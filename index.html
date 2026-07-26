@@ -124,7 +124,7 @@
                     </svg>
                     <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-display"><span style="color:var(--primary)">Pharm</span><span style="color:var(--text)">Academy</span></h1>
                 </div>
-                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.28</span></p>
+                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.29</span></p>
             </header>
             <p class="text-center font-bold mb-5" style="color:var(--text-muted)">Which team are you with?</p>
             <div class="space-y-4 max-w-md mx-auto">
@@ -160,7 +160,7 @@
                     </svg>
                     <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-display"><span style="color:var(--primary)">Pharm</span><span style="color:var(--text)">Academy</span></h1>
                 </div>
-                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.28</span></p>
+                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.29</span></p>
                 <button onclick="showView('view-category-select')" class="text-xs font-bold mt-2 underline" style="color:var(--text-muted)">Switch category</button>
             </header>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
@@ -461,11 +461,22 @@
                 </div>
 
                 <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-xs font-black uppercase tracking-widest flex items-center gap-1.5" style="color:var(--success)"><svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><path d="M2 19c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M17 8v4"/><path d="M15 10h4"/></svg>Staff Review</p>
-                        <select id="staff-review-mgr-topic-filter" onchange="renderStaffReviewSummary()" class="p-2 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                    <p class="text-xs font-black uppercase tracking-widest flex items-center gap-1.5 mb-2" style="color:var(--success)"><svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><path d="M2 19c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M17 8v4"/><path d="M15 10h4"/></svg>Staff Review</p>
+                    <p class="text-[11px] mb-2" style="color:var(--text-muted)">Every staff member at this outlet — Standard Quiz, AI Practice, and Area Manager reports, all in one place. Each filter narrows only its own section.</p>
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <div>
+                            <label class="text-[9px] font-bold uppercase block mb-1" style="color:var(--text-muted)">Standard Quiz</label>
+                            <select id="staff-review-quiz-topic-filter" onchange="renderStaffReviewSummary()" class="w-full p-2 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold uppercase block mb-1" style="color:var(--text-muted)">AI Practice</label>
+                            <select id="staff-review-ai-topic-filter" onchange="renderStaffReviewSummary()" class="w-full p-2 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold uppercase block mb-1" style="color:var(--text-muted)">Manager Report</label>
+                            <select id="staff-review-report-topic-filter" onchange="renderStaffReviewSummary()" class="w-full p-2 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
                     </div>
-                    <p class="text-[11px] mb-2" style="color:var(--text-muted)">Every staff member at this outlet — Standard Quiz, AI Practice, and Area Manager reports, all in one place.</p>
                     <div id="staff-review-mgr-list" class="space-y-2"></div>
                 </div>
             </div>
@@ -572,8 +583,23 @@
                     <div id="disp-staff-level-box" class="p-3 border rounded-xl text-white font-bold uppercase" style="border-color:var(--border)"><p id="disp-staff-level" class="text-lg"></p></div>
                 </div>
                 
-                <textarea id="mgr-comment" placeholder="Competency Comments" class="w-full p-4 border rounded-xl h-24 outline-none" style="border-color:var(--border)"></textarea>
-                <textarea id="mgr-housebrand" placeholder="Housebrand Focus" class="w-full p-4 border rounded-xl h-20 outline-none" style="border-color:var(--border)"></textarea>
+                <div class="space-y-2">
+                    <p class="text-xs font-black uppercase tracking-widest" style="color:var(--text-muted)">Marks (0–10 each)</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[10px] font-bold block mb-1" style="color:var(--text-muted)">Fluency</label>
+                            <input type="number" id="mgr-mark-fluency" inputmode="numeric" min="0" max="10" placeholder="0-10" class="w-full p-3 border rounded-xl text-center font-data font-bold" style="border-color:var(--border)">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold block mb-1" style="color:var(--text-muted)">Product Knowledge</label>
+                            <input type="number" id="mgr-mark-product" inputmode="numeric" min="0" max="10" placeholder="0-10" class="w-full p-3 border rounded-xl text-center font-data font-bold" style="border-color:var(--border)">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold block mb-1" style="color:var(--text-muted)">Communication &amp; Customer Service</label>
+                            <input type="number" id="mgr-mark-comms" inputmode="numeric" min="0" max="10" placeholder="0-10" class="w-full p-3 border rounded-xl text-center font-data font-bold" style="border-color:var(--border)">
+                        </div>
+                    </div>
+                </div>
                 <textarea id="mgr-gaps" placeholder="Performance Gaps" class="w-full p-4 border rounded-xl h-20 outline-none" style="border-color:var(--border)"></textarea>
                 <textarea id="mgr-recom" placeholder="Recommendations" class="w-full p-4 border rounded-xl h-20 outline-none" style="border-color:var(--border)"></textarea>
                 
@@ -621,7 +647,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-[10px]">
                         <thead style="background:var(--success-soft);color:#14532D">
-                            <tr><th class="p-2">Personnel</th><th class="p-2">Score</th><th class="p-2">Module</th><th class="p-2">Comments</th><th class="p-2">Focus</th><th class="p-2">Gaps</th><th class="p-2">Recs</th><th class="p-2">Manager</th></tr>
+                            <tr><th class="p-2">Personnel</th><th class="p-2">Score</th><th class="p-2">Module</th><th class="p-2">Fluency</th><th class="p-2">Product Knowledge</th><th class="p-2">Comms &amp; Service</th><th class="p-2">Gaps</th><th class="p-2">Recs</th><th class="p-2">Manager</th></tr>
                         </thead>
                         <tbody id="table-reports"></tbody>
                     </table>
@@ -974,6 +1000,19 @@
         /** MANAGER LOGIC (Area Manager) **/
         async function submitManagerReport() {
             if(!document.getElementById('rep-date').value) return alert("Please select an assessment date first.");
+
+            const markFields = [
+                { id: 'mgr-mark-fluency', label: 'Fluency' },
+                { id: 'mgr-mark-product', label: 'Product Knowledge' },
+                { id: 'mgr-mark-comms', label: 'Communication & Customer Service' }
+            ];
+            for (const f of markFields) {
+                const raw = document.getElementById(f.id).value;
+                if (raw !== '' && (isNaN(raw) || Number(raw) < 0 || Number(raw) > 10)) {
+                    return alert(`${f.label} must be a mark between 0 and 10.`);
+                }
+            }
+
             const p = {
                 action: 'save_report',
                 manager: document.getElementById('disp-mgr-name').innerText,
@@ -983,8 +1022,9 @@
                 trainTitle: document.getElementById('rep-topic-filter').value,
                 trainingDate: document.getElementById('rep-date').value,
                 level: document.getElementById('disp-staff-level').innerText,
-                comments: document.getElementById('mgr-comment').value,
-                focus: document.getElementById('mgr-housebrand').value,
+                fluency: document.getElementById('mgr-mark-fluency').value,
+                productKnowledge: document.getElementById('mgr-mark-product').value,
+                communication: document.getElementById('mgr-mark-comms').value,
                 gaps: document.getElementById('mgr-gaps').value,
                 rec: document.getElementById('mgr-recom').value,
                 isEdit: isEditingReport
@@ -1012,8 +1052,9 @@
                 isEditingReport = false;
                 document.getElementById('existing-report-notice').classList.add('hidden');
                 document.getElementById('rep-staff').value = "";
-                document.getElementById('mgr-comment').value = "";
-                document.getElementById('mgr-housebrand').value = "";
+                document.getElementById('mgr-mark-fluency').value = "";
+                document.getElementById('mgr-mark-product').value = "";
+                document.getElementById('mgr-mark-comms').value = "";
                 document.getElementById('mgr-gaps').value = "";
                 document.getElementById('mgr-recom').value = "";
             } catch(e) {
@@ -1149,12 +1190,11 @@
             // no Area Manager report system, so there's nothing extra to show
             // beyond what the AI Practice Monitor above already covers.
             if (scope === 'retail') {
-                const reviewTopics = [...new Set([
-                    ...allResults.filter(r => (r.Outlet||"").toString().trim().toUpperCase() === outlet.toUpperCase()).map(r => (r.Topic||"").toString().trim()),
-                    ...outletAITopics,
-                    ...allReports.filter(r => (r.Outlet||"").toString().trim().toUpperCase() === outlet.toUpperCase()).map(r => (r["Training Title"]||"").toString().trim())
-                ])].filter(Boolean).sort();
-                document.getElementById('staff-review-mgr-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + reviewTopics.map(t => `<option value="${t}">${t}</option>`).join('');
+                const quizTopics = [...new Set(allResults.filter(r => (r.Outlet||"").toString().trim().toUpperCase() === outlet.toUpperCase()).map(r => (r.Topic||"").toString().trim()))].filter(Boolean).sort();
+                const reportTopics = [...new Set(allReports.filter(r => (r.Outlet||"").toString().trim().toUpperCase() === outlet.toUpperCase()).map(r => (r["Training Title"]||"").toString().trim()))].filter(Boolean).sort();
+                document.getElementById('staff-review-quiz-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + quizTopics.map(t => `<option value="${t}">${t}</option>`).join('');
+                document.getElementById('staff-review-ai-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + outletAITopics.map(t => `<option value="${t}">${t}</option>`).join('');
+                document.getElementById('staff-review-report-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + reportTopics.map(t => `<option value="${t}">${t}</option>`).join('');
                 renderStaffReviewSummary();
             }
 
@@ -1671,12 +1711,18 @@
         }
         function reportCardHtml(r) {
             const date = r.Timestamp ? new Date(r.Timestamp).toLocaleDateString() : '';
+            const marks = [
+                { label: 'Fluency', v: r["Fluency"] },
+                { label: 'Product Knowledge', v: r["Product Knowledge"] },
+                { label: 'Communication & Customer Service', v: r["Communication and Customer Service"] }
+            ].filter(m => m.v !== '' && m.v !== undefined && m.v !== null);
             return `<div class="bg-white p-3 rounded-lg border space-y-1.5" style="border-color:var(--border)">
                 <div class="flex justify-between items-center">
                     <p class="font-bold text-sm">${r["Training Title"] || 'General'}</p>
                     <span class="badge" style="background:var(--supervisor-soft);color:var(--supervisor)">${r["Skill Level"] || ''}</span>
                 </div>
                 <p class="text-[11px]" style="color:var(--text-muted)">${date} · Filed by ${r.Manager || 'Area Manager'}</p>
+                ${marks.length ? `<div class="grid grid-cols-3 gap-1.5 pt-1">${marks.map(m => `<div class="text-center p-1.5 rounded-lg" style="background:var(--bg)"><p class="text-[9px] uppercase font-bold" style="color:var(--text-muted)">${m.label}</p><p class="font-bold font-data" style="color:var(--success)">${m.v}/10</p></div>`).join('')}</div>` : ''}
                 ${r["Competency Comments"] ? `<p class="text-xs"><b>Comments:</b> ${r["Competency Comments"]}</p>` : ''}
                 ${r["Housebrand Focus"] ? `<p class="text-xs"><b>Housebrand Focus:</b> ${r["Housebrand Focus"]}</p>` : ''}
                 ${r["Performance Gaps"] ? `<p class="text-xs"><b>Performance Gaps:</b> ${r["Performance Gaps"]}</p>` : ''}
@@ -1721,7 +1767,9 @@
         function renderStaffReviewSummary() {
             const list = document.getElementById('staff-review-mgr-list');
             if (!list) return;
-            const filter = document.getElementById('staff-review-mgr-topic-filter').value || 'ALL';
+            const quizFilter = document.getElementById('staff-review-quiz-topic-filter').value || 'ALL';
+            const aiFilter = document.getElementById('staff-review-ai-topic-filter').value || 'ALL';
+            const reportFilter = document.getElementById('staff-review-report-topic-filter').value || 'ALL';
             const outlet = currentOutletMgrOutlet.toUpperCase();
             const staffHere = allStaffRoster.filter(r => (r.Division||'').toString().trim().toLowerCase() === 'retail' && (r.Outlet||'').toString().trim().toUpperCase() === outlet);
 
@@ -1729,10 +1777,12 @@
 
             list.innerHTML = staffHere.map((s, i) => {
                 const name = s.Name.toString().trim().toUpperCase();
-                const matchTopic = t => filter === 'ALL' || (t||'').toString().trim() === filter;
-                const quizzes = allResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && matchTopic(r.Topic));
-                const aiAttempts = allAIResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && matchTopic(r.Topic));
-                const reports = allReports.filter(r => (r["Staff Name"]||'').toString().trim().toUpperCase() === name && matchTopic(r["Training Title"]));
+                // Each filter narrows only its own section — selecting a Standard
+                // Quiz topic no longer hides AI Practice or Report entries for the
+                // same person, and vice versa.
+                const quizzes = allResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && (quizFilter === 'ALL' || (r.Topic||'').toString().trim() === quizFilter));
+                const aiAttempts = allAIResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && (aiFilter === 'ALL' || (r.Topic||'').toString().trim() === aiFilter));
+                const reports = allReports.filter(r => (r["Staff Name"]||'').toString().trim().toUpperCase() === name && (reportFilter === 'ALL' || (r["Training Title"]||'').toString().trim() === reportFilter));
 
                 const allScored = [...quizzes, ...aiAttempts];
                 const avgPct = allScored.length
@@ -1955,7 +2005,7 @@
                 return matchY && matchO && matchT && matchM;
             });
 
-            document.getElementById('table-reports').innerHTML = filteredReports.map(r => `<tr><td class="p-2 font-bold uppercase">${r["Staff Name"]||r["Personnel"]}</td><td class="p-2">${r["Quiz Score"]}</td><td class="p-2">${r["Training Title"]||r["Topic"]}</td><td class="p-2">${r["Competency Comments"]||"-"}</td><td class="p-2">${r["Housebrand Focus"]||"-"}</td><td class="p-2" style="color:var(--danger)">${r["Performance Gaps"]||"-"}</td><td class="p-2">${r["Recommendations"]||"-"}</td><td class="p-2 italic">${r.Manager}</td></tr>`).join('');
+            document.getElementById('table-reports').innerHTML = filteredReports.map(r => `<tr><td class="p-2 font-bold uppercase">${r["Staff Name"]||r["Personnel"]}</td><td class="p-2">${r["Quiz Score"]}</td><td class="p-2">${r["Training Title"]||r["Topic"]}</td><td class="p-2">${r["Fluency"]||"-"}</td><td class="p-2">${r["Product Knowledge"]||"-"}</td><td class="p-2">${r["Communication and Customer Service"]||"-"}</td><td class="p-2" style="color:var(--danger)">${r["Performance Gaps"]||"-"}</td><td class="p-2">${r["Recommendations"]||"-"}</td><td class="p-2 italic">${r.Manager}</td></tr>`).join('');
             
             document.getElementById('stat-staff').innerText = [...new Set(allResults.map(r => r.Name))].length;
             document.getElementById('stat-reports').innerText = filteredReports.length;
@@ -1982,8 +2032,9 @@
             isEditingReport = true;
             const d = new Date(existing.Timestamp);
             if(!isNaN(d)) document.getElementById('rep-date').value = d.toISOString().slice(0, 10);
-            document.getElementById('mgr-comment').value = existing["Competency Comments"] || '';
-            document.getElementById('mgr-housebrand').value = existing["Housebrand Focus"] || '';
+            document.getElementById('mgr-mark-fluency').value = existing["Fluency"] || '';
+            document.getElementById('mgr-mark-product').value = existing["Product Knowledge"] || '';
+            document.getElementById('mgr-mark-comms').value = existing["Communication and Customer Service"] || '';
             document.getElementById('mgr-gaps').value = existing["Performance Gaps"] || '';
             document.getElementById('mgr-recom').value = existing["Recommendations"] || '';
             alert("Existing report loaded — make your changes, then submit to update it.");
@@ -2014,8 +2065,9 @@
             // Fresh state for every new staff/topic selection — no leftover text
             // from a previous person accidentally riding along into a new report.
             isEditingReport = false;
-            document.getElementById('mgr-comment').value = '';
-            document.getElementById('mgr-housebrand').value = '';
+            document.getElementById('mgr-mark-fluency').value = '';
+            document.getElementById('mgr-mark-product').value = '';
+            document.getElementById('mgr-mark-comms').value = '';
             document.getElementById('mgr-gaps').value = '';
             document.getElementById('mgr-recom').value = '';
             document.getElementById('rep-date').value = '';
@@ -2186,12 +2238,12 @@
         function exportComprehensiveCSV() {
             if (allResults.length === 0) return alert("There's no data to export yet.");
             const wrap = (t) => `"${(t || "").toString().replace(/"/g, "'").trim()}"`;
-            let csv = "Date,Personnel,Auditor,Module,Score,Comments,Housebrand,Gaps,Recs,Outlet\n";
+            let csv = "Date,Personnel,Auditor,Module,Score,Fluency,ProductKnowledge,CommsAndService,Gaps,Recs,Outlet\n";
             allReports.forEach(r => {
-                csv += [wrap(r.Timestamp||r.Date), wrap(r["Staff Name"]||r.Personnel), wrap(r.Manager), wrap(r["Training Title"]||r.Topic), wrap(r["Quiz Score"]), wrap(r["Competency Comments"]), wrap(r["Housebrand Focus"]), wrap(r["Performance Gaps"]), wrap(r.Recommendations), wrap(r.Outlet)].join(",") + "\n";
+                csv += [wrap(r.Timestamp||r.Date), wrap(r["Staff Name"]||r.Personnel), wrap(r.Manager), wrap(r["Training Title"]||r.Topic), wrap(r["Quiz Score"]), wrap(r["Fluency"]), wrap(r["Product Knowledge"]), wrap(r["Communication and Customer Service"]), wrap(r["Performance Gaps"]), wrap(r.Recommendations), wrap(r.Outlet)].join(",") + "\n";
             });
             const b = new Blob([csv], { type: 'text/csv;charset=utf-8;' }), l = document.createElement("a");
-            l.href = URL.createObjectURL(b); l.download = `PharmAcademy_Intel_v1.28.csv`; l.click();
+            l.href = URL.createObjectURL(b); l.download = `PharmAcademy_Intel_v1.29.csv`; l.click();
         }
     </script>
 </body>
