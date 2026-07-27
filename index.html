@@ -124,7 +124,7 @@
                     </svg>
                     <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-display"><span style="color:var(--primary)">Pharm</span><span style="color:var(--text)">Academy</span></h1>
                 </div>
-                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.29</span></p>
+                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.31</span></p>
             </header>
             <p class="text-center font-bold mb-5" style="color:var(--text-muted)">Which team are you with?</p>
             <div class="space-y-4 max-w-md mx-auto">
@@ -160,7 +160,7 @@
                     </svg>
                     <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-display"><span style="color:var(--primary)">Pharm</span><span style="color:var(--text)">Academy</span></h1>
                 </div>
-                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.29</span></p>
+                <p class="font-medium mt-1" style="color:var(--text-muted)">Training Management <span class="badge align-middle" style="background:var(--accent);color:white;">v1.31</span></p>
                 <button onclick="showView('view-category-select')" class="text-xs font-bold mt-2 underline" style="color:var(--text-muted)">Switch category</button>
             </header>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
@@ -232,15 +232,24 @@
                 <div id="staff-review" class="hidden space-y-4">
                     <button onclick="backToStaffMenu()" class="nav-btn font-bold text-xs mb-1" style="color:var(--primary)">← Menu</button>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:var(--primary-dark)">Standard Quiz History</p>
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-xs font-black uppercase tracking-widest" style="color:var(--primary-dark)">Standard Quiz History</p>
+                            <select id="staff-review-quiz-filter" onchange="showStaffReview()" class="p-1.5 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
                         <div id="staff-review-quiz-list" class="space-y-2"></div>
                     </div>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:var(--accent-dark)">AI Practice History</p>
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-xs font-black uppercase tracking-widest" style="color:var(--accent-dark)">AI Practice History</p>
+                            <select id="staff-review-ai-filter" onchange="showStaffReview()" class="p-1.5 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
                         <div id="staff-review-ai-list" class="space-y-2"></div>
                     </div>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:var(--supervisor)">Manager Reports About You</p>
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-xs font-black uppercase tracking-widest" style="color:var(--supervisor)">Manager Reports About You</p>
+                            <select id="staff-review-reports-filter" onchange="showStaffReview()" class="p-1.5 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
                         <p class="text-[11px] mb-2" style="color:var(--text-muted)">View only — filed by your Area Manager, not editable here.</p>
                         <div id="staff-review-reports-list" class="space-y-2"></div>
                     </div>
@@ -296,7 +305,10 @@
                 <div id="wh-staff-review" class="hidden space-y-4">
                     <button onclick="backToWarehouseStaffMenu()" class="nav-btn font-bold text-xs mb-1" style="color:var(--warehouse)">← Menu</button>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:var(--warehouse)">AI Practice History</p>
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-xs font-black uppercase tracking-widest" style="color:var(--warehouse)">AI Practice History</p>
+                            <select id="wh-staff-review-ai-filter" onchange="showWarehouseStaffReview()" class="p-1.5 text-[10px] border rounded-lg bg-white font-bold" style="border-color:var(--border)"></select>
+                        </div>
                         <div id="wh-staff-review-ai-list" class="space-y-2"></div>
                     </div>
                 </div>
@@ -1709,6 +1721,31 @@
                 <p class="font-bold font-data text-lg" style="color:${color}">${r.Percentage || ''}</p>
             </div>`;
         }
+        function wrongAnswerRowHtml(w) {
+            return `<div class="p-2 rounded border mt-1 bg-white" style="border-color:var(--border)"><p class="font-bold text-[11px]" style="color:var(--danger)">Q: ${w["Question Text"]}</p><p class="font-black text-[11px] mt-1" style="color:var(--success)">✓ Correct: ${w["Correct Answer"]}</p></div>`;
+        }
+        // Standard Quiz has no per-attempt ID (unlike AI Practice's AttemptID),
+        // so wrong answers are grouped by topic rather than tied to one
+        // specific attempt — if a topic's been retaken, this shows everything
+        // ever missed on it, not just the latest try.
+        function quizWrongsGroupedHtml(wrongs) {
+            if (!wrongs.length) return '';
+            const grouped = wrongs.reduce((acc, w) => { const t = (w.Topic||'General').toString().trim(); (acc[t] = acc[t] || []).push(w); return acc; }, {});
+            return `<p class="text-[10px] font-bold uppercase mt-2 mb-1" style="color:var(--danger)">Missed Questions</p>` +
+                Object.entries(grouped).map(([topic, ws]) => `<p class="text-[10px] font-bold mt-1.5" style="color:var(--text-muted)">${topic}</p>${ws.map(wrongAnswerRowHtml).join('')}`).join('');
+        }
+        // AI Practice DOES have an AttemptID, so this attaches precisely to
+        // one specific score card instead of being grouped loosely by topic.
+        function aiScoreCardHtml(r, color) {
+            const wrongs = allAIWrongAnswers.filter(w => w.AttemptID === r.AttemptID);
+            return `<div class="bg-white p-3 rounded-lg border" style="border-color:var(--border)">
+                <div class="flex justify-between items-center">
+                    <div><p class="font-bold text-sm">${r.Topic || 'General'}</p><p class="text-[11px]" style="color:var(--text-muted)">${r.Timestamp ? new Date(r.Timestamp).toLocaleDateString() : ''}</p></div>
+                    <p class="font-bold font-data text-lg" style="color:${color}">${r.Percentage || ''}</p>
+                </div>
+                ${wrongs.length ? `<p class="text-[10px] font-bold uppercase mt-2 mb-1" style="color:var(--danger)">Missed Questions</p>${wrongs.map(wrongAnswerRowHtml).join('')}` : ''}
+            </div>`;
+        }
         function reportCardHtml(r) {
             const date = r.Timestamp ? new Date(r.Timestamp).toLocaleDateString() : '';
             const marks = [
@@ -1735,25 +1772,58 @@
             document.getElementById('staff-review').classList.remove('hidden');
             const byDateDesc = (a, b) => new Date(b.Timestamp) - new Date(a.Timestamp);
 
+            // Filter options are built once — showStaffReview() runs again
+            // every time a filter changes (via onchange below), so rebuilding
+            // the dropdown's options on every call would reset whatever the
+            // person just selected right back to "All".
+            const quizFilterEl = document.getElementById('staff-review-quiz-filter');
+            if (quizFilterEl.options.length === 0) {
+                const topics = [...new Set(allResults.map(r => (r.Topic||'').toString().trim()))].filter(Boolean).sort();
+                quizFilterEl.innerHTML = '<option value="ALL">All topics</option>' + topics.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+            const aiFilterEl = document.getElementById('staff-review-ai-filter');
+            if (aiFilterEl.options.length === 0) {
+                const topics = [...new Set(allAIResults.map(r => (r.Topic||'').toString().trim()))].filter(Boolean).sort();
+                aiFilterEl.innerHTML = '<option value="ALL">All topics</option>' + topics.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+            const reportFilterEl = document.getElementById('staff-review-reports-filter');
+            if (reportFilterEl.options.length === 0) {
+                const topics = [...new Set(allReports.map(r => (r["Training Title"]||'').toString().trim()))].filter(Boolean).sort();
+                reportFilterEl.innerHTML = '<option value="ALL">All topics</option>' + topics.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+
+            const quizFilter = quizFilterEl.value || 'ALL';
+            const aiFilter = aiFilterEl.value || 'ALL';
+            const reportFilter = reportFilterEl.value || 'ALL';
+
             const quizList = document.getElementById('staff-review-quiz-list');
-            const quizzes = [...allResults].sort(byDateDesc);
-            quizList.innerHTML = quizzes.length ? quizzes.map(r => scoreCardHtml(r, 'var(--primary)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No Standard Quiz attempts yet.</p>';
+            const quizzes = allResults.filter(r => quizFilter === 'ALL' || (r.Topic||'').toString().trim() === quizFilter).sort(byDateDesc);
+            const quizWrongs = allWrongAnswers.filter(w => quizFilter === 'ALL' || (w.Topic||'').toString().trim() === quizFilter);
+            quizList.innerHTML = (quizzes.length ? quizzes.map(r => scoreCardHtml(r, 'var(--primary)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No Standard Quiz attempts yet.</p>') + quizWrongsGroupedHtml(quizWrongs);
 
             const aiList = document.getElementById('staff-review-ai-list');
-            const aiAttempts = [...allAIResults].sort(byDateDesc);
-            aiList.innerHTML = aiAttempts.length ? aiAttempts.map(r => scoreCardHtml(r, 'var(--accent-dark)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No AI Practice attempts yet.</p>';
+            const aiAttempts = allAIResults.filter(r => aiFilter === 'ALL' || (r.Topic||'').toString().trim() === aiFilter).sort(byDateDesc);
+            aiList.innerHTML = aiAttempts.length ? aiAttempts.map(r => aiScoreCardHtml(r, 'var(--accent-dark)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No AI Practice attempts yet.</p>';
 
             const reportList = document.getElementById('staff-review-reports-list');
-            const reports = [...allReports].sort(byDateDesc);
+            const reports = allReports.filter(r => reportFilter === 'ALL' || (r["Training Title"]||'').toString().trim() === reportFilter).sort(byDateDesc);
             reportList.innerHTML = reports.length ? reports.map(reportCardHtml).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No reports filed yet.</p>';
         }
 
         function showWarehouseStaffReview() {
             document.getElementById('wh-staff-post-login-menu').classList.add('hidden');
             document.getElementById('wh-staff-review').classList.remove('hidden');
+
+            const filterEl = document.getElementById('wh-staff-review-ai-filter');
+            if (filterEl.options.length === 0) {
+                const topics = [...new Set(allAIResults.map(r => (r.Topic||'').toString().trim()))].filter(Boolean).sort();
+                filterEl.innerHTML = '<option value="ALL">All topics</option>' + topics.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+            const filter = filterEl.value || 'ALL';
+
             const aiList = document.getElementById('wh-staff-review-ai-list');
-            const aiAttempts = [...allAIResults].sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-            aiList.innerHTML = aiAttempts.length ? aiAttempts.map(r => scoreCardHtml(r, 'var(--warehouse)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No AI Practice attempts yet.</p>';
+            const aiAttempts = allAIResults.filter(r => filter === 'ALL' || (r.Topic||'').toString().trim() === filter).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            aiList.innerHTML = aiAttempts.length ? aiAttempts.map(r => aiScoreCardHtml(r, 'var(--warehouse)')).join('') : '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No AI Practice attempts yet.</p>';
         }
 
         function toggleStaffReviewCard(id) {
@@ -1783,6 +1853,13 @@
                 const quizzes = allResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && (quizFilter === 'ALL' || (r.Topic||'').toString().trim() === quizFilter));
                 const aiAttempts = allAIResults.filter(r => (r.Name||'').toString().trim().toUpperCase() === name && (aiFilter === 'ALL' || (r.Topic||'').toString().trim() === aiFilter));
                 const reports = allReports.filter(r => (r["Staff Name"]||'').toString().trim().toUpperCase() === name && (reportFilter === 'ALL' || (r["Training Title"]||'').toString().trim() === reportFilter));
+                // Standard Quiz has no per-attempt ID the way AI Practice does
+                // (AIWrongAnswers links via AttemptID; WrongAnswers doesn't),
+                // so these are grouped by topic rather than tied to one
+                // specific attempt — if someone's retaken a topic more than
+                // once, this shows everything they've ever missed on it, not
+                // just the most recent attempt.
+                const quizWrongs = allWrongAnswers.filter(r => (r["Staff Name"]||'').toString().trim().toUpperCase() === name && (quizFilter === 'ALL' || (r.Topic||'').toString().trim() === quizFilter));
 
                 const allScored = [...quizzes, ...aiAttempts];
                 const avgPct = allScored.length
@@ -1794,8 +1871,9 @@
                 const detail = `
                     <p class="text-[11px] font-black uppercase mt-3 mb-1" style="color:var(--primary-dark)">Standard Quiz</p>
                     ${quizzes.length ? quizzes.map(r => scoreCardHtml(r, 'var(--primary)')).join('') : '<p class="text-xs" style="color:var(--text-muted)">None.</p>'}
+                    ${quizWrongsGroupedHtml(quizWrongs)}
                     <p class="text-[11px] font-black uppercase mt-3 mb-1" style="color:var(--accent-dark)">AI Practice</p>
-                    ${aiAttempts.length ? aiAttempts.map(r => scoreCardHtml(r, 'var(--accent-dark)')).join('') : '<p class="text-xs" style="color:var(--text-muted)">None.</p>'}
+                    ${aiAttempts.length ? aiAttempts.map(r => aiScoreCardHtml(r, 'var(--accent-dark)')).join('') : '<p class="text-xs" style="color:var(--text-muted)">None.</p>'}
                     <p class="text-[11px] font-black uppercase mt-3 mb-1" style="color:var(--supervisor)">Manager Reports</p>
                     ${reports.length ? reports.map(reportCardHtml).join('') : '<p class="text-xs" style="color:var(--text-muted)">None.</p>'}
                 `;
@@ -2243,7 +2321,7 @@
                 csv += [wrap(r.Timestamp||r.Date), wrap(r["Staff Name"]||r.Personnel), wrap(r.Manager), wrap(r["Training Title"]||r.Topic), wrap(r["Quiz Score"]), wrap(r["Fluency"]), wrap(r["Product Knowledge"]), wrap(r["Communication and Customer Service"]), wrap(r["Performance Gaps"]), wrap(r.Recommendations), wrap(r.Outlet)].join(",") + "\n";
             });
             const b = new Blob([csv], { type: 'text/csv;charset=utf-8;' }), l = document.createElement("a");
-            l.href = URL.createObjectURL(b); l.download = `PharmAcademy_Intel_v1.29.csv`; l.click();
+            l.href = URL.createObjectURL(b); l.download = `PharmAcademy_Intel_v1.31.csv`; l.click();
         }
     </script>
 </body>
