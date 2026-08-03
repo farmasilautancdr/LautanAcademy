@@ -713,7 +713,11 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyHp52VOZXi7q3xyxgfuQ3u0ti8M5q2RagaC8zeQn4PAT4c4lGJGUEnopsfTU-fIbI3/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyvioLEJ8tFK3766M8fj7wKxS5_qFDkKEKtniei3MHaP-aNkEq7LcwNqaVhcXgr26wKkg/exec";
+        // New Node/Supabase backend — only login + quiz create/redeem routed here so far.
+        // Everything else (results, reports, resources, content) still goes through GAS_URL.
+        // Not deployed anywhere yet — only reachable when this page and the backend run on the same machine.
+        const BACKEND_URL = "http://localhost:3000";
         let allQuestions = [], allResults = [], allReports = [], allWrongAnswers = [], allContent = [];
         let allAIResults = [], allAIWrongAnswers = [], allReferenceDocs = [];
         let currentLang = 'en', quizIdx = 0, score = 0, currentQuizData = [], staffWrongs = [];
@@ -741,7 +745,8 @@
 
         window.onload = fetchData;
 
-        let sessionToken = '';
+        let sessionToken = ''; // new backend JWT — used for /auth and /quiz calls
+        let gasSessionToken = ''; // GAS-issued token — used for every action still routed through GAS_URL
 
         async function fetchData() {
             document.getElementById('sync-error').classList.add('hidden');
@@ -785,6 +790,27 @@
             renderKBList();
         }
 
+        // Overlays results/wrongAnswers/aiResults/aiWrongAnswers from the new
+        // backend on top of whatever applyScopedData(gasData) just set — new
+        // backend is now authoritative for these (migrated history + all new
+        // saves go there). Reports/content/referenceDocs stay whatever GAS gave,
+        // untouched here. Best-effort: silently keeps GAS's copy on failure.
+        async function refreshResultsFromBackend() {
+            if (!sessionToken) return;
+            try {
+                const res = await fetch(BACKEND_URL + '/data/scoped-data', {
+                    headers: { 'Authorization': 'Bearer ' + sessionToken }
+                });
+                const data = await res.json();
+                if (!data.authorized) return;
+                allResults = data.results || [];
+                allWrongAnswers = data.wrongAnswers || [];
+                allAIResults = data.aiResults || [];
+                allAIWrongAnswers = data.aiWrongAnswers || [];
+                populateGlobalData();
+            } catch (e) { /* best-effort — GAS bridge data already applied */ }
+        }
+
         // Only needed now if something wants to re-fetch the current scope's
         // data without a fresh login (e.g. a manual refresh) — every login
         // flow gets its scoped data directly in the login response instead,
@@ -794,7 +820,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'get_scoped_data', token: sessionToken })
+                    body: JSON.stringify({ action: 'get_scoped_data', token: gasSessionToken })
                 });
                 const data = await res.json();
                 if (!data.authorized) {
@@ -994,21 +1020,21 @@
         }
 
         async function saveQuizResult() {
-            const p = { action: 'save_result', name: loggedInStaffName, outlet: loggedInStaffOutlet, topic: document.getElementById('staff-topic').value, score: `${score}/${currentQuizData.length}`, perc: Math.round((score/currentQuizData.length) * 100) + "%", wrongAnswers: staffWrongs, token: sessionToken };
-            const blob = new Blob([JSON.stringify(p)], {type: 'text/plain'});
-            if (navigator.sendBeacon) navigator.sendBeacon(GAS_URL, blob);
-            else fetch(GAS_URL, { method: 'POST', body: JSON.stringify(p), mode: 'no-cors' });
+            const p = { name: loggedInStaffName, outlet: loggedInStaffOutlet, topic: document.getElementById('staff-topic').value, score: `${score}/${currentQuizData.length}`, perc: Math.round((score/currentQuizData.length) * 100) + "%", wrongAnswers: staffWrongs, token: sessionToken };
+            const blob = new Blob([JSON.stringify(p)], {type: 'application/json'});
+            if (navigator.sendBeacon) navigator.sendBeacon(BACKEND_URL + '/data/results', blob);
+            else fetch(BACKEND_URL + '/data/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
             alert("Your result has been saved.");
-            location.reload(); 
+            location.reload();
         }
 
         async function saveAIQuizResult() {
             const attemptId = 'AI' + Date.now();
             const topic = (currentQuizData[0] && currentQuizData[0].topic) || (loggedInDivision === 'warehouse' ? 'Warehouse Practice' : document.getElementById('staff-topic').value) || 'General';
-            const p = { action: 'save_ai_result', attemptId, name: loggedInStaffName, outlet: loggedInStaffOutlet, topic, score: `${score}/${currentQuizData.length}`, perc: Math.round((score/currentQuizData.length) * 100) + "%", wrongAnswers: staffWrongs, passcode: joinedPasscode, token: sessionToken };
-            const blob = new Blob([JSON.stringify(p)], {type: 'text/plain'});
-            if (navigator.sendBeacon) navigator.sendBeacon(GAS_URL, blob);
-            else fetch(GAS_URL, { method: 'POST', body: JSON.stringify(p), mode: 'no-cors' });
+            const p = { attemptId, name: loggedInStaffName, outlet: loggedInStaffOutlet, topic, score: `${score}/${currentQuizData.length}`, perc: Math.round((score/currentQuizData.length) * 100) + "%", wrongAnswers: staffWrongs, passcode: joinedPasscode, token: sessionToken };
+            const blob = new Blob([JSON.stringify(p)], {type: 'application/json'});
+            if (navigator.sendBeacon) navigator.sendBeacon(BACKEND_URL + '/data/ai-results', blob);
+            else fetch(BACKEND_URL + '/data/ai-results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
             alert("Practice attempt shared with your manager.");
             location.reload();
         }
@@ -1126,9 +1152,9 @@
             document.getElementById(prefix + 'quiz-passcode-display').classList.add('hidden');
             if(quizTimerInterval) clearInterval(quizTimerInterval);
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_outlet_active_quiz', outlet })
+                const res = await fetch(BACKEND_URL + '/quiz/' + outlet + '/active', {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + sessionToken }
                 });
                 const data = await res.json();
                 if(data.active && data.passcode) showPasscodeDisplay(data.passcode, data.topic, data.count, data.createdAt, scope);
@@ -1174,9 +1200,9 @@
             if(!confirm("End this code now? Staff won't be able to join with it anymore, even though it hasn't expired yet.")) return;
             setLoader(true, "Ending code...");
             try {
-                await fetch(GAS_URL, {
+                await fetch(BACKEND_URL + '/quiz/' + outlet + '/end', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'end_ai_quiz', outlet, token: sessionToken })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken }
                 });
             } catch(e) { /* best-effort — clear the UI regardless below */ }
             if(quizTimerInterval) clearInterval(quizTimerInterval);
@@ -1250,9 +1276,10 @@
 
             setLoader(true, "Generating quiz...");
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/quiz/create', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'create_ai_quiz', outlet, sourceType, sourceValue, topicLabel, count, extraNotes, manager, token: sessionToken })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                    body: JSON.stringify({ outlet, sourceType, sourceValue, topicLabel, count, extraNotes, manager })
                 });
                 const data = await res.json();
                 if(data.error) throw new Error(data.error);
@@ -1658,9 +1685,10 @@
             setLoader(true, "Checking passcode...");
             let ok = false, alreadyShownError = false, loginData = null;
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/auth/staff-login', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'verify_staff_login', division, outlet, name, passcode })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ division, outlet, name, pin: passcode })
                 });
                 const data = await res.json();
                 if(data.error) { alert(data.error); alreadyShownError = true; }
@@ -1670,13 +1698,30 @@
                 alert("Couldn't reach the server — check your connection and try again.");
                 alreadyShownError = true;
             }
-            setLoader(false);
             if(!ok) {
+                setLoader(false);
                 if(!alreadyShownError) alert("That name/passcode combination doesn't look right.");
                 return;
             }
 
             applyScopedData(loginData); // v1.27: comes back in this same response now
+
+            // Bridge: new backend doesn't serve results/reports/content/resources yet,
+            // so also hit GAS (still source of truth for that data) to populate the UI.
+            // Its token is discarded — sessionToken stays the new-backend JWT above.
+            // Loader stays up through this whole sequence — hiding it before these
+            // finish made the screen look idle mid-login, prompting a second click.
+            setLoader(true, "Loading your data...");
+            try {
+                const gasRes = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'verify_staff_login', division, outlet, name, passcode })
+                });
+                const gasData = await gasRes.json();
+                if (gasData.authorized) { gasSessionToken = gasData.token || ''; applyScopedData(gasData); }
+            } catch (e) { /* best-effort — login already succeeded above */ }
+            await refreshResultsFromBackend();
+            setLoader(false);
 
             loggedInStaffName = name; loggedInStaffOutlet = outlet; loggedInDivision = division;
 
@@ -1907,7 +1952,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'get_staff_roster_full', division, outlet, token: sessionToken })
+                    body: JSON.stringify({ action: 'get_staff_roster_full', division, outlet, token: gasSessionToken })
                 });
                 const data = await res.json();
                 if(!data.authorized) { list.innerHTML = `<p class="text-xs text-center py-2" style="color:var(--danger-dark)">${data.error || 'Could not load roster.'}</p>`; return; }
@@ -1938,7 +1983,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'add_staff', division, outlet, name, idNote, passcode, addedBy: (division === 'warehouse' ? 'Warehouse Manager - ' : 'Outlet Manager - ') + outlet, token: sessionToken })
+                    body: JSON.stringify({ action: 'add_staff', division, outlet, name, idNote, passcode, addedBy: (division === 'warehouse' ? 'Warehouse Manager - ' : 'Outlet Manager - ') + outlet, token: gasSessionToken })
                 });
                 const data = await res.json();
                 if(data.status !== 'ok') { setLoader(false); return alert(data.error || "Couldn't add that staff member."); }
@@ -1958,7 +2003,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'remove_staff', division, outlet, name, token: sessionToken })
+                    body: JSON.stringify({ action: 'remove_staff', division, outlet, name, token: gasSessionToken })
                 });
                 const data = await res.json();
                 if(data.status !== 'ok') { setLoader(false); return alert(data.error || "Couldn't remove that staff member."); }
@@ -2041,9 +2086,10 @@
 
             setLoader(true, "Joining quiz...");
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/quiz/redeem', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'get_ai_quiz', outlet: entry.o, passcode })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ outlet: entry.o, passcode })
                 });
                 const data = await res.json();
                 if(data.error || !data.questions || !data.questions.length) throw new Error(data.error || "empty");
@@ -2080,7 +2126,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'get_scoped_data', token: sessionToken, windowMonths: months })
+                    body: JSON.stringify({ action: 'get_scoped_data', token: gasSessionToken, windowMonths: months })
                 });
                 const data = await res.json();
                 if (!data.authorized) {
@@ -2232,14 +2278,29 @@
         // outlet/location (or company-wide, for Supervisor).
         async function establishSession(role, outlet, pin) {
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/auth/manager-login', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'establish_session', role, outlet: outlet || '', pin })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role, outlet: outlet || '', pin })
                 });
                 const data = await res.json();
                 if (!data.authorized) { alert(data.error || "That PIN doesn't look right."); return false; }
-                sessionToken = data.token || '';
-                applyScopedData(data); // v1.27: comes back in this same response now
+                sessionToken = data.token || ''; // new backend's JWT — used for quiz API calls
+
+                // Bridge: new backend doesn't serve content/results/reports/resources yet,
+                // so also hit GAS (still the source of truth for that data) just to populate
+                // the UI. Its own session token is discarded — sessionToken above stays the
+                // new-backend JWT. Best-effort: login still succeeds if this fails.
+                try {
+                    const gasRes = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'establish_session', role, outlet: outlet || '', pin })
+                    });
+                    const gasData = await gasRes.json();
+                    if (gasData.authorized) { gasSessionToken = gasData.token || ''; applyScopedData(gasData); }
+                } catch (e) { /* best-effort — quiz login already succeeded above */ }
+                await refreshResultsFromBackend();
+
                 return true;
             } catch(e) {
                 alert("Couldn't reach the server — check your connection and try again.");
