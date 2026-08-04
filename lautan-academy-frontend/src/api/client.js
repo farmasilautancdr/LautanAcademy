@@ -11,8 +11,11 @@ function getToken() {
 
 async function request(path, options = {}) {
   const token = getToken()
+  // FormData bodies (file uploads) must NOT get a manual Content-Type — the
+  // browser sets multipart/form-data with the correct boundary itself.
+  const isFormData = options.body instanceof FormData
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   }
@@ -57,4 +60,11 @@ export const api = {
   addStaff: (payload) => request('/staff-roster-manage', { method: 'POST', body: JSON.stringify(payload) }),
   resetStaffPin: (payload) => request('/staff-roster-manage/reset-pin', { method: 'POST', body: JSON.stringify(payload) }),
   removeStaff: (payload) => request('/staff-roster-manage', { method: 'DELETE', body: JSON.stringify(payload) }),
+  addContent: (payload) => request('/content', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteContent: (id) => request(`/content/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  uploadContentFile: (file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return request('/content/upload', { method: 'POST', body: form })
+  },
 }

@@ -1,8 +1,9 @@
 <script setup>
 // Company-wide view — no outlet scoping server-side, windowMonths controls
-// how far back the backend queries (0 = all time). Reports/Resources/Manage
-// Staff views aren't built (see SCOPE_TRACKER.md); this covers results +
-// AI Practice history only, same as every other dashboard in this stack.
+// how far back the backend queries (0 = all time). Resources (Drive-backed
+// reference docs) isn't built (see SCOPE_TRACKER.md) — Knowledge Base below
+// covers the manually-typed Content sheet only, which is what quiz creation
+// actually reads from.
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
@@ -29,6 +30,85 @@ async function load() {
 
 watch(windowMonths, load)
 load()
+
+// --- Knowledge Base (Content) ---
+// Categories match GAS's real Content-sheet categories used for retail's
+// quiz-source sections. "Warehousing Handbook"/"eLearning Courses" are
+// Drive-only labels in the vanilla app (never Content-sheet entries), so
+// they're not offered here.
+const CATEGORIES = ['SOP', 'Training Material', 'Note', 'Guideline']
+const content = ref([])
+const loadingContent = ref(true)
+const cTopic = ref('')
+const cCategory = ref(CATEGORIES[0])
+const cTitle = ref('')
+const cBody = ref('')
+const cLink = ref('')
+const cError = ref('')
+const cSaving = ref(false)
+const cUploading = ref(false)
+const cUploadedName = ref('')
+const cFileInput = ref(null)
+
+async function loadContent() {
+  loadingContent.value = true
+  try {
+    const data = await api.getContent()
+    content.value = data.content || []
+  } catch (e) { /* leave empty */ }
+  loadingContent.value = false
+}
+loadContent()
+
+// Uploads immediately on file selection — link field fills in with the
+// resulting public URL, same field a manually-typed link would use.
+async function handleFileSelect(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  cError.value = ''
+  cUploading.value = true
+  try {
+    const data = await api.uploadContentFile(file)
+    cLink.value = data.url
+    cUploadedName.value = file.name
+  } catch (err) {
+    cError.value = err.message || 'Upload failed.'
+    if (cFileInput.value) cFileInput.value.value = ''
+  } finally {
+    cUploading.value = false
+  }
+}
+
+async function addContent() {
+  cError.value = ''
+  if (!cTopic.value.trim() || !cTitle.value.trim() || !cBody.value.trim()) {
+    cError.value = 'Topic, title, and body are required.'
+    return
+  }
+  cSaving.value = true
+  try {
+    await api.addContent({ topic: cTopic.value.trim(), category: cCategory.value, title: cTitle.value.trim(), body: cBody.value.trim(), link: cLink.value.trim() })
+    cTopic.value = ''
+    cTitle.value = ''
+    cBody.value = ''
+    cLink.value = ''
+    cUploadedName.value = ''
+    if (cFileInput.value) cFileInput.value.value = ''
+    await loadContent()
+  } catch (err) {
+    cError.value = err.message || 'Could not save.'
+  } finally {
+    cSaving.value = false
+  }
+}
+
+async function removeContent(item) {
+  if (!confirm(`Remove "${item.Title}"? Quizzes sourced from this topic will fall back to general knowledge.`)) return
+  try {
+    await api.deleteContent(item.ID)
+    await loadContent()
+  } catch (e) { /* best-effort */ }
+}
 
 const activity = computed(() => {
   const tagged = [
@@ -109,6 +189,58 @@ function logout() {
           </div>
         </div>
       </template>
+
+      <section class="mt-10">
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">Knowledge Base</h2>
+
+        <div v-if="loadingContent" class="text-slate text-sm">Loading...</div>
+        <div v-else-if="content.length === 0" class="text-slate text-sm mb-4">No entries yet — add one below.</div>
+        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
+          <div v-for="item in content" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ item.Title }}</p>
+              <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}</p>
+            </div>
+            <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">Remove</button>
+          </div>
+        </div>
+
+        <form @submit.prevent="addContent" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-ink mb-1">Topic</label>
+              <input v-model="cTopic" type="text" placeholder="e.g. Handwashing Basics" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-ink mb-1">Category</label>
+              <select v-model="cCategory" class="w-full border border-slate/30 rounded-lg py-2 px-3">
+                <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-ink mb-1">Title</label>
+            <input v-model="cTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-ink mb-1">Body</label>
+            <textarea v-model="cBody" rows="3" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-ink mb-1">File (optional)</label>
+            <input ref="cFileInput" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" @change="handleFileSelect"
+              class="w-full text-sm text-slate file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-aqualight file:text-deepsea file:font-medium" />
+            <p v-if="cUploading" class="text-xs text-slate mt-1">Uploading...</p>
+            <p v-else-if="cUploadedName" class="text-xs text-aqua mt-1">✓ {{ cUploadedName }} uploaded</p>
+            <p class="text-xs text-slate mt-1">PDF, Word, PowerPoint, Excel, or images — 20MB max. Or paste a link instead:</p>
+            <input v-model="cLink" type="text" placeholder="https://..." class="w-full border border-slate/30 rounded-lg py-2 px-3 mt-1" />
+          </div>
+          <p v-if="cError" class="text-coral text-sm">{{ cError }}</p>
+          <button type="submit" :disabled="cSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
+            {{ cSaving ? 'Saving...' : 'Add entry' }}
+          </button>
+        </form>
+      </section>
     </main>
   </div>
 </template>
