@@ -6,9 +6,21 @@ a Malaysian pharmacy retail chain (50+ outlets, R1–R9 clusters). It's a
 staff training/quiz platform: role-scoped sessions, AI-generated quizzes,
 per-attempt tracking, outlet-scoped data access.
 
-Stack: vanilla JS + Tailwind CDN (frontend), Google Apps Script + Sheets
-(backend), Gemini API for quiz generation. No framework, no build step —
-keep it that way unless explicitly told otherwise.
+Currently mid-migration from Google Apps Script + Sheets to Vue + Node.js/
+Express + Postgres, as a full production replacement (not a side experiment).
+Old GAS version stays live and authoritative until the new stack fully
+matches its feature set and is proven with real staff usage.
+
+Stack (new): Vue 3 + Vite + Tailwind (frontend), Node.js + Express + Postgres
+(backend), Supabase for hosted DB. No other frameworks/libraries added
+without asking first.
+
+## Current build order
+Follow `SCOPE_TRACKER.md` in this repo. At the start of a session, check it
+first. Work through unchecked items top to bottom unless I say otherwise.
+Check items off as they're completed AND verified — not just written.
+If an item turns out bigger than expected, stop and tell me before
+continuing, don't silently expand scope.
 
 ## About me
 I'm a self-taught "vibe coder" — no formal CS background, learned by
@@ -42,6 +54,10 @@ user-facing text.
 5. **Be honest about fragility.**
    If a fix is a workaround rather than a real solution, say so
    explicitly. Don't present hacky patches as clean fixes.
+
+6. **Don't mark SCOPE_TRACKER.md items done prematurely.**
+   A checkbox only gets checked after the feature is built AND verified
+   working — not just scaffolded.
 
 ## Style
 - Terse. No filler, no "Great question!" preambles.
