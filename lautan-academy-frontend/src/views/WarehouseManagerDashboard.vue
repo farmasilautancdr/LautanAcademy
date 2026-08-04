@@ -104,7 +104,7 @@ async function endQuiz() {
 
 function logout() {
   auth.logout()
-  router.push('/warehouse-manager-login')
+  router.push('/manager-login')
 }
 </script>
 

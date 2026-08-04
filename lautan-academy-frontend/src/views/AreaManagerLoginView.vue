@@ -53,17 +53,20 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-deepsea flex items-center justify-center px-6">
-    <div class="w-full max-w-sm">
-      <div class="text-center mb-8">
-        <h1 class="font-display text-3xl font-bold text-white tracking-tight">Lautan Academy</h1>
-        <p class="text-aqualight mt-2 text-sm">Area Manager</p>
+  <div class="min-h-screen bg-deepsea flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0" style="background: radial-gradient(ellipse at 50% -10%, rgba(23,163,152,0.18), transparent 60%)" />
+
+    <div class="w-full max-w-sm relative motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="text-center mb-8 relative z-10">
+        <h1 class="font-display text-4xl font-bold text-white tracking-tight leading-none">LAUTAN</h1>
+        <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] mt-1.5">ACADEMY</p>
+        <p class="text-aqualight/80 mt-3 text-sm">Area Manager</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl space-y-4">
+      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl relative z-10 space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Area</label>
-          <select v-model="areaId" @change="outlet = ''" class="w-full border border-slate/30 rounded-lg py-2 px-3">
+          <select v-model="areaId" @change="outlet = ''" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
             <option value="">Select your area...</option>
             <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
           </select>
@@ -71,7 +74,7 @@ async function handleLogin() {
 
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Outlet</label>
-          <select v-model="outlet" :disabled="!areaId" class="w-full border border-slate/30 rounded-lg py-2 px-3 disabled:opacity-50">
+          <select v-model="outlet" :disabled="!areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
             <option value="">{{ areaId ? 'Select outlet...' : 'Select area first...' }}</option>
             <option v-for="o in outletsForArea" :key="o" :value="o">{{ o }}</option>
           </select>
@@ -83,7 +86,7 @@ async function handleLogin() {
             v-model="pin"
             type="password"
             placeholder="••••••"
-            class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua"
+            class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 
@@ -111,3 +114,10 @@ async function handleLogin() {
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

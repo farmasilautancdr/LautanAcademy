@@ -11,6 +11,11 @@ const props = defineProps({
 const radius = 30
 const circumference = 2 * Math.PI * radius
 const offset = () => circumference - (props.percent / 100) * circumference
+
+// Label only fits comfortably above ~56px — smaller badge sizes (e.g. the
+// 40px list-row indicators) show as a plain ring instead of squeezing text.
+const showLabel = props.size >= 56
+const labelClass = props.size >= 100 ? 'text-2xl' : props.size >= 80 ? 'text-base' : 'text-sm'
 </script>
 
 <template>
@@ -25,6 +30,6 @@ const offset = () => circumference - (props.percent / 100) * circumference
         class="transition-all duration-700 ease-out"
       />
     </svg>
-    <span class="absolute font-display text-sm font-semibold text-ink">{{ percent }}%</span>
+    <span v-if="showLabel" class="absolute font-display font-semibold text-ink" :class="labelClass">{{ percent }}%</span>
   </div>
 </template>

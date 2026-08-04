@@ -63,8 +63,11 @@ async function handleLogin() {
         Staff? <router-link to="/login" class="underline">Log in here</router-link>
       </p>
       <p class="text-center text-aqualight/70 text-xs mt-2">
-        Outlet/Warehouse/Area Manager?
+        Outlet/Warehouse Manager?
         <router-link to="/manager-login" class="underline">Log in here</router-link>
+      </p>
+      <p class="text-center text-aqualight/70 text-xs mt-2">
+        Area Manager? <router-link to="/area-manager-login" class="underline">Log in here</router-link>
       </p>
     </div>
   </div>

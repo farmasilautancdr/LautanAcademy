@@ -3,7 +3,6 @@ import { useAuthStore } from '../store/auth'
 
 import LoginView from '../views/LoginView.vue'
 import ManagerLoginView from '../views/ManagerLoginView.vue'
-import WarehouseManagerLoginView from '../views/WarehouseManagerLoginView.vue'
 import AreaManagerLoginView from '../views/AreaManagerLoginView.vue'
 import SupervisorLoginView from '../views/SupervisorLoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
@@ -18,10 +17,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', name: 'login', component: LoginView },
-    { path: '/manager-login', name: 'manager-login', component: ManagerLoginView, meta: { managerRole: 'outlet_manager' } },
-    { path: '/warehouse-manager-login', name: 'warehouse-manager-login', component: WarehouseManagerLoginView, meta: { managerRole: 'warehouse_manager' } },
-    { path: '/area-manager-login', name: 'area-manager-login', component: AreaManagerLoginView, meta: { managerRole: 'area_manager' } },
-    { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRole: 'supervisor' } },
+    // manager-login covers both outlet_manager and warehouse_manager — a
+    // Retail/Warehouse division toggle inside the page picks the role, same
+    // pattern as staff login (see ManagerLoginView.vue).
+    { path: '/manager-login', name: 'manager-login', component: ManagerLoginView, meta: { managerRoles: ['outlet_manager', 'warehouse_manager'] } },
+    { path: '/area-manager-login', name: 'area-manager-login', component: AreaManagerLoginView, meta: { managerRoles: ['area_manager'] } },
+    { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRoles: ['supervisor'] } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
@@ -33,7 +34,7 @@ const router = createRouter({
 })
 
 const managerHome = { outlet_manager: 'manager', warehouse_manager: 'warehouse-manager', area_manager: 'area-manager', supervisor: 'supervisor' }
-const managerLogin = { outlet_manager: 'manager-login', warehouse_manager: 'warehouse-manager-login', area_manager: 'area-manager-login', supervisor: 'supervisor-login' }
+const managerLogin = { outlet_manager: 'manager-login', warehouse_manager: 'manager-login', area_manager: 'area-manager-login', supervisor: 'supervisor-login' }
 
 // Route guard: bounce to the right login screen if not authenticated for
 // that role, and away from a login screen (or another role's pages) once
@@ -56,8 +57,8 @@ router.beforeEach((to) => {
   }
 
   if (to.name === 'login' && auth.isStaff) return { name: 'dashboard' }
-  if (to.meta.managerRole && !to.meta.requiresAuth) {
-    if (auth.isManager && auth.manager.role === to.meta.managerRole) return { name: managerHome[to.meta.managerRole] }
+  if (to.meta.managerRoles && auth.isManager && to.meta.managerRoles.includes(auth.manager.role)) {
+    return { name: managerHome[auth.manager.role] }
   }
 })
 
