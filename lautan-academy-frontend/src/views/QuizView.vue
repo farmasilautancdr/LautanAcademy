@@ -1,12 +1,15 @@
 <script setup>
 // Questions come from sessionStorage (set by DashboardView after a
-// successful /quiz/redeem) rather than a route param + API fetch — there's
-// no "get quiz by id" endpoint, AI Practice quizzes only exist ephemerally
-// behind the passcode that was just redeemed.
+// successful /quiz/redeem, or ModuleQuizView for Standard Quiz) rather than
+// a route param + API fetch.
 //
-// Question shape from the real backend (Gemini-generated, matches
-// buildQuizPrompt's schema exactly): question_en/ms, opt1_en/ms..opt4_en/ms,
-// correct (0-3 index) — flat fields, not an options array.
+// Server-graded, not client-graded: neither quiz type's question objects
+// carry a `correct` field anymore (backend strips it from GET /questions
+// and POST /quiz/redeem). Picking an answer calls a live per-question check
+// endpoint for the instant reveal — that response is UX only, not
+// authoritative. submit() sends the raw {id/index, chosen} answer set and
+// the server independently grades the whole attempt from its own stored
+// data, so a tampered/faked check response can't change what gets saved.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
@@ -22,14 +25,17 @@ const kind = stored?.kind || 'ai' // 'standard' (Module Quiz, ModuleQuizView) | 
 const questions = ref(stored?.questions || [])
 
 const currentIndex = ref(0)
-const answers = ref({}) // { questionIndex: chosenOptionIndex }
+const answers = ref({}) // { questionIndex: { chosen, correct, correctIndex } }
 const lang = ref('en')
+const checking = ref(false)
+const checkError = ref('')
 const submitting = ref(false)
 const errorMsg = ref('')
 
 const currentQuestion = computed(() => questions.value[currentIndex.value])
 const isLastQuestion = computed(() => currentIndex.value === questions.value.length - 1)
 const answeredCount = computed(() => Object.keys(answers.value).length)
+const currentAnswer = computed(() => answers.value[currentIndex.value])
 
 function optionsFor(q) {
   const suffix = lang.value === 'en' ? '_en' : '_ms'
@@ -39,19 +45,30 @@ function optionsFor(q) {
 // Once an answer is picked for a question it's locked in — matches the
 // vanilla app's handleChoice, which disables the option buttons the instant
 // one is tapped so the correct/wrong reveal can't be gamed by re-clicking.
-const isRevealed = computed(() => answers.value[currentIndex.value] !== undefined)
+const isRevealed = computed(() => currentAnswer.value !== undefined)
 
-function selectAnswer(optIndex) {
-  if (isRevealed.value) return
-  answers.value[currentIndex.value] = optIndex
+async function selectAnswer(optIndex) {
+  if (isRevealed.value || checking.value) return
+  checkError.value = ''
+  checking.value = true
+  try {
+    const result = kind === 'standard'
+      ? await api.checkStandardAnswer(currentQuestion.value.id, optIndex)
+      : await api.checkAiAnswer(auth.staff.outlet, passcode, currentIndex.value, optIndex)
+    answers.value[currentIndex.value] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
+  } catch (err) {
+    checkError.value = 'Could not check that answer — check your connection and try again.'
+  } finally {
+    checking.value = false
+  }
 }
 
 function optionClass(i) {
   if (!isRevealed.value) {
     return 'border-slate/20 hover:border-aqua/50'
   }
-  if (i === currentQuestion.value.correct) return 'border-aqua bg-aqualight text-deepsea font-medium'
-  if (i === answers.value[currentIndex.value]) return 'border-coral bg-coral/10 text-coral font-medium'
+  if (i === currentAnswer.value.correctIndex) return 'border-aqua bg-aqualight text-deepsea font-medium'
+  if (i === currentAnswer.value.chosen) return 'border-coral bg-coral/10 text-coral font-medium'
   return 'border-slate/20 opacity-50'
 }
 
@@ -66,51 +83,37 @@ async function submit() {
   submitting.value = true
   errorMsg.value = ''
 
-  let score = 0
-  const wrongAnswers = []
-  questions.value.forEach((q, i) => {
-    const chosenIdx = answers.value[i]
-    const opts = optionsFor(q)
-    if (chosenIdx === q.correct) {
-      score++
-    } else {
-      wrongAnswers.push({
-        qText: lang.value === 'en' ? q.question_en : q.question_ms,
-        userChoice: opts[chosenIdx] ?? '',
-        correctText: opts[q.correct],
-      })
-    }
+  const payloadAnswers = questions.value.map((q, i) => {
+    const a = answers.value[i]
+    return kind === 'standard' ? { id: q.id, chosen: a?.chosen } : { index: i, chosen: a?.chosen }
   })
-  const total = questions.value.length
-  const percentage = Math.round((score / total) * 100)
 
   try {
-    if (kind === 'standard') {
-      await api.saveResult({
-        name: auth.staff.name,
-        outlet: auth.staff.outlet,
-        topic,
-        score: `${score}/${total}`,
-        perc: `${percentage}%`,
-        wrongAnswers,
-      })
-    } else {
-      await api.saveAiResult({
-        attemptId: 'AI' + Date.now(),
-        name: auth.staff.name,
-        outlet: auth.staff.outlet,
-        topic,
-        score: `${score}/${total}`,
-        perc: `${percentage}%`,
-        wrongAnswers,
-        passcode,
-      })
-    }
-    sessionStorage.setItem('lautan_last_result', JSON.stringify({ scoreCorrect: score, scoreTotal: total, percentage, wrongAnswers }))
+    const data = kind === 'standard'
+      ? await api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+      : await api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
+
+    // Missed-question summary for ResultView comes from the live per-answer
+    // checks already done during the quiz, not recomputed here — the score
+    // shown (data.score/data.total/data.percentage) is the server's, though.
+    const wrongAnswers = []
+    questions.value.forEach((q, i) => {
+      const a = answers.value[i]
+      if (a && a.chosen !== a.correctIndex) {
+        const opts = optionsFor(q)
+        wrongAnswers.push({
+          qText: lang.value === 'en' ? q.question_en : q.question_ms,
+          userChoice: opts[a.chosen] ?? '',
+          correctText: opts[a.correctIndex] ?? '',
+        })
+      }
+    })
+
+    sessionStorage.setItem('lautan_last_result', JSON.stringify({ scoreCorrect: data.score, scoreTotal: data.total, percentage: data.percentage, wrongAnswers }))
     sessionStorage.removeItem('lautan_active_quiz')
     router.push('/result')
   } catch (err) {
-    errorMsg.value = 'Could not submit your answers. Check your connection and try again.'
+    errorMsg.value = err.message || 'Could not submit your answers. Check your connection and try again.'
   } finally {
     submitting.value = false
   }
@@ -146,13 +149,17 @@ async function submit() {
             v-for="(opt, i) in optionsFor(currentQuestion)"
             :key="i"
             @click="selectAnswer(i)"
-            class="w-full text-left px-4 py-3 rounded-lg border transition-colors"
+            :disabled="checking"
+            class="w-full text-left px-4 py-3 rounded-lg border transition-colors disabled:opacity-70"
             :class="optionClass(i)"
           >
             {{ opt }}
-            <span v-if="isRevealed && i === currentQuestion.correct" class="ml-1">✓</span>
+            <span v-if="isRevealed && i === currentAnswer.correctIndex" class="ml-1">✓</span>
           </button>
         </div>
+
+        <p v-if="checking" class="text-slate text-xs mt-3 text-center">Checking...</p>
+        <p v-if="checkError" class="text-coral text-xs mt-3 text-center">{{ checkError }}</p>
       </div>
 
       <p v-if="errorMsg" class="text-coral text-sm mt-4 text-center">{{ errorMsg }}</p>

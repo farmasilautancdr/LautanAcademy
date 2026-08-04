@@ -73,6 +73,32 @@ built AND verified.
       parallel unused schema (`topics`, `quizzes`, `attempts`,
       `attempt_answers`, `outlets`, `staff`, `resources`, `manager_reviews`)
       — confirmed leftover from an earlier abandoned attempt, not touched.
+- [x] Server-side quiz grading — both quiz types. `GET /questions` and
+      `POST /quiz/redeem` no longer send `correct` to the client at all;
+      `POST /questions/:id/check` and `POST /quiz/:outlet/check` grade one
+      answer live (for instant reveal — not authoritative); `POST
+      /data/results` and `POST /data/ai-results` now take a raw
+      `answers: [{id or index, chosen}]` array and grade the *entire*
+      attempt server-side (Standard: looked up by id+topic in
+      `standard_questions`; AI: looked up by index against the quiz's own
+      stored `ai_quizzes.questions_json`) — the client's own score is never
+      trusted for what gets saved. Supersedes the earlier "accepted
+      tradeoff, don't touch" call on answer disclosure — that tradeoff no
+      longer exists, this closes it for both quiz types at once.
+      Known edge case: if a manager regenerates an outlet's AI quiz code
+      while someone is still mid-attempt on the old code, that old code's
+      row is gone (one-row-per-outlet, overwritten in place) and the
+      submission fails with a clear 410 instead of silently saving a
+      score for a quiz that no longer matches — a real but rare race,
+      flagged rather than fixed (would need an append-only quiz table).
+      Verified end-to-end via curl for both types: real Standard Quiz
+      question set (2 correct + 1 wrong → confirmed exact 2/3, 67%, correct
+      DB rows) and a synthetic AI quiz row (no Gemini call spent — 1
+      correct + 1 wrong → confirmed exact 1/2, 50%). Found and fixed one
+      real bug during this: `standard_questions.id` comes back as a string
+      from node-pg (bigserial), but was being used as a `Map` key against a
+      `parseInt`'d lookup — silently matched nothing, scored everyone 0
+      until fixed.
 - [x] PIN/passcode hardcoding removed — `checkPinInternal()` in
       `Code_v1.35.gs` no longer has a `defaultPins` fallback; requires
       `PropertiesService` Script Property or returns a clear "not

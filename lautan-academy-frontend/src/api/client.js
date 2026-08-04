@@ -69,4 +69,10 @@ export const api = {
   },
   getResources: () => request('/resources'),
   getQuestions: () => request('/questions'),
+  // Live per-question reveal — not authoritative, saveResult/saveAiResult
+  // independently re-grade the whole attempt server-side regardless of what
+  // this returns.
+  checkStandardAnswer: (id, chosen) => request(`/questions/${id}/check`, { method: 'POST', body: JSON.stringify({ chosen }) }),
+  checkAiAnswer: (outlet, passcode, index, chosen) =>
+    request(`/quiz/${encodeURIComponent(outlet)}/check`, { method: 'POST', body: JSON.stringify({ passcode, index, chosen }) }),
 }
