@@ -3,33 +3,39 @@
 // sections on the same page as Standard Quiz Results. The form still needs
 // results (to pick a topic + auto-show score) and staff names, loaded here
 // independently since this is now a separate route.
-import { ref, computed, onMounted } from 'vue'
+//
+// Area Manager now scopes to a whole region (see store/auth.js,
+// backend config/areas.js), not one outlet. auth.manager.outlet holds the
+// area id ("R1 - AMIRUL"), and auth.manager.outlets is that region's outlet
+// list (client-side copy, for the picker below — the backend enforces the
+// real scope independently). Staff names aren't unique across the region's
+// outlets, so the form picks an outlet first, then that outlet's staff —
+// same two-step pattern used elsewhere in the app, not a single dropdown
+// with duplicate names in it.
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
 const auth = useAuthStore()
-const outlet = auth.manager?.outlet
+const areaLabel = auth.manager?.outlet
+const regionOutlets = auth.manager?.outlets || []
 const managerLabel = auth.manager?.label || 'Area Manager'
 
 const results = ref([])
 const reports = ref([])
-const staffNames = ref([])
 const loading = ref(true)
 
 async function loadAll() {
   try {
-    const [scoped, roster] = await Promise.all([
-      api.getScopedData(),
-      api.getStaffNames('retail', outlet),
-    ])
+    const scoped = await api.getScopedData()
     results.value = scoped.results || []
     reports.value = scoped.reports || []
-    staffNames.value = roster.staff || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 }
 onMounted(loadAll)
 
+const formOutlet = ref('')
 const formStaff = ref('')
 const formTopic = ref('')
 const gaps = ref('')
@@ -41,17 +47,32 @@ const submitting = ref(false)
 const formError = ref('')
 const formNotice = ref('')
 
-const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Name === formStaff.value).map(r => r.Topic))])
-const selectedResult = computed(() => results.value.find(r => r.Name === formStaff.value && r.Topic === formTopic.value))
+const staffNames = ref([])
+const loadingStaff = ref(false)
+watch(formOutlet, async (o) => {
+  formStaff.value = ''
+  staffNames.value = []
+  if (!o) return
+  loadingStaff.value = true
+  try {
+    const roster = await api.getStaffNames('retail', o)
+    staffNames.value = roster.staff || []
+  } catch (e) { /* leave empty */ }
+  loadingStaff.value = false
+})
+
+const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value).map(r => r.Topic))])
+const selectedResult = computed(() => results.value.find(r => r.Name === formStaff.value && r.Outlet === formOutlet.value && r.Topic === formTopic.value))
 const skillLevel = computed(() => {
   const p = parseInt(selectedResult.value?.Percentage) || 0
   if (p >= 85) return 'HIGH'
   if (p >= 71) return 'MEDIUM'
   return 'LOW'
 })
-const existingReport = computed(() => reports.value.find(r => r['Staff Name'] === formStaff.value && r['Training Title'] === formTopic.value))
+const existingReport = computed(() => reports.value.find(r => r['Staff Name'] === formStaff.value && r.Outlet === formOutlet.value && r['Training Title'] === formTopic.value))
 
 function resetForm() {
+  formOutlet.value = ''
   formStaff.value = ''
   formTopic.value = ''
   gaps.value = ''
@@ -76,8 +97,8 @@ function loadExistingForEdit() {
 async function submitReport() {
   formError.value = ''
   formNotice.value = ''
-  if (!formStaff.value || !formTopic.value || !selectedResult.value) {
-    formError.value = 'Pick a staff member and a topic they have a quiz result for.'
+  if (!formOutlet.value || !formStaff.value || !formTopic.value || !selectedResult.value) {
+    formError.value = 'Pick an outlet, staff member, and a topic they have a quiz result for.'
     return
   }
   if (competency.value !== '' && (isNaN(competency.value) || competency.value < 0 || competency.value > 10)) {
@@ -87,7 +108,7 @@ async function submitReport() {
   submitting.value = true
   try {
     const data = await api.saveReport({
-      outlet,
+      outlet: formOutlet.value,
       staffName: formStaff.value,
       topic: formTopic.value,
       manager: managerLabel,
@@ -123,18 +144,26 @@ async function submitReport() {
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
       <p class="text-aqualight text-xs">{{ managerLabel }}</p>
-      <h1 class="font-display text-xl font-semibold text-white">Reviews — {{ outlet }}</h1>
+      <h1 class="font-display text-xl font-semibold text-white">Reviews — {{ areaLabel }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
       <section>
         <h2 class="font-display text-lg font-semibold text-ink mb-4">File a Report</h2>
         <form @submit.prevent="submitReport" class="bg-white rounded-xl2 p-5 shadow-sm space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-ink mb-1">Outlet</label>
+            <select v-model="formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3">
+              <option value="">Select outlet...</option>
+              <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
+            </select>
+          </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-ink mb-1">Staff</label>
-              <select v-model="formStaff" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3">
-                <option value="">Select staff...</option>
+              <select v-model="formStaff" :disabled="!formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3 disabled:opacity-50">
+                <option value="">{{ !formOutlet ? 'Select outlet first...' : loadingStaff ? 'Loading...' : 'Select staff...' }}</option>
                 <option v-for="n in staffNames" :key="n" :value="n">{{ n }}</option>
               </select>
             </div>
@@ -200,7 +229,7 @@ async function submitReport() {
         <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
           <div v-for="(r, i) in reports" :key="i" class="px-5 py-3">
             <div class="flex items-center justify-between">
-              <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r['Training Title'] }}</p>
+              <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r.Outlet }} · {{ r['Training Title'] }}</p>
               <span class="text-xs text-slate">{{ new Date(r.Timestamp).toLocaleDateString() }}</span>
             </div>
             <p class="text-xs text-slate mt-0.5">Filed by {{ r.Manager }} · Competency {{ r.Fluency ?? '—' }}/10</p>

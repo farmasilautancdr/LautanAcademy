@@ -19,6 +19,8 @@ import WarehouseManagerResultsView from '../views/WarehouseManagerResultsView.vu
 import AreaManagerDashboard from '../views/AreaManagerDashboard.vue'
 import AreaManagerReviewsView from '../views/AreaManagerReviewsView.vue'
 import SupervisorDashboard from '../views/SupervisorDashboard.vue'
+import SupervisorStaffComparisonView from '../views/SupervisorStaffComparisonView.vue'
+import SupervisorReportsView from '../views/SupervisorReportsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -44,6 +46,8 @@ const router = createRouter({
     { path: '/area-manager', name: 'area-manager', component: AreaManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/area-manager/reviews', name: 'area-manager-reviews', component: AreaManagerReviewsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/supervisor', name: 'supervisor', component: SupervisorDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
+    { path: '/supervisor/staff-comparison', name: 'supervisor-staff-comparison', component: SupervisorStaffComparisonView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
+    { path: '/supervisor/reports', name: 'supervisor-reports', component: SupervisorReportsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
   ],
 })
 

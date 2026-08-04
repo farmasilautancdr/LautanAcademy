@@ -52,6 +52,17 @@ built AND verified.
       URL for the entry's link field. New capability beyond GAS — GAS had
       no file upload, only a manually-typed link. Verified end-to-end: real
       upload, public URL reachable without auth, delete.
+- [x] Resources — Google Drive integration via service-account auth
+      (`googleapis`), recursive folder walk, category + one-level subfolder
+      grouping (e.g. a "Housebrand Modules" main folder with "Allife"/
+      "Biomerit" subfolders tags both levels), 5-min in-memory cache
+      (`GET /resources`). Verified against the real Drive folder.
+- [x] PIN/passcode hardcoding removed — `checkPinInternal()` in
+      `Code_v1.35.gs` no longer has a `defaultPins` fallback; requires
+      `PropertiesService` Script Property or returns a clear "not
+      configured" error. `index.html`'s visible `(SV2026)` hint text
+      removed. New backend already stored PINs bcrypt-hashed, no change
+      needed there.
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -68,13 +79,33 @@ built AND verified.
 - [x] Warehouse Manager dashboard — same as above, scoped to the 4 fixed
       locations (Taskforce/Warehouse/Inventory/Logistic), AI-Practice-only
       history (matches GAS: that scope never included Standard Quiz results)
-- [x] Area Manager dashboard — area/outlet picker matching GAS's fixed
-      roster (9 areas), Standard Quiz results + wrong answers, and Reports:
-      file/edit with duplicate detection + wrong-manager block, Skill Level
-      computed client-side from quiz percentage (matches GAS)
+- [x] Area Manager dashboard — area picker (9-region fixed roster) + PIN
+      login, scoped to the manager's **whole region** (all outlets in that
+      area), not a single outlet — a deliberate improvement beyond GAS,
+      which never scoped Area Manager past one outlet either. Standard Quiz
+      results + wrong answers now show per-row outlet since they span the
+      region; Reports: file/edit with duplicate detection + wrong-manager
+      block, outlet-then-staff picker (names aren't unique across the
+      region), Skill Level computed client-side from quiz percentage
+      (matches GAS). Region→outlet mapping is now canonical server-side
+      (`config/areas.js`, backend), not just a client-side dropdown copy.
+      Verified: region mapping logic (9 regions, no outlet in >1 region,
+      unknown area rejected) and the `ANY($1)` scoping query against the
+      real schema. **Not yet verified**: a real area_manager login end-to-
+      end — `results`/`wrong_answers`/`reports` are all empty in the DB
+      right now, so there's no real cross-outlet data to prove the join
+      against, and I didn't touch the real (hashed, production) PIN to
+      manufacture a test case.
 - [x] Supervisor dashboard — unscoped PIN-only login, `windowMonths` filter
       (3/6/12 months/all-time), company-wide stats (staff/outlets/avg score)
       + combined Standard+AI activity log, outlet filter
+- [x] Supervisor Cross-Outlet pages — Staff Comparison (per-staff rollup
+      across all outlets, sortable by avg score/attempts/name, outlet +
+      window filters) and Cluster Reports (company-wide filed Reports,
+      read-only, outlet + window filters). Both built from data already in
+      `/data/scoped-data`, no new backend endpoints needed. "All Outlets"
+      already pointed at the real `/supervisor` page. All 3 sidebar nav
+      items are now real, no dead links.
 - [x] Router branches staff vs. each of the 4 manager roles, each with its
       own login screen and home redirect
 - [x] Manage Staff UI — shared `ManageStaffPanel` component (division prop
@@ -84,6 +115,19 @@ built AND verified.
       Content entries, category picker, file upload (phone storage, not
       just a link — uploads immediately, fills the link field with the
       resulting URL). Tested end-to-end including a real file upload.
+- [x] Resources browsing UI — category + subcategory filter dropdowns,
+      staff dashboard only (deliberate scope decision, not yet built for
+      manager dashboards)
+- [x] `AppSidebar.vue` — role-aware nav drawer (staff / outlet-manager /
+      warehouse-manager / area-manager / supervisor), wired into `App.vue`,
+      replaced redundant per-page headers
+- [x] Staff dashboard and all 4 manager-role dashboards split from one
+      bundled page per role into distinct routed pages matching each
+      sidebar nav item (e.g. Outlet Manager: `/manager` create-quiz,
+      `/manager/staff`, `/manager/results` as separate routes)
+- [x] Dashboard delight pass — count-up ring animation on load (opt-in,
+      other ring usages unaffected), first-use auto-focus + settling cue on
+      the join-code form, error message paired with an icon
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -96,16 +140,14 @@ built AND verified.
 ## ❌ Not built yet
 
 ### Backend
-- [ ] Resources (Google Drive-backed reference docs) — lives in Drive, not a
-      table. Needs its own Drive API integration if ever migrated; no plan
-      to yet.
 - [ ] Standard Quiz question bank (topic-based, non-AI quizzes) — GAS's
       Questions sheet was never migrated; no endpoint exists for it at all
 - [ ] Rate limiter is in-memory only — resets on restart, not safe across
       multiple instances if ever scaled horizontally
 
 ### Frontend (Vue)
-- [ ] Resources browsing UI
+- [ ] Resources browsing UI on manager dashboards (staff-only today, by
+      explicit scope decision — not a bug, just not built)
 
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
@@ -141,6 +183,12 @@ built AND verified.
   already caused one real outage this session (stale deployment ID). Now
   also true of `VITE_API_URL` baked into the Vercel build — if the Railway
   URL ever changes, the frontend needs a rebuild, not just a var change.
+- **`BACKEND_URL` in `index.html` is currently `http://localhost:3000`**
+  (line 720) — the new-backend calls in vanilla (staff login, quiz
+  create/redeem/active/end, results) only work when opened on this dev
+  machine with the local backend running. Not yet repointed to the Railway
+  URL. Unclear if vanilla is meant to hit the new backend in production at
+  all yet — needs a decision, not an assumption.
 - Supabase's Direct connection (`db.<ref>.supabase.co`) does not work from
   Railway — it resolves to an IPv6 address Railway can't route, and even
   after forcing IPv4-first DNS + disabling Node's Happy Eyeballs
@@ -154,8 +202,19 @@ built AND verified.
 
 ## Suggested build order (next)
 
-Reports, Manage Staff, Content/Knowledge Base, and both data migrations
-(staff roster, reports) done. Remaining:
+Backend + Vue frontend are both deployed and live (Railway + Vercel).
+Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
+route-split, security hardening, Area Manager region-scoping, and Supervisor
+Cross-Outlet pages are all done. Remaining, unordered — ask before picking
+one:
 
-1. Deploy backend + frontend somewhere reachable, run parallel to GAS
-2. Cutover only once staff have used the new stack for real without issues
+1. Decide vanilla `index.html`'s `BACKEND_URL` — point it at Railway for
+   real staff use, or leave it dev-only if GAS stays authoritative for now
+2. Standard Quiz question bank migration (topic-based, non-AI) — no plan
+   exists yet, GAS's Questions sheet was never even inventoried
+3. Resources UI on manager dashboards (currently staff-only by choice)
+4. Rate limiter durability (in-memory, resets on restart)
+5. Load test before any real cutover
+6. Real end-to-end test of Area Manager region-scoping once real usage (or
+   a deliberately-authorized test PIN reset) makes that possible — logic is
+   verified in isolation but not proven against real cross-outlet data

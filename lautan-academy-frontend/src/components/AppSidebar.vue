@@ -84,18 +84,18 @@ const sections = computed(() => {
     })
   }
 
-  // Cross-outlet: neither role has this as a real feature today. Area
-  // Manager is scoped to one outlet per login session, not cross-outlet.
-  // Supervisor's actual company-wide view (/supervisor) already covers
-  // stats + activity log on one page, not three separate ones. Included
-  // per spec with routes that need real pages built — not hidden, not faked.
-  if (isAreaManager.value || isSupervisor.value) {
+  // Cross-outlet: Supervisor only. Area Manager now scopes to their whole
+  // region (see store/auth.js, backend config/areas.js) — "Staff Results"
+  // in the Outlet Performance group above already covers every outlet in
+  // that region on one page, so a separate Cross-Outlet section here would
+  // just duplicate the same link. All 3 items are real pages.
+  if (isSupervisor.value) {
     groups.push({
       label: 'Cross-Outlet',
       items: [
-        { label: 'All Outlets', to: isSupervisor.value ? '/supervisor' : '/am/outlets', icon: 'grid' },
-        { label: 'Staff Comparison', to: '/am/compare', icon: 'users' },
-        { label: 'Cluster Reports', to: '/am/reports', icon: 'file' },
+        { label: 'All Outlets', to: '/supervisor', icon: 'grid' },
+        { label: 'Staff Comparison', to: '/supervisor/staff-comparison', icon: 'users' },
+        { label: 'Cluster Reports', to: '/supervisor/reports', icon: 'file' },
       ],
     })
   }

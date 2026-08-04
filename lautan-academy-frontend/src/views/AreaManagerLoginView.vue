@@ -1,10 +1,11 @@
 <script setup>
 // Area Manager picks their region (fixed roster below, matches the vanilla
-// app's managerData exactly), then one of that region's assigned outlets,
-// then the shared category PIN. Real backend has no per-manager identity
-// check beyond the PIN + outlet scope — matches GAS (the area ID itself is
-// never validated server-side, same as before).
-import { ref, computed } from 'vue'
+// app's managerData exactly), then the shared category PIN. Scope is the
+// whole region now, not one outlet within it — the backend independently
+// validates the area id and resolves it to that region's outlet list
+// (config/areas.js), so this list is for the picker only, not trusted for
+// scoping.
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 
@@ -20,20 +21,19 @@ const AREAS = [
   { id: "R9 - IFFAH / RAIHAN", outlets: ["GM", "CK"] },
 ]
 
+function outletsForArea(id) { return AREAS.find(a => a.id === id)?.outlets || [] }
+
 const areaId = ref('')
-const outlet = ref('')
 const pin = ref('')
 const error = ref('')
 const loading = ref(false)
 const router = useRouter()
 const auth = useAuthStore()
 
-const outletsForArea = computed(() => AREAS.find(a => a.id === areaId.value)?.outlets || [])
-
 async function handleLogin() {
   error.value = ''
-  if (!outlet.value) {
-    error.value = 'Select your area and outlet.'
+  if (!areaId.value) {
+    error.value = 'Select your area.'
     return
   }
   if (!pin.value.trim()) {
@@ -42,7 +42,7 @@ async function handleLogin() {
   }
   loading.value = true
   try {
-    await auth.loginManager('area_manager', outlet.value, pin.value.trim(), areaId.value)
+    await auth.loginManager('area_manager', areaId.value, pin.value.trim(), areaId.value, outletsForArea(areaId.value))
     router.push('/area-manager')
   } catch (err) {
     error.value = err.message || 'That PIN doesn\'t look right.'
@@ -66,17 +66,9 @@ async function handleLogin() {
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl relative z-10 space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Area</label>
-          <select v-model="areaId" @change="outlet = ''" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
+          <select v-model="areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
             <option value="">Select your area...</option>
             <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-ink mb-1">Outlet</label>
-          <select v-model="outlet" :disabled="!areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-            <option value="">{{ areaId ? 'Select outlet...' : 'Select area first...' }}</option>
-            <option v-for="o in outletsForArea" :key="o" :value="o">{{ o }}</option>
           </select>
         </div>
 

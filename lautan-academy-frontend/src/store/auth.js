@@ -33,11 +33,15 @@ export const useAuthStore = defineStore('auth', {
     // area "R2 - HAZWANI") — used as the "manager" field on report
     // submissions, matching GAS's disp-mgr-name. Not needed for roles that
     // don't file reports.
-    async loginManager(role, outlet, pin, label = '') {
+    // outlet doubles as the area id for area_manager (server scopes to that
+    // whole region, not one outlet — see backend's config/areas.js). outlets
+    // is that region's outlet list, client-side only, for building pickers —
+    // the backend independently re-resolves and enforces it server-side.
+    async loginManager(role, outlet, pin, label = '', outlets = null) {
       const data = await api.managerLogin(role, outlet, pin)
       if (!data.authorized) throw new Error(data.error || 'Login failed')
       this.token = data.token
-      this.manager = { role, outlet, label }
+      this.manager = { role, outlet, label, outlets }
       this.staff = null
       localStorage.setItem('lautan_token', data.token)
       localStorage.setItem('lautan_manager', JSON.stringify(this.manager))
