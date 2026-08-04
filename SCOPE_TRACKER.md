@@ -27,7 +27,14 @@ built AND verified.
 - [x] Save AI Practice result + wrong answers (`POST /data/ai-results`)
 - [x] One-time historical migration script — pulled all Results/WrongAnswers/
       AIResults/AIWrongAnswers/Content out of GAS via Supervisor scope,
-      verified row counts and spot-checked data format after (`scripts/migrate-from-gas.js`)
+      verified row counts and spot-checked data format after
+      (`scripts/migrate-from-gas.js` — no longer safe to re-run wholesale,
+      see Known Fragility)
+- [x] Content (Knowledge Base) CRUD — list/add/delete, add/delete gated to
+      Supervisor matching GAS. Tested against an empty table (GAS's Content
+      sheet has 0 rows too — infra works, no data exists yet either side)
+      (`GET/POST /content`, `DELETE /content/:id`)
+- [x] Content-only GAS sync, safe to re-run (`scripts/sync-content-from-gas.js`)
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -38,6 +45,14 @@ built AND verified.
       (locked in once picked, matches vanilla app's behavior)
 - [x] Result screen — score, pass/fail state, missed-questions breakdown
 - [x] Recent-attempts list on dashboard (from `/data/scoped-data`)
+- [x] Outlet Manager dashboard — login (role+outlet+PIN), create-quiz with
+      optional existing-content dropdown, active-code display + countdown,
+      end-early, outlet-wide Standard+AI history
+- [x] Warehouse Manager dashboard — same as above, scoped to the 4 fixed
+      locations (Taskforce/Warehouse/Inventory/Logistic), AI-Practice-only
+      history (matches GAS: that scope never included Standard Quiz results)
+- [x] Router branches staff vs. outlet-manager vs. warehouse-manager
+      sessions, each with their own login screen and home redirect
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -57,9 +72,6 @@ built AND verified.
 - [ ] Resources (Google Drive-backed reference docs) — lives in Drive, not a
       table. Needs its own Drive API integration if ever migrated; no plan
       to yet.
-- [ ] Content management writes (add/delete Knowledge Base entries) — reads
-      exist in schema but nothing populates `content` going forward; GAS
-      Content sheet still the only place entries are added/removed
 - [ ] Manage Staff roster CRUD + passcode lookup — GAS shows managers the
       plaintext passcode for lookup; this backend hashes PINs (correct
       practice) so that specific feature can't be replicated as-is, would
@@ -70,14 +82,13 @@ built AND verified.
       multiple instances if ever scaled horizontally
 
 ### Frontend (Vue)
-- [ ] Outlet Manager dashboard (create quiz, view outlet results/roster)
-- [ ] Warehouse Manager dashboard
 - [ ] Area Manager dashboard (cross-staff reporting)
 - [ ] Supervisor dashboard (company-wide view, `windowMonths` filter)
 - [ ] Reports UI
 - [ ] Resources browsing UI
 - [ ] Manage Staff UI
-- [ ] Content/question bank editor UI
+- [ ] Content/Knowledge Base editor UI (backend CRUD exists, no UI consumes
+      the write side yet — quiz-create only reads it)
 
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
@@ -102,11 +113,11 @@ built AND verified.
 
 ## Suggested build order (next)
 
-1. Outlet Manager dashboard in Vue (create-quiz flow, mirrors what's already
-   working in the vanilla app) — highest-value next step, backend's ready
-2. Warehouse/Area Manager, then Supervisor dashboards in Vue
-3. Reports schema rebuild (backend) + Reports UI (Vue)
-4. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
+1. Area Manager dashboard in Vue, then Supervisor (company-wide,
+   `windowMonths` filter already built backend-side)
+2. Reports schema rebuild (backend) + Reports UI (Vue)
+3. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
+4. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
 5. Staff roster full migration (GAS Sheet → `staff_roster` table)
 6. Deploy backend + frontend somewhere reachable, run parallel to GAS
 7. Cutover only once staff have used the new stack for real without issues
