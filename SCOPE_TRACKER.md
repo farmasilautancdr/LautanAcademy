@@ -125,6 +125,14 @@ built AND verified.
       configured" error. `index.html`'s visible `(SV2026)` hint text
       removed. New backend already stored PINs bcrypt-hashed, no change
       needed there.
+- [x] Rate limiter durability — was in-memory (wiped on every
+      restart/redeploy, wrong if ever scaled to multiple instances). Now
+      Postgres-backed (`rate_limits` table), atomic upsert avoids a
+      read-then-write race for concurrent requests on the same key.
+      Verified: login lockout still triggers after 5 wrong PINs, survives
+      a full process restart (confirmed the old version couldn't), clears
+      correctly; check-endpoint throttle confirmed writing/reading
+      correctly through a real Railway deploy.
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -229,10 +237,6 @@ built AND verified.
 
 ## ❌ Not built yet
 
-### Backend
-- [ ] Rate limiter is in-memory only — resets on restart, not safe across
-      multiple instances if ever scaled horizontally
-
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
 - [x] Staff roster — 20 real staff migrated (names/outlets/divisions only —
@@ -304,16 +308,13 @@ built AND verified.
 
 ## Suggested build order (next)
 
-Backend + Vue frontend are both deployed and live (Railway + Vercel).
-Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
-route-split, security hardening, Area Manager region-scoping (+ outlet
-filter), Supervisor Cross-Outlet pages, vanilla's `BACKEND_URL`, the
-Standard Quiz question bank + Module Quiz UI, Quiz History's Module
-Quiz/AI Practice segregation, server-side grading for both quiz types
-(+ the follow-up integrity/rate-limit fixes a second security review
-caught), a load test, and the native-bcrypt fix it surfaced are all done
-and deployed. Remaining:
-
-1. Rate limiter durability (in-memory, resets on restart) — now covers
-   both login lockout and the new check-endpoint throttling, same
-   per-process-only limitation for both
+Every item that was tracked as unbuilt is now done, tested, and deployed —
+no open checkboxes remain anywhere in this document. That's not the same
+as "ready to cut over": GAS stays authoritative until the new stack is
+proven with real staff usage (see CLAUDE.md), and vanilla `index.html`'s
+dual-token bridge to GAS for Reports/Resources/Manage Staff (see Known
+fragility below) is still real — those features work on the new backend
+now, vanilla just hasn't been repointed to use its own backend's endpoints
+for them instead of GAS's. That repoint, plus actual real-staff usage
+before calling this proven, are the honest next steps — not new build
+work, a decision about when/how to start relying on this in production.
