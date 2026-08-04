@@ -93,7 +93,18 @@ built AND verified.
       no-ops the duplicate silently; this adds the explicit heads-up GAS
       gave). Reuses `QuizView.vue` for the actual quiz-taking screen — same
       question shape as AI Practice, just branches which endpoint saves the
-      result (`/data/results` vs `/data/ai-results`)
+      result (`/data/results` vs `/data/ai-results`). `/module-quiz` route
+      guard checks `auth.staff.division === 'retail'`, not just sidebar
+      hiding — a warehouse account typing the URL directly used to reach
+      the quiz screen before hitting the backend's 403 on save; found by
+      automated security review, fixed
+- [x] Quiz History — Module Quiz and AI Practice shown as two separate
+      sections (Module Quiz was previously invisible here entirely), each
+      row expandable to review wrong answers + correct answer. Module Quiz
+      matches wrong answers by topic only (no shared attempt id in that
+      table — a topic retaken on a different day shows all its wrong
+      answers together, not just one attempt's); AI Practice matches by
+      the real `AttemptID`, exact per-attempt
 - [x] Quiz taking — bilingual toggle, instant correct/wrong reveal per answer
       (locked in once picked, matches vanilla app's behavior)
 - [x] Result screen — score, pass/fail state, missed-questions breakdown
@@ -109,7 +120,9 @@ built AND verified.
       area), not a single outlet — a deliberate improvement beyond GAS,
       which never scoped Area Manager past one outlet either. Standard Quiz
       results + wrong answers now show per-row outlet since they span the
-      region; Reports: file/edit with duplicate detection + wrong-manager
+      region, plus an outlet filter dropdown (matches Supervisor's existing
+      filter pattern) since an unfiltered region-wide list wasn't a real
+      improvement on its own; Reports: file/edit with duplicate detection + wrong-manager
       block, outlet-then-staff picker (names aren't unique across the
       region), Skill Level computed client-side from quiz percentage
       (matches GAS). Region→outlet mapping is now canonical server-side
@@ -227,16 +240,15 @@ built AND verified.
 
 Backend + Vue frontend are both deployed and live (Railway + Vercel).
 Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
-route-split, security hardening, Area Manager region-scoping, Supervisor
-Cross-Outlet pages, vanilla's `BACKEND_URL`, and the Standard Quiz question
-bank are all done. Remaining, unordered — ask before picking one:
+route-split, security hardening, Area Manager region-scoping (+ outlet
+filter), Supervisor Cross-Outlet pages, vanilla's `BACKEND_URL`, the
+Standard Quiz question bank + Module Quiz UI, and Quiz History's Module
+Quiz/AI Practice segregation are all done and deployed. Remaining,
+unordered — ask before picking one:
 
 1. Resources UI on manager dashboards (currently staff-only by choice)
 2. Rate limiter durability (in-memory, resets on restart)
 3. Load test before any real cutover
-4. Deploy this session's Standard Quiz migration + Area Manager
-   region-scoping + BACKEND_URL fix — built and locally verified, not yet
-   committed/pushed/deployed
-5. `QuizHistoryView.vue` only shows AI Practice history, never Standard
-   Quiz results — noticed while building Module Quiz, not fixed (out of
-   the scope that was actually asked for)
+4. The one unreviewed automated security finding from the Module Quiz
+   commit ("+1 more", full detail never retrieved — see git history around
+   commit 5874369) — worth a look before treating that review as closed
