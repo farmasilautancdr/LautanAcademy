@@ -11,8 +11,13 @@ import ResourcesView from '../views/ResourcesView.vue'
 import QuizView from '../views/QuizView.vue'
 import ResultView from '../views/ResultView.vue'
 import OutletManagerDashboard from '../views/OutletManagerDashboard.vue'
+import OutletManagerStaffView from '../views/OutletManagerStaffView.vue'
+import OutletManagerResultsView from '../views/OutletManagerResultsView.vue'
 import WarehouseManagerDashboard from '../views/WarehouseManagerDashboard.vue'
+import WarehouseManagerStaffView from '../views/WarehouseManagerStaffView.vue'
+import WarehouseManagerResultsView from '../views/WarehouseManagerResultsView.vue'
 import AreaManagerDashboard from '../views/AreaManagerDashboard.vue'
+import AreaManagerReviewsView from '../views/AreaManagerReviewsView.vue'
 import SupervisorDashboard from '../views/SupervisorDashboard.vue'
 
 const router = createRouter({
@@ -31,8 +36,13 @@ const router = createRouter({
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/manager', name: 'manager', component: OutletManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
+    { path: '/manager/staff', name: 'manager-staff', component: OutletManagerStaffView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
+    { path: '/manager/results', name: 'manager-results', component: OutletManagerResultsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
     { path: '/warehouse-manager', name: 'warehouse-manager', component: WarehouseManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
+    { path: '/warehouse-manager/staff', name: 'warehouse-manager-staff', component: WarehouseManagerStaffView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
+    { path: '/warehouse-manager/results', name: 'warehouse-manager-results', component: WarehouseManagerResultsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
     { path: '/area-manager', name: 'area-manager', component: AreaManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
+    { path: '/area-manager/reviews', name: 'area-manager-reviews', component: AreaManagerReviewsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/supervisor', name: 'supervisor', component: SupervisorDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
   ],
 })

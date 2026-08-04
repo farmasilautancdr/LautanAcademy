@@ -6,7 +6,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
-import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 
 const auth = useAuthStore()
 const location = auth.manager?.outlet // reused field name in store — holds location for this role
@@ -22,8 +21,6 @@ const activeQuiz = ref(null)
 const remaining = ref('')
 let timerHandle = null
 
-const history = ref([])
-const loadingHistory = ref(true)
 const contentTopics = ref([])
 
 async function refreshActiveQuiz() {
@@ -51,12 +48,6 @@ function startCountdown() {
 onMounted(async () => {
   await refreshActiveQuiz()
   startCountdown()
-  try {
-    const data = await api.getScopedData()
-    history.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
-  } catch (e) { /* leave history empty */ }
-  loadingHistory.value = false
-
   try {
     const data = await api.getContent()
     contentTopics.value = [...new Set((data.content || []).map(c => c.Topic))].filter(Boolean).sort()
@@ -152,28 +143,6 @@ async function endQuiz() {
             {{ creating ? 'Generating...' : (activeQuiz ? 'Replace active code' : 'Generate code') }}
           </button>
         </form>
-      </section>
-
-      <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">Manage Staff</h2>
-        <ManageStaffPanel division="warehouse" :outlet="location" :manager-label="managerLabel" />
-      </section>
-
-      <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">Practice History</h2>
-        <div v-if="loadingHistory" class="text-slate text-sm">Loading...</div>
-        <div v-else-if="history.length === 0" class="text-slate text-sm">No attempts yet.</div>
-        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <div v-for="(h, i) in history.slice(0, 20)" :key="i" class="flex items-center justify-between px-5 py-3">
-            <div>
-              <p class="text-sm font-medium text-ink">{{ h.Name }} · {{ h.Topic }}</p>
-              <p class="text-xs text-slate">{{ new Date(h.Timestamp).toLocaleDateString() }}</p>
-            </div>
-            <span class="text-sm font-display font-semibold" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-              {{ h.Score }}
-            </span>
-          </div>
-        </div>
       </section>
     </main>
   </div>

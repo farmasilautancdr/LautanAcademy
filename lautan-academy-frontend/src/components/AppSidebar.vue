@@ -6,13 +6,11 @@
 // `role` field on auth.staff at all). Adapted to the real roles per
 // instruction, not built against the literal spec's role model.
 //
-// Route honesty: most nav items below point at real, working pages; a
-// couple point at routes that don't exist yet because the underlying page
-// hasn't been built (Assign to Staff, and the whole Cross-Outlet section
-// for Area Manager — that role is scoped to one outlet per login in the
-// real system, it has no cross-outlet view today). Each is commented at
-// its definition below — see this session's chat reply for the full list,
-// not silently faked here.
+// Route honesty: every nav item now points at a real, distinct page except
+// the Cross-Outlet section for Area Manager/Supervisor — that role is
+// scoped to one outlet per login in the real system (Area Manager) or
+// already covers everything on one page (Supervisor), so those routes
+// don't have real pages built yet. Commented at their definition below.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
@@ -32,6 +30,8 @@ const isOutletOrWarehouseManager = computed(() => managerRole.value === 'outlet_
 const isAreaManager = computed(() => managerRole.value === 'area_manager')
 const isSupervisor = computed(() => managerRole.value === 'supervisor')
 const managerHomePath = computed(() => managerRole.value === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
+const managerStaffPath = computed(() => `${managerHomePath.value}/staff`)
+const managerResultsPath = computed(() => `${managerHomePath.value}/results`)
 
 const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
 const roleLabel = computed(() => auth.isStaff ? 'Staff' : (ROLE_LABELS[managerRole.value] || ''))
@@ -57,18 +57,17 @@ const sections = computed(() => {
     groups.push({
       label: 'Quiz Management',
       items: [
-        // Real — quiz-create form already lives on this manager's dashboard.
         { label: 'Create Quiz', to: managerHomePath.value, icon: 'plus' },
-        // Not a distinct real feature — quizzes are joined by passcode, not
-        // individually assigned to specific staff. Routes to the same
-        // dashboard rather than a page that doesn't exist.
-        { label: 'Assign to Staff', to: managerHomePath.value, icon: 'send' },
+        // Repurposed from a placeholder — "assigning" isn't a real concept
+        // (quizzes are joined by passcode), but Manage Staff is a real,
+        // working feature that fits this section better than dead-ending.
+        { label: 'Assign to Staff', to: managerStaffPath.value, icon: 'send' },
       ],
     })
     groups.push({
       label: 'Outlet Performance',
       items: [
-        { label: 'Staff Results', to: managerHomePath.value, icon: 'chart' },
+        { label: 'Staff Results', to: managerResultsPath.value, icon: 'chart' },
       ],
     })
   }
@@ -78,9 +77,9 @@ const sections = computed(() => {
       label: 'Outlet Performance',
       items: [
         { label: 'Staff Results', to: '/area-manager', icon: 'chart' },
-        // Real — this is the Filed Reports section on the Area Manager
-        // dashboard. No "pending" state exists in the data model yet.
-        { label: 'Reviews', to: '/area-manager', icon: 'clipboard', badge: props.pendingReviewCount },
+        // Real — File a Report + Filed Reports, its own page now. No
+        // "pending" state exists in the data model yet.
+        { label: 'Reviews', to: '/area-manager/reviews', icon: 'clipboard', badge: props.pendingReviewCount },
       ],
     })
   }
