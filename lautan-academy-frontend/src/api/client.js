@@ -67,4 +67,5 @@ export const api = {
     form.append('file', file)
     return request('/content/upload', { method: 'POST', body: form })
   },
+  getResources: () => request('/resources'),
 }
