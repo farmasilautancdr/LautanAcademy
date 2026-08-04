@@ -35,7 +35,12 @@ const router = createRouter({
     { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRoles: ['supervisor'] } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/history', name: 'history', component: QuizHistoryView, meta: { requiresAuth: true, role: 'staff' } },
-    { path: '/module-quiz', name: 'module-quiz', component: ModuleQuizView, meta: { requiresAuth: true, role: 'staff' } },
+    // Standard Quiz is retail-only, matches GAS (warehouse never had it,
+    // only AI Practice) — division meta enforced below, not just hidden
+    // from the sidebar. The backend's /data/results already 403s a
+    // warehouse staff's save either way, but they shouldn't reach the quiz
+    // screen at all just to hit that wall.
+    { path: '/module-quiz', name: 'module-quiz', component: ModuleQuizView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/resources', name: 'resources', component: ResourcesView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
@@ -66,8 +71,9 @@ router.beforeEach((to) => {
 
   if (to.meta.requiresAuth) {
     if (to.meta.role === 'staff') {
-      if (auth.isStaff) return
-      return { name: auth.isManager ? managerHome[auth.manager.role] : 'login' }
+      if (!auth.isStaff) return { name: auth.isManager ? managerHome[auth.manager.role] : 'login' }
+      if (to.meta.division && auth.staff.division !== to.meta.division) return { name: 'dashboard' }
+      return
     }
     if (to.meta.role === 'manager') {
       if (auth.isManager && auth.manager.role === to.meta.managerRole) return
