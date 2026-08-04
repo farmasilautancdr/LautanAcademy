@@ -119,8 +119,16 @@ built AND verified.
 
 ### Infra
 - [x] Postgres — deployed (Supabase)
-- [ ] Express backend — local dev only, not deployed anywhere reachable
-- [ ] Vue frontend — local dev only (Vite), not deployed
+- [x] Express backend — deployed to Railway:
+      https://lautan-academy-backend-production.up.railway.app
+      Env vars set there (DATABASE_URL uses the Session Pooler connection,
+      not Direct — see Known Fragility). Verified: health check, staff
+      login, scoped-data, content — all real DB round-trips.
+- [x] Vue frontend — deployed to Vercel:
+      https://lautan-academy-frontend.vercel.app
+      `VITE_API_URL` set to the Railway URL above. Verified: bundle
+      contains the correct backend URL (not localhost), CORS confirmed
+      working between the two live origins.
 - [ ] Load test with realistic concurrent usage before any real cutover
 
 ## Known fragility (see CLAUDE.md hard rule 5)
@@ -130,7 +138,19 @@ built AND verified.
   is finishing the backend endpoints above so the GAS bridge — and the
   second token — can be removed entirely.
 - `GAS_URL` and `BACKEND_URL` are hardcoded constants in `index.html`;
-  already caused one real outage this session (stale deployment ID).
+  already caused one real outage this session (stale deployment ID). Now
+  also true of `VITE_API_URL` baked into the Vercel build — if the Railway
+  URL ever changes, the frontend needs a rebuild, not just a var change.
+- Supabase's Direct connection (`db.<ref>.supabase.co`) does not work from
+  Railway — it resolves to an IPv6 address Railway can't route, and even
+  after forcing IPv4-first DNS + disabling Node's Happy Eyeballs
+  (`net.setDefaultAutoSelectFamily(false)`), the IPv4 path still hung
+  (likely a firewalled egress, not just an address-family issue). Fixed by
+  switching to Supabase's **Session Pooler** connection string instead
+  (`aws-0-<region>.pooler.supabase.com`) — that's what's actually set in
+  Railway's `DATABASE_URL` now, not what's in this repo's `.env.example`.
+  Local dev keeps using Direct connection since it works fine here; the
+  pooler is only required for Railway specifically.
 
 ## Suggested build order (next)
 
