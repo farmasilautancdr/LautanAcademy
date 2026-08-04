@@ -42,7 +42,7 @@ async function handleLogin() {
   }
   loading.value = true
   try {
-    await auth.loginManager('area_manager', outlet.value, pin.value.trim())
+    await auth.loginManager('area_manager', outlet.value, pin.value.trim(), areaId.value)
     router.push('/area-manager')
   } catch (err) {
     error.value = err.message || 'That PIN doesn\'t look right.'

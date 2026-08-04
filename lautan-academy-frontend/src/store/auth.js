@@ -28,12 +28,16 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('lautan_manager')
     },
 
-    // role: outlet_manager | warehouse_manager | area_manager | supervisor
-    async loginManager(role, outlet, pin) {
+    // role: outlet_manager | warehouse_manager | area_manager | supervisor.
+    // label is an optional display identity (e.g. Area Manager's picked
+    // area "R2 - HAZWANI") — used as the "manager" field on report
+    // submissions, matching GAS's disp-mgr-name. Not needed for roles that
+    // don't file reports.
+    async loginManager(role, outlet, pin, label = '') {
       const data = await api.managerLogin(role, outlet, pin)
       if (!data.authorized) throw new Error(data.error || 'Login failed')
       this.token = data.token
-      this.manager = { role, outlet }
+      this.manager = { role, outlet, label }
       this.staff = null
       localStorage.setItem('lautan_token', data.token)
       localStorage.setItem('lautan_manager', JSON.stringify(this.manager))

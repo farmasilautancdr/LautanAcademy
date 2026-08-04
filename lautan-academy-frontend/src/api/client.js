@@ -48,4 +48,8 @@ export const api = {
   saveResult: (payload) => request('/data/results', { method: 'POST', body: JSON.stringify(payload) }),
   saveAiResult: (payload) => request('/data/ai-results', { method: 'POST', body: JSON.stringify(payload) }),
   getContent: () => request('/content'),
+  // Returns { status: 'created'|'updated'|'duplicate'|'auth_error'|'error' } —
+  // duplicate/auth_error are normal 200 responses, not thrown errors, since
+  // they're expected outcomes the caller needs to react to, not failures.
+  saveReport: (payload) => request('/reports', { method: 'POST', body: JSON.stringify(payload) }),
 }
