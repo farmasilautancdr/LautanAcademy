@@ -40,6 +40,11 @@ built AND verified.
       edit blocked across a different manager's report. Area Manager only.
       Included in `/data/scoped-data` for staff/outlet-manager/area-manager/
       supervisor (warehouse excluded, matches GAS)
+- [x] Manage Staff CRUD — list (names + who-added, never the PIN), add,
+      reset-pin (explicit reset instead of GAS's plaintext lookup — not
+      possible with hashed PINs, see note below), remove. Outlet/warehouse
+      manager scoped. Verified: add, duplicate-block (409), reset (old PIN
+      rejected/new PIN works), delete (`/staff-roster-manage*`)
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -65,6 +70,9 @@ built AND verified.
       + combined Standard+AI activity log, outlet filter
 - [x] Router branches staff vs. each of the 4 manager roles, each with its
       own login screen and home redirect
+- [x] Manage Staff UI — shared `ManageStaffPanel` component (division prop
+      differs) on Outlet + Warehouse Manager dashboards: list, add, Reset
+      PIN, remove. Tested in both.
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -80,10 +88,6 @@ built AND verified.
 - [ ] Resources (Google Drive-backed reference docs) — lives in Drive, not a
       table. Needs its own Drive API integration if ever migrated; no plan
       to yet.
-- [ ] Manage Staff roster CRUD + passcode lookup — GAS shows managers the
-      plaintext passcode for lookup; this backend hashes PINs (correct
-      practice) so that specific feature can't be replicated as-is, would
-      need a "reset" UX instead of "look up"
 - [ ] Standard Quiz question bank (topic-based, non-AI quizzes) — GAS's
       Questions sheet was never migrated; no endpoint exists for it at all
 - [ ] Rate limiter is in-memory only — resets on restart, not safe across
@@ -91,7 +95,6 @@ built AND verified.
 
 ### Frontend (Vue)
 - [ ] Resources browsing UI
-- [ ] Manage Staff UI
 - [ ] Content/Knowledge Base editor UI (backend CRUD exists, no UI consumes
       the write side yet — quiz-create only reads it)
 
@@ -119,11 +122,10 @@ built AND verified.
 
 ## Suggested build order (next)
 
-Reports (backend + Vue UI) done. Remaining:
+Reports and Manage Staff (backend + Vue UI, both) done. Remaining:
 
-1. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
-2. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
-3. Staff roster full migration (GAS Sheet → `staff_roster` table)
-4. Reports historical data migration (GAS Reports sheet → `reports` table)
-5. Deploy backend + frontend somewhere reachable, run parallel to GAS
-6. Cutover only once staff have used the new stack for real without issues
+1. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
+2. Staff roster full migration (GAS Sheet → `staff_roster` table)
+3. Reports historical data migration (GAS Reports sheet → `reports` table)
+4. Deploy backend + frontend somewhere reachable, run parallel to GAS
+5. Cutover only once staff have used the new stack for real without issues
