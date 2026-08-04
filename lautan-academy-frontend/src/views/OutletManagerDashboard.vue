@@ -5,12 +5,10 @@
 // doesn't exist yet either). Google Drive-based Resources are a separate,
 // not-yet-migrated piece — see SCOPE_TRACKER.md.
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 
-const router = useRouter()
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
 const managerLabel = `Outlet Manager - ${outlet}`
@@ -106,20 +104,13 @@ async function endQuiz() {
   activeQuiz.value = null
 }
 
-function logout() {
-  auth.logout()
-  router.push('/manager-login')
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <header class="bg-deepsea px-6 py-5 flex items-center justify-between">
-      <div>
-        <p class="text-aqualight text-xs">Outlet Manager</p>
-        <h1 class="font-display text-xl font-semibold text-white">{{ outlet }}</h1>
-      </div>
-      <button @click="logout" class="text-aqualight text-sm hover:text-white transition-colors">Log out</button>
+    <header class="bg-deepsea px-6 py-5">
+      <p class="text-aqualight text-xs">Outlet Manager</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ outlet }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">

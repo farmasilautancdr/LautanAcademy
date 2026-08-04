@@ -6,6 +6,8 @@ import ManagerLoginView from '../views/ManagerLoginView.vue'
 import AreaManagerLoginView from '../views/AreaManagerLoginView.vue'
 import SupervisorLoginView from '../views/SupervisorLoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
+import QuizHistoryView from '../views/QuizHistoryView.vue'
+import ResourcesView from '../views/ResourcesView.vue'
 import QuizView from '../views/QuizView.vue'
 import ResultView from '../views/ResultView.vue'
 import OutletManagerDashboard from '../views/OutletManagerDashboard.vue'
@@ -24,6 +26,8 @@ const router = createRouter({
     { path: '/area-manager-login', name: 'area-manager-login', component: AreaManagerLoginView, meta: { managerRoles: ['area_manager'] } },
     { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRoles: ['supervisor'] } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'staff' } },
+    { path: '/history', name: 'history', component: QuizHistoryView, meta: { requiresAuth: true, role: 'staff' } },
+    { path: '/resources', name: 'resources', component: ResourcesView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/manager', name: 'manager', component: OutletManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },

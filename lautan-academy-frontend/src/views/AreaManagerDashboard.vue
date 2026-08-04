@@ -3,11 +3,9 @@
 // staff's existing quiz percentage (>=85 HIGH, >=71 MEDIUM, else LOW) and
 // files it alongside the report. Same here: computed, not a form field.
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
-const router = useRouter()
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
 const managerLabel = auth.manager?.label || 'Area Manager'
@@ -126,20 +124,13 @@ async function submitReport() {
   }
 }
 
-function logout() {
-  auth.logout()
-  router.push('/area-manager-login')
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <header class="bg-deepsea px-6 py-5 flex items-center justify-between">
-      <div>
-        <p class="text-aqualight text-xs">{{ managerLabel }}</p>
-        <h1 class="font-display text-xl font-semibold text-white">{{ outlet }}</h1>
-      </div>
-      <button @click="logout" class="text-aqualight text-sm hover:text-white transition-colors">Log out</button>
+    <header class="bg-deepsea px-6 py-5">
+      <p class="text-aqualight text-xs">{{ managerLabel }}</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ outlet }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">

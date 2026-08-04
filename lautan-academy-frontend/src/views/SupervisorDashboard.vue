@@ -5,12 +5,7 @@
 // covers the manually-typed Content sheet only, which is what quiz creation
 // actually reads from.
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
-
-const router = useRouter()
-const auth = useAuthStore()
 
 const windowMonths = ref(3) // matches GAS's default — fast first load
 const loading = ref(true)
@@ -127,20 +122,13 @@ const avgPercent = computed(() => {
   return Math.round(all.reduce((sum, r) => sum + (parseInt(r.Percentage) || 0), 0) / all.length)
 })
 
-function logout() {
-  auth.logout()
-  router.push('/supervisor-login')
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <header class="bg-deepsea px-6 py-5 flex items-center justify-between">
-      <div>
-        <p class="text-aqualight text-xs">Supervisor</p>
-        <h1 class="font-display text-xl font-semibold text-white">Company-wide</h1>
-      </div>
-      <button @click="logout" class="text-aqualight text-sm hover:text-white transition-colors">Log out</button>
+    <header class="bg-deepsea px-6 py-5">
+      <p class="text-aqualight text-xs">Supervisor</p>
+      <h1 class="font-display text-xl font-semibold text-white">Company-wide</h1>
     </header>
 
     <main class="max-w-4xl mx-auto px-6 py-8">

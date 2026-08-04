@@ -4,12 +4,10 @@
 // Quiz results/wrong-answers (matches GAS's buildScopedData exactly; that
 // scope never included those fields for warehouse).
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 
-const router = useRouter()
 const auth = useAuthStore()
 const location = auth.manager?.outlet // reused field name in store — holds location for this role
 const managerLabel = `Warehouse Manager - ${location}`
@@ -104,20 +102,13 @@ async function endQuiz() {
   activeQuiz.value = null
 }
 
-function logout() {
-  auth.logout()
-  router.push('/manager-login')
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <header class="bg-deepsea px-6 py-5 flex items-center justify-between">
-      <div>
-        <p class="text-aqualight text-xs">Warehouse Manager</p>
-        <h1 class="font-display text-xl font-semibold text-white">{{ location }}</h1>
-      </div>
-      <button @click="logout" class="text-aqualight text-sm hover:text-white transition-colors">Log out</button>
+    <header class="bg-deepsea px-6 py-5">
+      <p class="text-aqualight text-xs">Warehouse Manager</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ location }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
