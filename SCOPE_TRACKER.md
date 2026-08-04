@@ -90,12 +90,10 @@ built AND verified.
       (matches GAS). Region→outlet mapping is now canonical server-side
       (`config/areas.js`, backend), not just a client-side dropdown copy.
       Verified: region mapping logic (9 regions, no outlet in >1 region,
-      unknown area rejected) and the `ANY($1)` scoping query against the
-      real schema. **Not yet verified**: a real area_manager login end-to-
-      end — `results`/`wrong_answers`/`reports` are all empty in the DB
-      right now, so there's no real cross-outlet data to prove the join
-      against, and I didn't touch the real (hashed, production) PIN to
-      manufacture a test case.
+      unknown area rejected), the `ANY($1)` scoping query against the real
+      schema, and a real Area Manager login end-to-end on production
+      (https://lautan-academy-frontend.vercel.app) — login, dashboard, and
+      Reviews' outlet-then-staff picker all confirmed working.
 - [x] Supervisor dashboard — unscoped PIN-only login, `windowMonths` filter
       (3/6/12 months/all-time), company-wide stats (staff/outlets/avg score)
       + combined Standard+AI activity log, outlet filter
@@ -215,6 +213,3 @@ one:
 3. Resources UI on manager dashboards (currently staff-only by choice)
 4. Rate limiter durability (in-memory, resets on restart)
 5. Load test before any real cutover
-6. Real end-to-end test of Area Manager region-scoping once real usage (or
-   a deliberately-authorized test PIN reset) makes that possible — logic is
-   verified in isolation but not proven against real cross-outlet data
