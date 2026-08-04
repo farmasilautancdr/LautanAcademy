@@ -144,7 +144,7 @@ async function submitReport() {
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
       <p class="text-aqualight text-xs">{{ managerLabel }}</p>
-      <h1 class="font-display text-xl font-semibold text-white">Reviews — {{ areaLabel }}</h1>
+      <h1 class="font-display text-xl font-semibold text-white">Assessment — {{ areaLabel }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">

@@ -32,6 +32,13 @@ const isSupervisor = computed(() => managerRole.value === 'supervisor')
 const managerHomePath = computed(() => managerRole.value === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
 const managerStaffPath = computed(() => `${managerHomePath.value}/staff`)
 const managerResultsPath = computed(() => `${managerHomePath.value}/results`)
+// Area Manager's home path differs from managerHomePath (which only
+// branches outlet vs. warehouse); Supervisor's home is /supervisor.
+const managerResourcesPath = computed(() => {
+  if (isAreaManager.value) return '/area-manager/resources'
+  if (isSupervisor.value) return '/supervisor/resources'
+  return `${managerHomePath.value}/resources`
+})
 
 const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
 const roleLabel = computed(() => auth.isStaff ? 'Staff' : (ROLE_LABELS[managerRole.value] || ''))
@@ -57,17 +64,24 @@ const sections = computed(() => {
       label: 'Quiz Management',
       items: [
         { label: 'Create Quiz', to: managerHomePath.value, icon: 'plus' },
-        // Repurposed from a placeholder — "assigning" isn't a real concept
-        // (quizzes are joined by passcode), but Manage Staff is a real,
-        // working feature that fits this section better than dead-ending.
-        { label: 'Assign to Staff', to: managerStaffPath.value, icon: 'send' },
       ],
+    })
+    groups.push({
+      label: 'Assign Staff',
+      // Repurposed from a placeholder — "assigning" isn't a real concept
+      // (quizzes are joined by passcode), but Manage Staff is a real,
+      // working feature that fits this section better than dead-ending.
+      items: [{ label: 'Staff Roster', to: managerStaffPath.value, icon: 'send' }],
     })
     groups.push({
       label: 'Outlet Performance',
       items: [
         { label: 'Staff Results', to: managerResultsPath.value, icon: 'chart' },
       ],
+    })
+    groups.push({
+      label: 'Resources',
+      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
@@ -78,8 +92,12 @@ const sections = computed(() => {
         { label: 'Staff Results', to: '/area-manager', icon: 'chart' },
         // Real — File a Report + Filed Reports, its own page now. No
         // "pending" state exists in the data model yet.
-        { label: 'Reviews', to: '/area-manager/reviews', icon: 'clipboard', badge: props.pendingReviewCount },
+        { label: 'Assessment', to: '/area-manager/reviews', icon: 'clipboard', badge: props.pendingReviewCount },
       ],
+    })
+    groups.push({
+      label: 'Resources',
+      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
@@ -96,6 +114,10 @@ const sections = computed(() => {
         { label: 'Staff Comparison', to: '/supervisor/staff-comparison', icon: 'users' },
         { label: 'Cluster Reports', to: '/supervisor/reports', icon: 'file' },
       ],
+    })
+    groups.push({
+      label: 'Resources',
+      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 

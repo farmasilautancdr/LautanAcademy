@@ -2,6 +2,11 @@
 // Split out of DashboardView.vue — was a section on the same page as My
 // Learning/Quiz History, but the sidebar nav treats it as its own
 // destination, so it needs to actually be one.
+//
+// Shared across staff AND all 4 manager roles — GET /resources is
+// company-wide with no scoping (matches GAS: every role gets the same
+// referenceDocs), and nothing else here depends on which role is viewing,
+// so one component covers every route rather than 5 near-duplicates.
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
@@ -11,6 +16,9 @@ const loading = ref(true)
 const categoryFilter = ref('ALL')
 const subcategoryFilter = ref('ALL')
 const auth = useAuthStore()
+
+const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
+const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_LABELS[auth.manager?.role] || ''))
 
 onMounted(async () => {
   try {
@@ -43,7 +51,7 @@ const filteredResources = computed(() => {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
-      <p class="text-aqualight text-xs">{{ auth.staff?.outlet }}</p>
+      <p class="text-aqualight text-xs">{{ headerLabel }}</p>
       <h1 class="font-display text-xl font-semibold text-white">Resources</h1>
     </header>
 
