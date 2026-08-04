@@ -1,15 +1,9 @@
 <script setup>
-// Scoped to Outlet Manager only for now — warehouse/area manager and
-// supervisor logins work fine against the backend already, but there's no
-// Vue dashboard for them yet (see SCOPE_TRACKER.md). Adding the role picker
-// back once those dashboards exist rather than dead-ending someone here.
+// Supervisor is the one unscoped role — no outlet/location picker, just PIN.
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 
-const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
-
-const outlet = ref('')
 const pin = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -18,18 +12,14 @@ const auth = useAuthStore()
 
 async function handleLogin() {
   error.value = ''
-  if (!outlet.value) {
-    error.value = 'Select your outlet.'
-    return
-  }
   if (!pin.value.trim()) {
-    error.value = 'Enter the manager PIN.'
+    error.value = 'Enter the Supervisor PIN.'
     return
   }
   loading.value = true
   try {
-    await auth.loginManager('outlet_manager', outlet.value, pin.value.trim())
-    router.push('/manager')
+    await auth.loginManager('supervisor', '', pin.value.trim())
+    router.push('/supervisor')
   } catch (err) {
     error.value = err.message || 'That PIN doesn\'t look right.'
   } finally {
@@ -43,25 +33,17 @@ async function handleLogin() {
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
         <h1 class="font-display text-3xl font-bold text-white tracking-tight">Lautan Academy</h1>
-        <p class="text-aqualight mt-2 text-sm">Outlet Manager</p>
+        <p class="text-aqualight mt-2 text-sm">Supervisor</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl space-y-4">
         <div>
-          <label for="outlet" class="block text-sm font-medium text-ink mb-1">Outlet</label>
-          <select id="outlet" v-model="outlet" class="w-full border border-slate/30 rounded-lg py-2 px-3">
-            <option value="">Select outlet...</option>
-            <option v-for="o in OUTLET_LIST" :key="o" :value="o">{{ o }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="pin" class="block text-sm font-medium text-ink mb-1">Manager PIN</label>
+          <label class="block text-sm font-medium text-ink mb-1">Supervisor PIN</label>
           <input
-            id="pin"
             v-model="pin"
             type="password"
             placeholder="••••••"
+            autofocus
             class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua"
           />
         </div>
@@ -81,10 +63,8 @@ async function handleLogin() {
         Staff? <router-link to="/login" class="underline">Log in here</router-link>
       </p>
       <p class="text-center text-aqualight/70 text-xs mt-2">
-        Warehouse Manager? <router-link to="/warehouse-manager-login" class="underline">Log in here</router-link>
-      </p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
-        Area Manager? <router-link to="/area-manager-login" class="underline">Log in here</router-link>
+        Outlet/Warehouse/Area Manager?
+        <router-link to="/manager-login" class="underline">Log in here</router-link>
       </p>
     </div>
   </div>
