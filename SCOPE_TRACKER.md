@@ -99,6 +99,26 @@ built AND verified.
       from node-pg (bigserial), but was being used as a `Map` key against a
       `parseInt`'d lookup — silently matched nothing, scored everyone 0
       until fixed.
+      **Second round, found by automated security review of the push**:
+      grading originally used `total = answers.length` — the client's own
+      claim of how many questions it was answering, not the real bank/quiz
+      size. Submitting a cherry-picked subset (e.g. only your one
+      known-correct answer) inflated the percentage; a duplicated id could
+      do the same. Fixed by grading against the *authoritative* question
+      set (topic's real rows from `standard_questions`, or the AI quiz's
+      full stored `questions_json`) and only ever consulting the client for
+      "what did you pick for question X", never "how many questions counted".
+      Also: the new live check endpoints had no rate limit and
+      `/quiz/:outlet/check` had no auth at all — either could be scripted
+      to loop every id/option and rebuild the exact answer key this change
+      was meant to stop exposing, just via many small calls instead of one
+      response. Both endpoints are now `requireAuth` + capped at 80
+      calls/10 min per staff session (`hitRateLimit`, new generic counter in
+      `middleware/rateLimit.js` — separate from the login-lockout one,
+      since a real quiz needs far more than 5 calls). Re-verified end-to-
+      end: normal grading still exact, the specific bypass (submit 1 of 3
+      answers) now correctly returns 1/3 not 1/1, unauthenticated check
+      correctly 401s.
 - [x] PIN/passcode hardcoding removed — `checkPinInternal()` in
       `Code_v1.35.gs` no longer has a `defaultPins` fallback; requires
       `PropertiesService` Script Property or returns a clear "not
