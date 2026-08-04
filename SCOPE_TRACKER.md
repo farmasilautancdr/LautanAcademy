@@ -109,10 +109,13 @@ built AND verified.
 
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
-- [ ] Staff roster — only 3 test rows seeded manually so far; real roster
-      still lives only in GAS's Sheet
-- [ ] Reports data — schema now exists; historical GAS Reports rows still
-      not migrated (separate from the schema-rebuild blocker, now resolved)
+- [x] Staff roster — 20 real staff migrated (names/outlets/divisions only —
+      GAS never exposes passcodes in bulk, only per-outlet behind manager
+      auth). Each needs an explicit Reset PIN via Manage Staff UI before
+      that account can log in — intentional, not a bug
+      (`scripts/migrate-staff-roster-names.js`, safe to re-run)
+- [x] Reports data — synced, GAS had 0 historical rows (feature was
+      apparently unused there too) (`scripts/sync-reports-from-gas.js`)
 
 ### Infra
 - [x] Postgres — deployed (Supabase)
@@ -131,10 +134,8 @@ built AND verified.
 
 ## Suggested build order (next)
 
-Reports, Manage Staff, and Content/Knowledge Base (backend + Vue UI, all
-three) done. Remaining:
+Reports, Manage Staff, Content/Knowledge Base, and both data migrations
+(staff roster, reports) done. Remaining:
 
-1. Staff roster full migration (GAS Sheet → `staff_roster` table)
-2. Reports historical data migration (GAS Reports sheet → `reports` table)
-3. Deploy backend + frontend somewhere reachable, run parallel to GAS
-4. Cutover only once staff have used the new stack for real without issues
+1. Deploy backend + frontend somewhere reachable, run parallel to GAS
+2. Cutover only once staff have used the new stack for real without issues
