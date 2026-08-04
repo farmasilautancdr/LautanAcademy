@@ -714,10 +714,9 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyvioLEJ8tFK3766M8fj7wKxS5_qFDkKEKtniei3MHaP-aNkEq7LcwNqaVhcXgr26wKkg/exec";
-        // New Node/Supabase backend — only login + quiz create/redeem routed here so far.
-        // Everything else (results, reports, resources, content) still goes through GAS_URL.
-        // Not deployed anywhere yet — only reachable when this page and the backend run on the same machine.
-        const BACKEND_URL = "http://localhost:3000";
+        // New Node/Supabase backend — only login + quiz create/redeem/results routed here so far.
+        // Everything else (reports, resources, manage staff) still goes through GAS_URL.
+        const BACKEND_URL = "https://lautan-academy-backend-production.up.railway.app";
         let allQuestions = [], allResults = [], allReports = [], allWrongAnswers = [], allContent = [];
         let allAIResults = [], allAIWrongAnswers = [], allReferenceDocs = [];
         let currentLang = 'en', quizIdx = 0, score = 0, currentQuizData = [], staffWrongs = [];

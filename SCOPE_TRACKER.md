@@ -181,12 +181,10 @@ built AND verified.
   already caused one real outage this session (stale deployment ID). Now
   also true of `VITE_API_URL` baked into the Vercel build — if the Railway
   URL ever changes, the frontend needs a rebuild, not just a var change.
-- **`BACKEND_URL` in `index.html` is currently `http://localhost:3000`**
-  (line 720) — the new-backend calls in vanilla (staff login, quiz
-  create/redeem/active/end, results) only work when opened on this dev
-  machine with the local backend running. Not yet repointed to the Railway
-  URL. Unclear if vanilla is meant to hit the new backend in production at
-  all yet — needs a decision, not an assumption.
+- `BACKEND_URL` in `index.html` now points at the Railway URL (was
+  `localhost:3000`, dev-only). Same fragility as `GAS_URL` above: it's a
+  hardcoded constant, so a future Railway URL change needs a manual edit
+  here too, not just an env var.
 - Supabase's Direct connection (`db.<ref>.supabase.co`) does not work from
   Railway — it resolves to an IPv6 address Railway can't route, and even
   after forcing IPv4-first DNS + disabling Node's Happy Eyeballs
@@ -206,10 +204,8 @@ route-split, security hardening, Area Manager region-scoping, and Supervisor
 Cross-Outlet pages are all done. Remaining, unordered — ask before picking
 one:
 
-1. Decide vanilla `index.html`'s `BACKEND_URL` — point it at Railway for
-   real staff use, or leave it dev-only if GAS stays authoritative for now
-2. Standard Quiz question bank migration (topic-based, non-AI) — no plan
+1. Standard Quiz question bank migration (topic-based, non-AI) — no plan
    exists yet, GAS's Questions sheet was never even inventoried
-3. Resources UI on manager dashboards (currently staff-only by choice)
-4. Rate limiter durability (in-memory, resets on restart)
-5. Load test before any real cutover
+2. Resources UI on manager dashboards (currently staff-only by choice)
+3. Rate limiter durability (in-memory, resets on restart)
+4. Load test before any real cutover
