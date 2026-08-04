@@ -1147,14 +1147,14 @@ function getReferenceDocs() {
 // anyone via View Source. Now the frontend just asks "is this PIN right?"
 // and gets back true/false — the actual value never reaches the browser.
 //
-// Optional (recommended) setup: Project Settings → Script Properties → add
-// any of these to override the defaults below:
-//   AREA_MANAGER_PIN     (default if unset: 1234)
-//   OUTLET_MANAGER_PIN   (default if unset: 1234)
-//   SUPERVISOR_PIN       (default if unset: SV2026)
-// Skipping this is fine — the app keeps working with the same PINs as
-// before, just no longer exposed in the page source. Setting your own
-// values here is what actually makes them harder to guess.
+// Required setup: Project Settings → Script Properties → set:
+//   RESOURCES_PASSCODE   (the shared Manager-category PIN)
+//   SUPERVISOR_PIN
+// No hardcoded fallback exists for these anymore — a login attempt for a
+// role whose property isn't set returns a clear "not configured" error
+// instead of silently accepting a guessable default. (AREA_MANAGER_PIN /
+// OUTLET_MANAGER_PIN are defined but unused — every manager role currently
+// routes through the shared 'resources' PIN, see establishSession.)
 //
 // Basic brute-force protection: 5 wrong PINs for a given role within 5
 // minutes locks out further attempts for that role until the window
@@ -1433,44 +1433,45 @@ function handleGetScopedData(data) {
 
 function checkPinInternal(role, pin) {
   const propKeyMap = {
-    'area_manager': 'AREA_MANAGER_PIN', 
-    'outlet_manager': 'OUTLET_MANAGER_PIN', 
-    'supervisor': 'SUPERVISOR_PIN', 
-    // v1.17: this key is FLT2026 — the Manager-category PIN entered once at
-    // the category-select screen. It's also reused server-side to protect
+    'area_manager': 'AREA_MANAGER_PIN',
+    'outlet_manager': 'OUTLET_MANAGER_PIN',
+    'supervisor': 'SUPERVISOR_PIN',
+    // v1.17: this key is the Manager-category PIN entered once at the
+    // category-select screen. It's also reused server-side to protect
     // Content upload/delete and, as of v1.21, all Manage Staff actions
     // (add/remove/lookup passcodes). "resources" is a legacy name from when
     // this only guarded viewing Resources (v1.15) — kept as-is rather than
     // renamed, to avoid breaking anyone who already set RESOURCES_PASSCODE.
     'resources': 'RESOURCES_PASSCODE'
-  }; 
-  const defaultPins = {
-    'area_manager': '1234', 
-    'outlet_manager': '1234', 
-    'supervisor': 'SV2026', 
-    'resources': 'FLT2026'
-  }; 
+  };
+  // No hardcoded fallback values — a real PIN must never sit in committed
+  // source (this file is on a public repo). Each Script Property below is
+  // required; an admin must set it in Project Settings > Script Properties
+  // before that login path works at all.
 
-  const propKey = propKeyMap[role]; 
-  if (!propKey) return { ok: false, error: 'Unknown login type.' }; 
+  const propKey = propKeyMap[role];
+  if (!propKey) return { ok: false, error: 'Unknown login type.' };
 
-  const cache = CacheService.getScriptCache(); 
-  const failKey = 'pinfail_' + role; 
-  const fails = parseInt(cache.get(failKey) || '0'); 
+  const cache = CacheService.getScriptCache();
+  const failKey = 'pinfail_' + role;
+  const fails = parseInt(cache.get(failKey) || '0');
   if (fails >= 5) {
-    return { ok: false, error: 'Too many attempts. Please wait a few minutes and try again.' }; 
+    return { ok: false, error: 'Too many attempts. Please wait a few minutes and try again.' };
   }
 
-  const props = PropertiesService.getScriptProperties(); 
-  const correctPin = props.getProperty(propKey) || defaultPins[role]; 
+  const props = PropertiesService.getScriptProperties();
+  const correctPin = props.getProperty(propKey);
+  if (!correctPin) {
+    return { ok: false, error: 'This login is not configured yet — ask your administrator to set ' + propKey + ' in Script Properties.' };
+  }
 
   if (pin && pin === correctPin) {
-    cache.remove(failKey); 
-    return { ok: true, error: null }; 
+    cache.remove(failKey);
+    return { ok: true, error: null };
   }
 
-  cache.put(failKey, (fails + 1).toString(), 300); 
-  return { ok: false, error: null }; 
+  cache.put(failKey, (fails + 1).toString(), 300);
+  return { ok: false, error: null };
 }
 
 function handleVerifyPin(data) {
@@ -1479,7 +1480,7 @@ function handleVerifyPin(data) {
   const result = checkPinInternal(role, pin); 
   if (!result.ok) return { authorized: false, error: result.error }; 
 
-  // v1.26: the Manager-category gate (role 'resources', FLT2026) doubles as
+  // v1.26: the Manager-category gate (role 'resources') doubles as
   // entry to Resources directly from the tile grid, without necessarily
   // picking a specific sub-role first — so it gets its own minimal token,
   // scoped to just Resources, immediately on success.
@@ -1508,7 +1509,7 @@ function handleVerifyPin(data) {
 //      code can't be brute-forced, without locking out unrelated staff.
 //   2. handleGetStaffRosterFull — used by the Manage Staff panel so a
 //      manager can look up a forgotten passcode. Gated by the same
-//      RESOURCES_PASSCODE (FLT2026) used for the Manager-category screens.
+//      RESOURCES_PASSCODE used for the Manager-category screens.
 // ============================================================
 
 // v1.35: the StaffRoster sheet is read on EVERY staff login and every public
