@@ -9,7 +9,7 @@ built AND verified.
 
 - [x] Postgres schema: `staff_roster`, `manager_pins`, `content`, `results`,
       `wrong_answers`, `ai_results`, `ai_wrong_answers`, `ai_quizzes`,
-      `reports` (stub — see gaps below)
+      `reports` (real schema now — matches GAS's live report form fields)
 - [x] Staff login — division + outlet + name + PIN, bcrypt-hashed PINs, JWT,
       5-fail/5-min lockout (`POST /auth/staff-login`)
 - [x] Manager login — role + PIN (+ outlet unless supervisor), same lockout
@@ -35,6 +35,11 @@ built AND verified.
       sheet has 0 rows too — infra works, no data exists yet either side)
       (`GET/POST /content`, `DELETE /content/:id`)
 - [x] Content-only GAS sync, safe to re-run (`scripts/sync-content-from-gas.js`)
+- [x] Reports — `POST /reports`, matches GAS's save_report exactly: one
+      report per outlet+staff+topic, duplicate blocked unless `isEdit` set,
+      edit blocked across a different manager's report. Area Manager only.
+      Included in `/data/scoped-data` for staff/outlet-manager/area-manager/
+      supervisor (warehouse excluded, matches GAS)
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -52,8 +57,9 @@ built AND verified.
       locations (Taskforce/Warehouse/Inventory/Logistic), AI-Practice-only
       history (matches GAS: that scope never included Standard Quiz results)
 - [x] Area Manager dashboard — area/outlet picker matching GAS's fixed
-      roster (9 areas), view-only Standard Quiz results + wrong answers.
-      Report submission NOT built (banner says so explicitly) — see gaps
+      roster (9 areas), Standard Quiz results + wrong answers, and Reports:
+      file/edit with duplicate detection + wrong-manager block, Skill Level
+      computed client-side from quiz percentage (matches GAS)
 - [x] Supervisor dashboard — unscoped PIN-only login, `windowMonths` filter
       (3/6/12 months/all-time), company-wide stats (staff/outlets/avg score)
       + combined Standard+AI activity log, outlet filter
@@ -71,10 +77,6 @@ built AND verified.
 ## ❌ Not built yet
 
 ### Backend
-- [ ] Reports (Area Manager write-ups) — GAS's Reports sheet has ~15 columns
-      (skill level, competency comments, fluency, housebrand focus, etc.);
-      this backend's `reports` table is a 3-column stub. Real schema work,
-      not a quick add.
 - [ ] Resources (Google Drive-backed reference docs) — lives in Drive, not a
       table. Needs its own Drive API integration if ever migrated; no plan
       to yet.
@@ -88,7 +90,6 @@ built AND verified.
       multiple instances if ever scaled horizontally
 
 ### Frontend (Vue)
-- [ ] Reports UI
 - [ ] Resources browsing UI
 - [ ] Manage Staff UI
 - [ ] Content/Knowledge Base editor UI (backend CRUD exists, no UI consumes
@@ -98,7 +99,8 @@ built AND verified.
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
 - [ ] Staff roster — only 3 test rows seeded manually so far; real roster
       still lives only in GAS's Sheet
-- [ ] Reports data — blocked on the schema rebuild above
+- [ ] Reports data — schema now exists; historical GAS Reports rows still
+      not migrated (separate from the schema-rebuild blocker, now resolved)
 
 ### Infra
 - [x] Postgres — deployed (Supabase)
@@ -117,13 +119,11 @@ built AND verified.
 
 ## Suggested build order (next)
 
-All 5 login flows (staff + 4 manager roles) now have working Vue dashboards.
-Remaining Vue work is the genuinely unbuilt-backend pieces:
+Reports (backend + Vue UI) done. Remaining:
 
-1. Reports schema rebuild (backend) + Reports UI (Vue) — biggest remaining
-   gap, Area Manager's real workflow needs this
-2. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
-3. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
-4. Staff roster full migration (GAS Sheet → `staff_roster` table)
+1. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
+2. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
+3. Staff roster full migration (GAS Sheet → `staff_roster` table)
+4. Reports historical data migration (GAS Reports sheet → `reports` table)
 5. Deploy backend + frontend somewhere reachable, run parallel to GAS
 6. Cutover only once staff have used the new stack for real without issues
