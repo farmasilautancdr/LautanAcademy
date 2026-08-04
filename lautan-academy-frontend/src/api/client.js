@@ -52,4 +52,9 @@ export const api = {
   // duplicate/auth_error are normal 200 responses, not thrown errors, since
   // they're expected outcomes the caller needs to react to, not failures.
   saveReport: (payload) => request('/reports', { method: 'POST', body: JSON.stringify(payload) }),
+  getStaffRosterFull: (division, outlet) =>
+    request(`/staff-roster-manage/full?division=${encodeURIComponent(division)}&outlet=${encodeURIComponent(outlet)}`),
+  addStaff: (payload) => request('/staff-roster-manage', { method: 'POST', body: JSON.stringify(payload) }),
+  resetStaffPin: (payload) => request('/staff-roster-manage/reset-pin', { method: 'POST', body: JSON.stringify(payload) }),
+  removeStaff: (payload) => request('/staff-roster-manage', { method: 'DELETE', body: JSON.stringify(payload) }),
 }

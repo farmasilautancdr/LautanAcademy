@@ -8,10 +8,12 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
+const managerLabel = `Outlet Manager - ${outlet}`
 
 const topicLabel = ref('')
 const extraNotes = ref('')
@@ -82,7 +84,7 @@ async function createQuiz() {
       topicLabel: topicLabel.value.trim(),
       count: count.value,
       extraNotes: extraNotes.value.trim(),
-      manager: `Outlet Manager - ${outlet}`,
+      manager: managerLabel,
     })
     activeQuiz.value = data
     startCountdown()
@@ -161,6 +163,11 @@ function logout() {
             {{ creating ? 'Generating...' : (activeQuiz ? 'Replace active code' : 'Generate code') }}
           </button>
         </form>
+      </section>
+
+      <section>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">Manage Staff</h2>
+        <ManageStaffPanel division="retail" :outlet="outlet" :manager-label="managerLabel" />
       </section>
 
       <section>

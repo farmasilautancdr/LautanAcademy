@@ -7,10 +7,12 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 const location = auth.manager?.outlet // reused field name in store — holds location for this role
+const managerLabel = `Warehouse Manager - ${location}`
 
 const topicLabel = ref('')
 const extraNotes = ref('')
@@ -80,7 +82,7 @@ async function createQuiz() {
       topicLabel: topicLabel.value.trim(),
       count: count.value,
       extraNotes: extraNotes.value.trim(),
-      manager: `Warehouse Manager - ${location}`,
+      manager: managerLabel,
     })
     activeQuiz.value = data
     startCountdown()
@@ -159,6 +161,11 @@ function logout() {
             {{ creating ? 'Generating...' : (activeQuiz ? 'Replace active code' : 'Generate code') }}
           </button>
         </form>
+      </section>
+
+      <section>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">Manage Staff</h2>
+        <ManageStaffPanel division="warehouse" :outlet="location" :manager-label="managerLabel" />
       </section>
 
       <section>
