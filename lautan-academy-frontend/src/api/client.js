@@ -34,10 +34,18 @@ export const api = {
     request('/auth/staff-login', { method: 'POST', body: JSON.stringify({ division, outlet, name, pin }) }),
   getStaffNames: (division, outlet) =>
     request(`/auth/staff-roster?division=${encodeURIComponent(division)}&outlet=${encodeURIComponent(outlet)}`),
-  getScopedData: () => request('/data/scoped-data'),
+  // role: outlet_manager | warehouse_manager | area_manager | supervisor.
+  // outlet is ignored server-side for supervisor (unscoped, 'ALL').
+  managerLogin: (role, outlet, pin) =>
+    request('/auth/manager-login', { method: 'POST', body: JSON.stringify({ role, outlet, pin }) }),
+  getScopedData: (windowMonths) =>
+    request(`/data/scoped-data${windowMonths ? `?windowMonths=${windowMonths}` : ''}`),
   createAiQuiz: (payload) => request('/quiz/create', { method: 'POST', body: JSON.stringify(payload) }),
   redeemAiQuiz: (outlet, passcode) =>
     request('/quiz/redeem', { method: 'POST', body: JSON.stringify({ outlet, passcode }) }),
+  getActiveQuiz: (outlet) => request(`/quiz/${encodeURIComponent(outlet)}/active`),
+  endQuiz: (outlet) => request(`/quiz/${encodeURIComponent(outlet)}/end`, { method: 'POST' }),
   saveResult: (payload) => request('/data/results', { method: 'POST', body: JSON.stringify(payload) }),
   saveAiResult: (payload) => request('/data/ai-results', { method: 'POST', body: JSON.stringify(payload) }),
+  getContent: () => request('/content'),
 }

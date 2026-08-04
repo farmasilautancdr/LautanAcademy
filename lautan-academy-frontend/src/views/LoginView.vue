@@ -111,6 +111,9 @@ async function handleLogin() {
       </form>
 
       <p class="text-center text-aqualight/70 text-xs mt-6">Ask your outlet manager if you don't have a passcode.</p>
+      <p class="text-center text-aqualight/70 text-xs mt-2">
+        Manager? <router-link to="/manager-login" class="underline">Log in here</router-link>
+      </p>
     </div>
   </div>
 </template>
