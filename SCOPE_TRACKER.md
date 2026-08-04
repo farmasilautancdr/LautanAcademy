@@ -259,7 +259,20 @@ built AND verified.
       `VITE_API_URL` set to the Railway URL above. Verified: bundle
       contains the correct backend URL (not localhost), CORS confirmed
       working between the two live origins.
-- [ ] Load test with realistic concurrent usage before any real cutover
+- [x] Load test — 20 concurrent simulated staff (seeded throwaway
+      LOADTEST01-20 accounts, deleted after) against **production Railway**:
+      login, `GET /questions`, `GET /data/scoped-data`, per-question
+      check-answer, and a real graded submission on "Medsy Products" (7
+      questions, real DB writes). No Gemini calls made (cost), no real
+      staff/manager credentials touched. 19/20 flows succeeded end-to-end.
+      Every endpoint held up under load *except* login: min 2.9s, but
+      **worst case 134 seconds** for the last of 20 concurrent logins —
+      `bcryptjs` (pure JS) does CPU-bound hashing that blocks Node's single
+      event loop, so concurrent logins serialize behind each other instead
+      of running in parallel. Real risk for a shift-change burst. Fix is
+      switching to native `bcrypt` (thread-pool based, doesn't block the
+      loop) — flagged above, not yet done, needs a decision since it's a
+      new native dependency.
 
 ## Known fragility (see CLAUDE.md hard rule 5)
 
@@ -301,4 +314,6 @@ picking one:
 1. Rate limiter durability (in-memory, resets on restart) — now covers
    both login lockout and the new check-endpoint throttling, same
    per-process-only limitation for both
-2. Load test before any real cutover
+2. **Switch `bcryptjs` → native `bcrypt`** — load test (below) found login
+   latency collapses under concurrency because of this. New native
+   dependency, not added yet — needs a decision before installing.
