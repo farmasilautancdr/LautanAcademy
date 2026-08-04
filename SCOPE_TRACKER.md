@@ -51,8 +51,14 @@ built AND verified.
 - [x] Warehouse Manager dashboard — same as above, scoped to the 4 fixed
       locations (Taskforce/Warehouse/Inventory/Logistic), AI-Practice-only
       history (matches GAS: that scope never included Standard Quiz results)
-- [x] Router branches staff vs. outlet-manager vs. warehouse-manager
-      sessions, each with their own login screen and home redirect
+- [x] Area Manager dashboard — area/outlet picker matching GAS's fixed
+      roster (9 areas), view-only Standard Quiz results + wrong answers.
+      Report submission NOT built (banner says so explicitly) — see gaps
+- [x] Supervisor dashboard — unscoped PIN-only login, `windowMonths` filter
+      (3/6/12 months/all-time), company-wide stats (staff/outlets/avg score)
+      + combined Standard+AI activity log, outlet filter
+- [x] Router branches staff vs. each of the 4 manager roles, each with its
+      own login screen and home redirect
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -82,8 +88,6 @@ built AND verified.
       multiple instances if ever scaled horizontally
 
 ### Frontend (Vue)
-- [ ] Area Manager dashboard (cross-staff reporting)
-- [ ] Supervisor dashboard (company-wide view, `windowMonths` filter)
 - [ ] Reports UI
 - [ ] Resources browsing UI
 - [ ] Manage Staff UI
@@ -113,11 +117,13 @@ built AND verified.
 
 ## Suggested build order (next)
 
-1. Area Manager dashboard in Vue, then Supervisor (company-wide,
-   `windowMonths` filter already built backend-side)
-2. Reports schema rebuild (backend) + Reports UI (Vue)
-3. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
-4. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
-5. Staff roster full migration (GAS Sheet → `staff_roster` table)
-6. Deploy backend + frontend somewhere reachable, run parallel to GAS
-7. Cutover only once staff have used the new stack for real without issues
+All 5 login flows (staff + 4 manager roles) now have working Vue dashboards.
+Remaining Vue work is the genuinely unbuilt-backend pieces:
+
+1. Reports schema rebuild (backend) + Reports UI (Vue) — biggest remaining
+   gap, Area Manager's real workflow needs this
+2. Manage Staff CRUD (backend, passcode-reset UX not lookup) + UI
+3. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
+4. Staff roster full migration (GAS Sheet → `staff_roster` table)
+5. Deploy backend + frontend somewhere reachable, run parallel to GAS
+6. Cutover only once staff have used the new stack for real without issues
