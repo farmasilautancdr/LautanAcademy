@@ -288,13 +288,14 @@ Backend + Vue frontend are both deployed and live (Railway + Vercel).
 Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
 route-split, security hardening, Area Manager region-scoping (+ outlet
 filter), Supervisor Cross-Outlet pages, vanilla's `BACKEND_URL`, the
-Standard Quiz question bank + Module Quiz UI, and Quiz History's Module
-Quiz/AI Practice segregation are all done and deployed. Remaining,
-unordered — ask before picking one:
+Standard Quiz question bank + Module Quiz UI, Quiz History's Module
+Quiz/AI Practice segregation, and server-side grading for both quiz types
+(+ the follow-up integrity/rate-limit fixes a second security review
+caught) are all done and deployed. Remaining, unordered — ask before
+picking one:
 
 1. Resources UI on manager dashboards (currently staff-only by choice)
-2. Rate limiter durability (in-memory, resets on restart)
+2. Rate limiter durability (in-memory, resets on restart) — now covers
+   both login lockout and the new check-endpoint throttling, same
+   per-process-only limitation for both
 3. Load test before any real cutover
-4. The one unreviewed automated security finding from the Module Quiz
-   commit ("+1 more", full detail never retrieved — see git history around
-   commit 5874369) — worth a look before treating that review as closed
