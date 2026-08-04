@@ -43,14 +43,13 @@ const sections = computed(() => {
   const groups = []
 
   if (auth.isStaff) {
-    groups.push({
-      label: 'My Learning',
-      items: [
-        { label: 'My Learning', to: '/', icon: 'home' },
-        { label: 'Quiz History', to: '/history', icon: 'history' },
-        { label: 'Resources', to: '/resources', icon: 'book' },
-      ],
-    })
+    const items = [{ label: 'My Learning', to: '/', icon: 'home' }]
+    // Module Quiz (Standard Quiz question bank) is retail-only — matches
+    // GAS, which never gave warehouse staff anything but AI Practice.
+    if (auth.staff?.division === 'retail') items.push({ label: 'Module Quiz', to: '/module-quiz', icon: 'clipboard' })
+    items.push({ label: 'Quiz History', to: '/history', icon: 'history' })
+    items.push({ label: 'Resources', to: '/resources', icon: 'book' })
+    groups.push({ label: 'My Learning', items })
   }
 
   if (isOutletOrWarehouseManager.value) {

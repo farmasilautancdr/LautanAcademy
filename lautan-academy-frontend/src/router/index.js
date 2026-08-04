@@ -7,6 +7,7 @@ import AreaManagerLoginView from '../views/AreaManagerLoginView.vue'
 import SupervisorLoginView from '../views/SupervisorLoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import QuizHistoryView from '../views/QuizHistoryView.vue'
+import ModuleQuizView from '../views/ModuleQuizView.vue'
 import ResourcesView from '../views/ResourcesView.vue'
 import QuizView from '../views/QuizView.vue'
 import ResultView from '../views/ResultView.vue'
@@ -34,6 +35,7 @@ const router = createRouter({
     { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRoles: ['supervisor'] } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/history', name: 'history', component: QuizHistoryView, meta: { requiresAuth: true, role: 'staff' } },
+    { path: '/module-quiz', name: 'module-quiz', component: ModuleQuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/resources', name: 'resources', component: ResourcesView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },

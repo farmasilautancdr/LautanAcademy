@@ -57,6 +57,22 @@ built AND verified.
       grouping (e.g. a "Housebrand Modules" main folder with "Allife"/
       "Biomerit" subfolders tags both levels), 5-min in-memory cache
       (`GET /resources`). Verified against the real Drive folder.
+- [x] Standard Quiz question bank — `standard_questions` table (mirrors
+      GAS's Questions sheet exactly: topic, bilingual question/options,
+      0-indexed `correct`, `status`), `scripts/migrate-questions-from-gas.js`
+      pulled the real 133 questions/8 topics from GAS's public doGet(),
+      `GET /questions` (public, no auth, matches GAS serving this
+      pre-login). Reuses the existing `/data/results` endpoint to save
+      attempts — no new save endpoint needed. Verified: migrated data
+      matches GAS row-for-row (spot-checked + per-topic counts), full save
+      flow tested end-to-end via curl (real staff login → save → confirmed
+      correct rows in `results`+`wrong_answers` → cleaned up).
+      **Named `standard_questions`, not `questions`** — this Supabase
+      project already has an unrelated, unused `questions` table (different
+      shape: `topic_id` FK, jsonb options, `correct_index`) plus a whole
+      parallel unused schema (`topics`, `quizzes`, `attempts`,
+      `attempt_answers`, `outlets`, `staff`, `resources`, `manager_reviews`)
+      — confirmed leftover from an earlier abandoned attempt, not touched.
 - [x] PIN/passcode hardcoding removed — `checkPinInternal()` in
       `Code_v1.35.gs` no longer has a `defaultPins` fallback; requires
       `PropertiesService` Script Property or returns a clear "not
@@ -69,6 +85,15 @@ built AND verified.
 - [x] Staff login — outlet + name dropdowns (outlet list static, names from
       the public roster endpoint), division + PIN
 - [x] AI Practice: join-by-passcode from dashboard
+- [x] Module Quiz (Standard Quiz) — topic picker (`ModuleQuizView.vue`),
+      retail staff only (sidebar item hidden for warehouse, matches GAS),
+      uses the topic's **entire** question bank per attempt — deliberately
+      not GAS's old fixed-10 cap, overridden per request — client-side
+      "already attempted today" warning before starting (backend already
+      no-ops the duplicate silently; this adds the explicit heads-up GAS
+      gave). Reuses `QuizView.vue` for the actual quiz-taking screen — same
+      question shape as AI Practice, just branches which endpoint saves the
+      result (`/data/results` vs `/data/ai-results`)
 - [x] Quiz taking — bilingual toggle, instant correct/wrong reveal per answer
       (locked in once picked, matches vanilla app's behavior)
 - [x] Result screen — score, pass/fail state, missed-questions breakdown
@@ -138,8 +163,6 @@ built AND verified.
 ## ❌ Not built yet
 
 ### Backend
-- [ ] Standard Quiz question bank (topic-based, non-AI quizzes) — GAS's
-      Questions sheet was never migrated; no endpoint exists for it at all
 - [ ] Rate limiter is in-memory only — resets on restart, not safe across
       multiple instances if ever scaled horizontally
 
@@ -156,6 +179,10 @@ built AND verified.
       (`scripts/migrate-staff-roster-names.js`, safe to re-run)
 - [x] Reports data — synced, GAS had 0 historical rows (feature was
       apparently unused there too) (`scripts/sync-reports-from-gas.js`)
+- [x] Standard Quiz question bank — 133 questions/8 topics migrated from
+      GAS's live Questions sheet, verified row-for-row
+      (`scripts/migrate-questions-from-gas.js`, safe to re-run — nothing
+      else writes to `standard_questions`)
 
 ### Infra
 - [x] Postgres — deployed (Supabase)
@@ -200,12 +227,16 @@ built AND verified.
 
 Backend + Vue frontend are both deployed and live (Railway + Vercel).
 Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
-route-split, security hardening, Area Manager region-scoping, and Supervisor
-Cross-Outlet pages are all done. Remaining, unordered — ask before picking
-one:
+route-split, security hardening, Area Manager region-scoping, Supervisor
+Cross-Outlet pages, vanilla's `BACKEND_URL`, and the Standard Quiz question
+bank are all done. Remaining, unordered — ask before picking one:
 
-1. Standard Quiz question bank migration (topic-based, non-AI) — no plan
-   exists yet, GAS's Questions sheet was never even inventoried
-2. Resources UI on manager dashboards (currently staff-only by choice)
-3. Rate limiter durability (in-memory, resets on restart)
-4. Load test before any real cutover
+1. Resources UI on manager dashboards (currently staff-only by choice)
+2. Rate limiter durability (in-memory, resets on restart)
+3. Load test before any real cutover
+4. Deploy this session's Standard Quiz migration + Area Manager
+   region-scoping + BACKEND_URL fix — built and locally verified, not yet
+   committed/pushed/deployed
+5. `QuizHistoryView.vue` only shows AI Practice history, never Standard
+   Quiz results — noticed while building Module Quiz, not fixed (out of
+   the scope that was actually asked for)

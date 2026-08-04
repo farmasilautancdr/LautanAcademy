@@ -18,6 +18,7 @@ const auth = useAuthStore()
 const stored = JSON.parse(sessionStorage.getItem('lautan_active_quiz') || 'null')
 const topic = stored?.topic || 'Practice'
 const passcode = stored?.passcode || ''
+const kind = stored?.kind || 'ai' // 'standard' (Module Quiz, ModuleQuizView) | 'ai' (Practice, DashboardView)
 const questions = ref(stored?.questions || [])
 
 const currentIndex = ref(0)
@@ -84,16 +85,27 @@ async function submit() {
   const percentage = Math.round((score / total) * 100)
 
   try {
-    await api.saveAiResult({
-      attemptId: 'AI' + Date.now(),
-      name: auth.staff.name,
-      outlet: auth.staff.outlet,
-      topic,
-      score: `${score}/${total}`,
-      perc: `${percentage}%`,
-      wrongAnswers,
-      passcode,
-    })
+    if (kind === 'standard') {
+      await api.saveResult({
+        name: auth.staff.name,
+        outlet: auth.staff.outlet,
+        topic,
+        score: `${score}/${total}`,
+        perc: `${percentage}%`,
+        wrongAnswers,
+      })
+    } else {
+      await api.saveAiResult({
+        attemptId: 'AI' + Date.now(),
+        name: auth.staff.name,
+        outlet: auth.staff.outlet,
+        topic,
+        score: `${score}/${total}`,
+        perc: `${percentage}%`,
+        wrongAnswers,
+        passcode,
+      })
+    }
     sessionStorage.setItem('lautan_last_result', JSON.stringify({ scoreCorrect: score, scoreTotal: total, percentage, wrongAnswers }))
     sessionStorage.removeItem('lautan_active_quiz')
     router.push('/result')

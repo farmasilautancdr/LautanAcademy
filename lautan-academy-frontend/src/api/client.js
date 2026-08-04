@@ -68,4 +68,5 @@ export const api = {
     return request('/content/upload', { method: 'POST', body: form })
   },
   getResources: () => request('/resources'),
+  getQuestions: () => request('/questions'),
 }
