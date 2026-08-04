@@ -269,10 +269,13 @@ built AND verified.
       **worst case 134 seconds** for the last of 20 concurrent logins —
       `bcryptjs` (pure JS) does CPU-bound hashing that blocks Node's single
       event loop, so concurrent logins serialize behind each other instead
-      of running in parallel. Real risk for a shift-change burst. Fix is
-      switching to native `bcrypt` (thread-pool based, doesn't block the
-      loop) — flagged above, not yet done, needs a decision since it's a
-      new native dependency.
+      of running in parallel. Real risk for a shift-change burst.
+      **Fixed**: switched to native `bcrypt` (thread-pool based, doesn't
+      block the loop) — same hash format, verified compatible with
+      existing bcryptjs-created PIN hashes (no resets needed), and Railway
+      builds the native module fine. Re-ran the 20-concurrent-login test
+      against production after deploying: **worst case dropped from 134s
+      to 2.15s**, 20/20 succeeded. Test accounts deleted after both runs.
 
 ## Known fragility (see CLAUDE.md hard rule 5)
 
@@ -306,14 +309,11 @@ Reports, Manage Staff, Content/Knowledge Base, Resources, sidebar nav,
 route-split, security hardening, Area Manager region-scoping (+ outlet
 filter), Supervisor Cross-Outlet pages, vanilla's `BACKEND_URL`, the
 Standard Quiz question bank + Module Quiz UI, Quiz History's Module
-Quiz/AI Practice segregation, and server-side grading for both quiz types
+Quiz/AI Practice segregation, server-side grading for both quiz types
 (+ the follow-up integrity/rate-limit fixes a second security review
-caught) are all done and deployed. Remaining, unordered — ask before
-picking one:
+caught), a load test, and the native-bcrypt fix it surfaced are all done
+and deployed. Remaining:
 
 1. Rate limiter durability (in-memory, resets on restart) — now covers
    both login lockout and the new check-endpoint throttling, same
    per-process-only limitation for both
-2. **Switch `bcryptjs` → native `bcrypt`** — load test (below) found login
-   latency collapses under concurrency because of this. New native
-   dependency, not added yet — needs a decision before installing.
