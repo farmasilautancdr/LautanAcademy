@@ -45,6 +45,13 @@ built AND verified.
       possible with hashed PINs, see note below), remove. Outlet/warehouse
       manager scoped. Verified: add, duplicate-block (409), reset (old PIN
       rejected/new PIN works), delete (`/staff-roster-manage*`)
+- [x] Content file upload — `POST /content/upload`, Supervisor only,
+      multipart, 20MB max (PDF/Word/PowerPoint/Excel/images), uploads to a
+      Supabase Storage bucket (`content-files`, public) via the service-role
+      key (server-side only, never reaches the browser), returns a public
+      URL for the entry's link field. New capability beyond GAS — GAS had
+      no file upload, only a manually-typed link. Verified end-to-end: real
+      upload, public URL reachable without auth, delete.
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -73,6 +80,10 @@ built AND verified.
 - [x] Manage Staff UI — shared `ManageStaffPanel` component (division prop
       differs) on Outlet + Warehouse Manager dashboards: list, add, Reset
       PIN, remove. Tested in both.
+- [x] Knowledge Base editor UI on Supervisor dashboard — list/add/remove
+      Content entries, category picker, file upload (phone storage, not
+      just a link — uploads immediately, fills the link field with the
+      resulting URL). Tested end-to-end including a real file upload.
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -95,8 +106,6 @@ built AND verified.
 
 ### Frontend (Vue)
 - [ ] Resources browsing UI
-- [ ] Content/Knowledge Base editor UI (backend CRUD exists, no UI consumes
-      the write side yet — quiz-create only reads it)
 
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
@@ -122,10 +131,10 @@ built AND verified.
 
 ## Suggested build order (next)
 
-Reports and Manage Staff (backend + Vue UI, both) done. Remaining:
+Reports, Manage Staff, and Content/Knowledge Base (backend + Vue UI, all
+three) done. Remaining:
 
-1. Content/Knowledge Base editor UI (Supervisor-only, backend already there)
-2. Staff roster full migration (GAS Sheet → `staff_roster` table)
-3. Reports historical data migration (GAS Reports sheet → `reports` table)
-4. Deploy backend + frontend somewhere reachable, run parallel to GAS
-5. Cutover only once staff have used the new stack for real without issues
+1. Staff roster full migration (GAS Sheet → `staff_roster` table)
+2. Reports historical data migration (GAS Reports sheet → `reports` table)
+3. Deploy backend + frontend somewhere reachable, run parallel to GAS
+4. Cutover only once staff have used the new stack for real without issues
