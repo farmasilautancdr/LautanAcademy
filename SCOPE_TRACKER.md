@@ -197,9 +197,17 @@ built AND verified.
       Content entries, category picker, file upload (phone storage, not
       just a link — uploads immediately, fills the link field with the
       resulting URL). Tested end-to-end including a real file upload.
-- [x] Resources browsing UI — category + subcategory filter dropdowns,
-      staff dashboard only (deliberate scope decision, not yet built for
-      manager dashboards)
+- [x] Resources browsing UI — category + subcategory filter dropdowns.
+      Now on staff AND all 4 manager roles — one shared `ResourcesView.vue`
+      (GET /resources is company-wide/unscoped, matches GAS, so no backend
+      change was needed to extend it)
+- [x] Outlet Manager results — Module Quiz/AI Practice split into two
+      sections (was one merged list) + wrong-answer review per attempt.
+      Warehouse Manager results — wrong-answer review added (no
+      segregation needed, warehouse only ever has AI Practice)
+- [x] Sidebar wording — "Assign to Staff" → "Staff Roster", moved into its
+      own "Assign Staff" group (was under "Quiz Management"). Area
+      Manager's "Reviews" → "Assessment" (sidebar + page header)
 - [x] `AppSidebar.vue` — role-aware nav drawer (staff / outlet-manager /
       warehouse-manager / area-manager / supervisor), wired into `App.vue`,
       replaced redundant per-page headers
@@ -224,10 +232,6 @@ built AND verified.
 ### Backend
 - [ ] Rate limiter is in-memory only — resets on restart, not safe across
       multiple instances if ever scaled horizontally
-
-### Frontend (Vue)
-- [ ] Resources browsing UI on manager dashboards (staff-only today, by
-      explicit scope decision — not a bug, just not built)
 
 ### Data migration
 - [x] Results/WrongAnswers/AIResults/AIWrongAnswers/Content — done, verified
@@ -294,8 +298,7 @@ Quiz/AI Practice segregation, and server-side grading for both quiz types
 caught) are all done and deployed. Remaining, unordered — ask before
 picking one:
 
-1. Resources UI on manager dashboards (currently staff-only by choice)
-2. Rate limiter durability (in-memory, resets on restart) — now covers
+1. Rate limiter durability (in-memory, resets on restart) — now covers
    both login lockout and the new check-endpoint throttling, same
    per-process-only limitation for both
-3. Load test before any real cutover
+2. Load test before any real cutover
