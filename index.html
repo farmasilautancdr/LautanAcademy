@@ -789,11 +789,12 @@
             renderKBList();
         }
 
-        // Overlays results/wrongAnswers/aiResults/aiWrongAnswers from the new
-        // backend on top of whatever applyScopedData(gasData) just set — new
-        // backend is now authoritative for these (migrated history + all new
-        // saves go there). Reports/content/referenceDocs stay whatever GAS gave,
-        // untouched here. Best-effort: silently keeps GAS's copy on failure.
+        // Overlays results/wrongAnswers/aiResults/aiWrongAnswers/reports from
+        // the new backend on top of whatever applyScopedData(gasData) just
+        // set — new backend is now authoritative for these (migrated history
+        // + all new saves go there). Content/referenceDocs (Resources) stay
+        // whatever GAS gave, untouched here — out of scope for this repoint.
+        // Best-effort: silently keeps GAS's copy on failure.
         async function refreshResultsFromBackend() {
             if (!sessionToken) return;
             try {
@@ -806,6 +807,7 @@
                 allWrongAnswers = data.wrongAnswers || [];
                 allAIResults = data.aiResults || [];
                 allAIWrongAnswers = data.aiWrongAnswers || [];
+                allReports = data.reports || [];
                 populateGlobalData();
             } catch (e) { /* best-effort — GAS bridge data already applied */ }
         }
@@ -1052,15 +1054,18 @@
                 }
             }
 
+            // trainingDate has no home on the new backend (it always uses
+            // submission time, created_at) — matches the Vue app's existing
+            // Reports form, which never had this field either. Still
+            // collected/required above so the form doesn't silently change;
+            // just not sent, since the new endpoint wouldn't read it anyway.
             const p = {
-                action: 'save_report',
                 manager: document.getElementById('disp-mgr-name').innerText,
                 outlet: document.getElementById('disp-mgr-outlet').innerText,
                 staffName: document.getElementById('rep-staff').value,
-                staffScore: document.getElementById('disp-staff-perc').innerText,
-                trainTitle: document.getElementById('rep-topic-filter').value,
-                trainingDate: document.getElementById('rep-date').value,
-                level: document.getElementById('disp-staff-level').innerText,
+                quizScore: document.getElementById('disp-staff-perc').innerText,
+                topic: document.getElementById('rep-topic-filter').value,
+                skillLevel: document.getElementById('disp-staff-level').innerText,
                 competency: document.getElementById('mgr-mark-fluency').value,
                 productKnowledgeComments: document.getElementById('mgr-product-comments').value,
                 gaps: document.getElementById('mgr-gaps').value,
@@ -1070,7 +1075,11 @@
 
             setLoader(true, "Submitting report...");
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(p) });
+                const res = await fetch(BACKEND_URL + '/reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                    body: JSON.stringify(p)
+                });
                 const data = await res.json();
                 setLoader(false);
 
@@ -1941,17 +1950,17 @@
         }
 
         // Manage Staff — shared between Outlet Manager (retail) and Warehouse
-        // Manager. Passcodes are only ever fetched here, gated server-side by
-        // the same PIN entered at the Manager-category screen.
+        // Manager. Routed through the new backend now, not GAS — PINs are
+        // hashed there, so unlike GAS this can never show an existing
+        // passcode, only reset it to a new known one (see resetStaffPin below).
         async function renderStaffRosterList(division, outlet) {
             const listId = division === 'warehouse' ? 'staff-roster-list-warehouse' : 'staff-roster-list-retail';
             const list = document.getElementById(listId);
             if(!list) return;
             list.innerHTML = '<p class="text-xs text-center py-2" style="color:var(--text-muted)">Loading...</p>';
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_staff_roster_full', division, outlet, token: gasSessionToken })
+                const res = await fetch(BACKEND_URL + `/staff-roster-manage/full?division=${encodeURIComponent(division)}&outlet=${encodeURIComponent(outlet)}`, {
+                    headers: { 'Authorization': 'Bearer ' + sessionToken }
                 });
                 const data = await res.json();
                 if(!data.authorized) { list.innerHTML = `<p class="text-xs text-center py-2" style="color:var(--danger-dark)">${data.error || 'Could not load roster.'}</p>`; return; }
@@ -1960,9 +1969,12 @@
                     <div class="flex justify-between items-center p-2.5 rounded-lg border text-sm" style="border-color:var(--border)">
                         <div class="min-w-0">
                             <p class="font-bold truncate">${s.Name}${s.IDNote ? ` <span class="text-xs font-normal" style="color:var(--text-muted)">(${s.IDNote})</span>` : ''}</p>
-                            <p class="text-xs font-data" style="color:var(--text-muted)">Passcode: ${s.Passcode}</p>
+                            <p class="text-xs" style="color:var(--text-muted)">Added by ${s.AddedBy || '—'}</p>
                         </div>
-                        <button onclick="removeStaffFromRoster('${division}', '${outlet.replace(/'/g,"\\'")}', '${s.Name.replace(/'/g,"\\'")}')" class="flex-shrink-0 text-xs font-bold px-3 rounded-lg min-h-[36px]" style="background:var(--danger-soft);color:var(--danger-dark)">Remove</button>
+                        <div class="flex gap-1.5 flex-shrink-0">
+                            <button onclick="resetStaffPin('${division}', '${outlet.replace(/'/g,"\\'")}', '${s.Name.replace(/'/g,"\\'")}')" class="text-xs font-bold px-3 rounded-lg min-h-[36px]" style="background:var(--primary-soft);color:var(--primary)">Reset PIN</button>
+                            <button onclick="removeStaffFromRoster('${division}', '${outlet.replace(/'/g,"\\'")}', '${s.Name.replace(/'/g,"\\'")}')" class="text-xs font-bold px-3 rounded-lg min-h-[36px]" style="background:var(--danger-soft);color:var(--danger-dark)">Remove</button>
+                        </div>
                     </div>`).join('');
             } catch(e) {
                 list.innerHTML = '<p class="text-xs text-center py-2" style="color:var(--danger-dark)">Couldn\'t reach the server.</p>';
@@ -1980,9 +1992,10 @@
 
             setLoader(true, "Adding...");
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/staff-roster-manage', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'add_staff', division, outlet, name, idNote, passcode, addedBy: (division === 'warehouse' ? 'Warehouse Manager - ' : 'Outlet Manager - ') + outlet, token: gasSessionToken })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                    body: JSON.stringify({ division, outlet, name, idNote, pin: passcode, addedBy: (division === 'warehouse' ? 'Warehouse Manager - ' : 'Outlet Manager - ') + outlet })
                 });
                 const data = await res.json();
                 if(data.status !== 'ok') { setLoader(false); return alert(data.error || "Couldn't add that staff member."); }
@@ -1996,13 +2009,35 @@
             setLoader(false);
         }
 
+        async function resetStaffPin(division, outlet, name) {
+            const pin = prompt(`Enter a new 4-digit PIN for ${name}:`);
+            if (pin === null) return; // cancelled
+            if (!/^\d{4}$/.test(pin.trim())) return alert("PIN must be exactly 4 digits.");
+            setLoader(true, "Resetting PIN...");
+            try {
+                const res = await fetch(BACKEND_URL + '/staff-roster-manage/reset-pin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                    body: JSON.stringify({ division, outlet, name, pin: pin.trim() })
+                });
+                const data = await res.json();
+                setLoader(false);
+                if(data.status !== 'ok') return alert(data.error || "Couldn't reset that PIN.");
+                alert(`PIN reset for ${name}.`);
+            } catch(e) {
+                setLoader(false);
+                alert("Couldn't reach the server — check your connection and try again.");
+            }
+        }
+
         async function removeStaffFromRoster(division, outlet, name) {
             if(!confirm(`Remove ${name} from the staff list? They won't be able to log in anymore.`)) return;
             setLoader(true, "Removing...");
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'remove_staff', division, outlet, name, token: gasSessionToken })
+                const res = await fetch(BACKEND_URL + '/staff-roster-manage', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                    body: JSON.stringify({ division, outlet, name })
                 });
                 const data = await res.json();
                 if(data.status !== 'ok') { setLoader(false); return alert(data.error || "Couldn't remove that staff member."); }
@@ -2324,7 +2359,11 @@
             if (!m || !m.outlets.includes(o)) return alert("That outlet isn't assigned to you.");
 
             setLoader(true, "Loading your dashboard...");
-            const ok = await establishSession('area_manager', o, managerCategoryPin);
+            // Area Manager scope is the whole region now, not one outlet — the
+            // backend validates `id` (the region) against config/areas.js, not
+            // a literal outlet code. `o` (the outlet picked above) is still used
+            // for report filing below, just not for auth.
+            const ok = await establishSession('area_manager', id, managerCategoryPin);
             setLoader(false);
             if(!ok) return;
 
