@@ -124,7 +124,7 @@ async function joinQuiz() {
       <!-- Hero: dark card, average practice score. Reuses the app's
            existing "ripple ring" signature rather than a second gauge style. -->
       <div class="area-hero bg-deepsea rounded-xl2 shadow-lg p-6 md:p-8 flex items-center gap-5 md:gap-8">
-        <ProgressRing v-if="!loadingHistory" :percent="avgPercent" :size="88" accent="#1E88C7" :animate-count="history.length > 0" />
+        <ProgressRing v-if="!loadingHistory" :percent="avgPercent" :size="88" accent="#1E88C7" label-color="text-white" :animate-count="history.length > 0" />
         <div v-else class="w-[88px] h-[88px] rounded-full bg-white/10 animate-pulse shrink-0" />
         <div class="min-w-0">
           <p class="text-aqualight text-[11px] font-semibold uppercase tracking-wide">Your Progress</p>

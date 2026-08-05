@@ -12,6 +12,9 @@ const props = defineProps({
   // Off by default so every other use of this ring (badges, list rows,
   // manager dashboards) keeps its current instant-paint behavior.
   animateCount: { type: Boolean, default: false },
+  // Defaults to dark text for the ring's usual white/light-card context —
+  // the dashboard hero card is dark navy, so it opts into white instead.
+  labelColor: { type: String, default: 'text-ink' },
 })
 
 const radius = 30
@@ -56,6 +59,6 @@ const labelClass = props.size >= 100 ? 'text-2xl' : props.size >= 80 ? 'text-bas
         :class="animateCount ? '' : 'transition-all duration-700 ease-out'"
       />
     </svg>
-    <span v-if="showLabel" class="absolute font-display font-semibold text-ink" :class="labelClass">{{ displayPercent }}%</span>
+    <span v-if="showLabel" class="absolute font-display font-semibold" :class="[labelColor, labelClass]">{{ displayPercent }}%</span>
   </div>
 </template>
