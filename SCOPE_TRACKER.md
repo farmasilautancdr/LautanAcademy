@@ -230,6 +230,12 @@ built AND verified.
 - [x] Manage Staff UI — shared `ManageStaffPanel` component (division prop
       differs) on Outlet + Warehouse Manager dashboards: list, add, Reset
       PIN, remove. Tested in both.
+      Fix: Add row + Reset PIN row had `flex-1` inputs beside fixed-width
+      siblings (PIN input/buttons) with no `min-w-0` — inputs don't shrink
+      below their intrinsic content width by default, so the row exceeded
+      phone viewport width and scrolled the whole page sideways. Added
+      `min-w-0` to both. Checked rest of the app for the same pattern —
+      no other instances. Verified live on phone.
 - [x] Knowledge Base editor UI on Supervisor dashboard — list/add/remove
       Content entries, category picker, file upload (phone storage, not
       just a link — uploads immediately, fills the link field with the
