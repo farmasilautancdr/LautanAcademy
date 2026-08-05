@@ -72,13 +72,13 @@ async function handleLogin() {
     <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
-          <img :src="logoUrl" alt="Lautan Academy" class="w-16 h-16 shrink-0" />
-          <div class="text-left h-16 flex flex-col justify-center">
+          <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
+          <div class="text-left h-20 flex flex-col justify-center">
             <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">LAUTAN</h1>
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3">Farmasi Lautan staff training</p>
+        <p class="text-slate text-sm mt-3 text-center">Farmasi Lautan staff training</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-5">

@@ -34,10 +34,10 @@ async function handleLogin() {
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
-          <img :src="logoUrl" alt="Lautan Academy" class="w-16 h-16 shrink-0" />
+          <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
           <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">Lautan Academy</h1>
         </div>
-        <p class="text-slate mt-2 text-sm">Supervisor</p>
+        <p class="text-slate mt-2 text-sm text-center">Supervisor</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
