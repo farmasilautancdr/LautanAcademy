@@ -20,6 +20,7 @@ const standardHistory = ref([])
 const aiHistory = ref([])
 const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
+const reports = ref([])
 const loading = ref(true)
 const auth = useAuthStore()
 
@@ -30,9 +31,18 @@ onMounted(async () => {
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = data.wrongAnswers || []
     aiWrongAnswers.value = data.aiWrongAnswers || []
+    reports.value = (data.reports || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
   } catch (e) { /* leave empty — not fatal */ }
   loading.value = false
 })
+
+// Same thresholds AreaManagerReviewsView uses to compute the badge when
+// filing — reports store the label already, this just picks its color.
+function skillLevelColor(level) {
+  if (level === 'HIGH') return 'text-aqua'
+  if (level === 'LOW') return 'text-coral'
+  return 'text-ink'
+}
 
 function relativeTime(iso) {
   const days = Math.floor((Date.now() - new Date(iso)) / 86400000)
@@ -112,6 +122,41 @@ function wrongsForAi(attemptId) {
                 <div v-for="(w, j) in wrongsForAi(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
                   <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
                   <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section v-if="auth.staff?.division === 'retail'" class="mt-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">Assessment Review</h2>
+          <div v-if="reports.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">No assessments filed for you yet.</p>
+          </div>
+          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <details v-for="(r, i) in reports" :key="i" class="px-5 py-3.5">
+              <summary class="flex items-center gap-4 cursor-pointer">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink truncate">{{ r['Training Title'] }}</p>
+                  <p class="text-xs text-slate">{{ relativeTime(r.Timestamp) }} · Filed by {{ r.Manager }}</p>
+                </div>
+                <span class="text-sm font-display font-semibold shrink-0" :class="skillLevelColor(r['Skill Level'])">{{ r['Skill Level'] }}</span>
+              </summary>
+              <div class="mt-3 space-y-2">
+                <div class="bg-seafoam rounded-lg p-3">
+                  <p class="text-xs text-slate">Quiz score: <span class="font-medium text-ink">{{ r['Quiz Score'] }}%</span> · Competency: <span class="font-medium text-ink">{{ r.Fluency ?? '—' }}/10</span></p>
+                </div>
+                <div v-if="r['Product Knowledge Comments']" class="bg-seafoam rounded-lg p-3">
+                  <p class="text-xs font-medium text-ink">Product knowledge</p>
+                  <p class="text-xs text-slate mt-1 whitespace-pre-wrap">{{ r['Product Knowledge Comments'] }}</p>
+                </div>
+                <div v-if="r['Performance Gaps']" class="bg-seafoam rounded-lg p-3">
+                  <p class="text-xs font-medium text-ink">Performance gaps</p>
+                  <p class="text-xs text-slate mt-1 whitespace-pre-wrap">{{ r['Performance Gaps'] }}</p>
+                </div>
+                <div v-if="r.Recommendations" class="bg-seafoam rounded-lg p-3">
+                  <p class="text-xs font-medium text-ink">Recommendations</p>
+                  <p class="text-xs text-slate mt-1 whitespace-pre-wrap">{{ r.Recommendations }}</p>
                 </div>
               </div>
             </details>
