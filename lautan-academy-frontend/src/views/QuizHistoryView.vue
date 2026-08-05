@@ -11,7 +11,7 @@
 // just the one being expanded — a pre-existing schema limitation, same one
 // AreaManagerDashboard.vue already has. AI Practice rows have a real
 // AttemptID, so that review is exact per-attempt.
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import ProgressRing from '../components/ProgressRing.vue'
@@ -23,6 +23,9 @@ const aiWrongAnswers = ref([])
 const reports = ref([])
 const loading = ref(true)
 const auth = useAuthStore()
+
+const reportYear = ref('ALL')
+const reportTopic = ref('ALL')
 
 onMounted(async () => {
   try {
@@ -42,6 +45,21 @@ function skillLevelColor(level) {
   if (level === 'HIGH') return 'text-aqua'
   if (level === 'LOW') return 'text-coral'
   return 'text-ink'
+}
+
+const reportYears = computed(() => [...new Set(reports.value.map((r) => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const reportTopics = computed(() => [...new Set(reports.value.map((r) => r['Training Title']))].sort())
+
+const filteredReports = computed(() => reports.value.filter((r) => {
+  if (reportYear.value !== 'ALL' && new Date(r.Timestamp).getFullYear() !== reportYear.value) return false
+  if (reportTopic.value !== 'ALL' && r['Training Title'] !== reportTopic.value) return false
+  return true
+}))
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+function dateBadge(iso) {
+  const d = new Date(iso)
+  return { month: MONTHS[d.getMonth()], day: d.getDate() }
 }
 
 function relativeTime(iso) {
@@ -133,18 +151,36 @@ function wrongsForAi(attemptId) {
           <div v-if="reports.length === 0" class="bg-white rounded-xl2 p-6 text-center">
             <p class="text-slate text-sm">No assessments filed for you yet.</p>
           </div>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="reportYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All years</option>
+                <option v-for="y in reportYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="reportTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All topics</option>
+                <option v-for="t in reportTopics" :key="t" :value="t">{{ t }}</option>
+              </select>
+            </div>
+            <div v-if="filteredReports.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+              <p class="text-slate text-sm">No assessments match this filter.</p>
+            </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(r, i) in reports" :key="i" class="px-5 py-3.5">
+            <details v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
+                <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                  <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                  <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+                </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ r['Training Title'] }}</p>
-                  <p class="text-xs text-slate">{{ relativeTime(r.Timestamp) }} · Filed by {{ r.Manager }}</p>
+                  <p class="text-xs text-slate">Filed by {{ r.Manager }}</p>
                 </div>
                 <span class="text-sm font-display font-semibold shrink-0" :class="skillLevelColor(r['Skill Level'])">{{ r['Skill Level'] }}</span>
               </summary>
               <div class="mt-3 space-y-2">
                 <div class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs text-slate">Quiz score: <span class="font-medium text-ink">{{ r['Quiz Score'] }}%</span> · Competency: <span class="font-medium text-ink">{{ r.Fluency ?? '—' }}/10</span></p>
+                  <p class="text-xs text-slate">Quiz score: <span class="font-medium text-ink">{{ r['Quiz Score'] }}</span> · Competency: <span class="font-medium text-ink">{{ r.Fluency ?? '—' }}/10</span></p>
                 </div>
                 <div v-if="r['Product Knowledge Comments']" class="bg-seafoam rounded-lg p-3">
                   <p class="text-xs font-medium text-ink">Product knowledge</p>
@@ -161,6 +197,7 @@ function wrongsForAi(attemptId) {
               </div>
             </details>
           </div>
+          </template>
         </section>
       </template>
     </main>
