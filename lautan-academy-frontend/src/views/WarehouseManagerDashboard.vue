@@ -3,11 +3,13 @@
 // warehouse_manager scope only returns AI Practice history — no Standard
 // Quiz results/wrong-answers (matches GAS's buildScopedData exactly; that
 // scope never included those fields for warehouse).
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
 const auth = useAuthStore()
+const route = useRoute()
 const location = auth.manager?.outlet // reused field name in store — holds location for this role
 const managerLabel = `Warehouse Manager - ${location}`
 
@@ -16,12 +18,60 @@ const extraNotes = ref('')
 const count = ref(10)
 const creating = ref(false)
 const createError = ref('')
+const resourceSource = ref('') // Drive file id, set only via a Browse Courses hand-off
+const selectedCourseKey = ref('') // dropdown's own selection, kept in sync with resourceSource/topicLabel
+function clearResourceSource() { resourceSource.value = ''; selectedCourseKey.value = '' }
 
 const activeQuiz = ref(null)
 const remaining = ref('')
 let timerHandle = null
 
-const contentTopics = ref([])
+// Same category/subcategory shape Browse Courses itself uses (see
+// ResourcesView.vue) — Category is the main group (Housebrand Modules,
+// SOP, etc.), Topic/Subcategory is the finer grouping under it. Narrowing
+// through both before picking a specific course replaces what used to be
+// one long flat list.
+const allCourseOptions = ref([])
+
+async function loadCourseOptions() {
+  const [contentResult, resourcesResult] = await Promise.allSettled([api.getContent(), api.getResources()])
+  const opts = []
+  if (contentResult.status === 'fulfilled') {
+    for (const c of (contentResult.value.content || [])) {
+      opts.push({ key: 'topic::' + c.ID, label: c.Title, category: c.Category, subcategory: c.Topic, sourceType: 'topic', sourceValue: c.Topic })
+    }
+  }
+  if (resourcesResult.status === 'fulfilled') {
+    for (const r of (resourcesResult.value.referenceDocs || [])) {
+      opts.push({ key: 'resource::' + r.ID, label: r.Name, category: r.Category, subcategory: r.Subcategory, sourceType: 'resource', sourceValue: r.ID })
+    }
+  }
+  allCourseOptions.value = opts
+}
+
+const categoryFilter = ref('ALL')
+const subcategoryFilter = ref('ALL')
+const categories = computed(() => [...new Set(allCourseOptions.value.map(o => o.category).filter(Boolean))].sort())
+const subcategories = computed(() => {
+  if (categoryFilter.value === 'ALL') return []
+  return [...new Set(allCourseOptions.value.filter(o => o.category === categoryFilter.value && o.subcategory).map(o => o.subcategory))].sort()
+})
+function onCategoryFilterChange() { subcategoryFilter.value = 'ALL'; selectedCourseKey.value = ''; resourceSource.value = '' }
+function onSubcategoryFilterChange() { selectedCourseKey.value = ''; resourceSource.value = '' }
+
+const filteredCourseOptions = computed(() => {
+  let list = allCourseOptions.value
+  if (categoryFilter.value !== 'ALL') list = list.filter(o => o.category === categoryFilter.value)
+  if (subcategoryFilter.value !== 'ALL') list = list.filter(o => o.subcategory === subcategoryFilter.value)
+  return list
+})
+
+function onCourseSelect() {
+  const opt = allCourseOptions.value.find(o => o.key === selectedCourseKey.value)
+  if (!opt) { resourceSource.value = ''; return }
+  topicLabel.value = opt.sourceType === 'resource' ? opt.label : opt.subcategory
+  resourceSource.value = opt.sourceType === 'resource' ? opt.sourceValue : ''
+}
 
 async function refreshActiveQuiz() {
   try {
@@ -49,9 +99,23 @@ onMounted(async () => {
   await refreshActiveQuiz()
   startCountdown()
   try {
-    const data = await api.getContent()
-    contentTopics.value = [...new Set((data.content || []).map(c => c.Topic))].filter(Boolean).sort()
+    await loadCourseOptions()
   } catch (e) { /* leave dropdown empty */ }
+  // Arrived from Browse Courses' "Create Quiz" button.
+  if (route.query.sourceType === 'resource' && route.query.sourceValue) {
+    resourceSource.value = route.query.sourceValue.toString()
+    topicLabel.value = (route.query.topicLabel || '').toString()
+    selectedCourseKey.value = 'resource::' + resourceSource.value
+    // Reflect the picked item in the two filters too, so the cascade
+    // shows where it actually lives instead of sitting at "All".
+    const matched = allCourseOptions.value.find(o => o.key === selectedCourseKey.value)
+    if (matched) { categoryFilter.value = matched.category || 'ALL'; subcategoryFilter.value = matched.subcategory || 'ALL' }
+  } else if (route.query.topic) {
+    // Knowledge hand-off only carries a topic string, not a specific
+    // content id, so there's no single option key to preselect here —
+    // just fill the topic field, leave the filters at their defaults.
+    topicLabel.value = route.query.topic.toString()
+  }
 })
 
 onUnmounted(() => { if (timerHandle) clearInterval(timerHandle) })
@@ -66,8 +130,8 @@ async function createQuiz() {
   try {
     const data = await api.createAiQuiz({
       outlet: location,
-      sourceType: 'topic',
-      sourceValue: topicLabel.value.trim(),
+      sourceType: resourceSource.value ? 'resource' : 'topic',
+      sourceValue: resourceSource.value || topicLabel.value.trim(),
       topicLabel: topicLabel.value.trim(),
       count: count.value,
       extraNotes: extraNotes.value.trim(),
@@ -77,6 +141,7 @@ async function createQuiz() {
     startCountdown()
     topicLabel.value = ''
     extraNotes.value = ''
+    clearResourceSource()
   } catch (err) {
     createError.value = err.message || 'Could not generate the quiz.'
   } finally {
@@ -115,16 +180,30 @@ async function endQuiz() {
         </div>
 
         <form @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
-          <div v-if="contentTopics.length">
-            <label class="block text-sm font-medium text-ink mb-1">Pick existing material (optional)</label>
-            <select v-model="topicLabel" class="w-full border border-slate/30 rounded-lg py-2 px-3">
+          <div v-if="resourceSource" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
+            <span>Sourced from a Browse Courses file — content will be pulled from it directly.</span>
+            <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">Use topic instead</button>
+          </div>
+          <div v-if="allCourseOptions.length">
+            <label class="block text-sm font-medium text-ink mb-1">Pick a course from Browse Courses (optional)</label>
+            <div class="grid grid-cols-2 gap-2 mb-2">
+              <select v-model="categoryFilter" @change="onCategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
+                <option value="ALL">All categories</option>
+                <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+              </select>
+              <select v-if="subcategories.length" v-model="subcategoryFilter" @change="onSubcategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
+                <option value="ALL">All topics</option>
+                <option v-for="s in subcategories" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+            <select v-model="selectedCourseKey" @change="onCourseSelect" class="w-full border border-slate/30 rounded-lg py-2 px-3">
               <option value="">— or type a topic below —</option>
-              <option v-for="t in contentTopics" :key="t" :value="t">{{ t }}</option>
+              <option v-for="o in filteredCourseOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-ink mb-1">Topic</label>
-            <input v-model="topicLabel" type="text" placeholder="e.g. Stock Rotation Basics"
+            <input v-model="topicLabel" @input="clearResourceSource" type="text" placeholder="e.g. Stock Rotation Basics"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>

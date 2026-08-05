@@ -1,8 +1,19 @@
 <script setup>
-// Quiz History and Resources used to be sections on this same page — split
-// into their own routes (QuizHistoryView, ResourcesView) since the sidebar
-// nav treats them as distinct destinations. This page keeps the hero
-// (average score, still needs aiResults for that) and the join-code form.
+// Rebuilt to match the "Learning Dashboard" reference layout (hero progress
+// card, course grid, right-rail widget) while staying honest about what
+// data actually exists here — no resumable "lessons", no scheduled
+// "upcoming quizzes" calendar, no search/notifications backend, so those
+// mockup elements are either remapped to real data or dropped rather than
+// faked. See CLAUDE.md hard rule 1: don't invent UI for data that isn't real.
+//
+// - Hero gauge = existing avg AI Practice score (was already here pre-
+//   redesign), "Resume lesson" -> "Join a Quiz" scrolls to the existing
+//   join-code form instead of a resume action that has no backing state.
+// - "Enrolled Courses" grid -> Browse Courses categories (Resources),
+//   since that's the actual browsable material in this app; each card
+//   deep-links into ResourcesView pre-filtered to that category.
+// - "Upcoming Quizzes" widget -> "Recent Practice", the real AI Practice
+//   history, since nothing in this app is date-scheduled.
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../api/client'
@@ -15,9 +26,12 @@ const joining = ref(false)
 const joinError = ref('')
 const history = ref([])
 const loadingHistory = ref(true)
+const resources = ref([])
+const loadingResources = ref(true)
 const router = useRouter()
 const auth = useAuthStore()
 const digitCode = ref(null)
+const joinSection = ref(null)
 
 onMounted(async () => {
   try {
@@ -30,10 +44,49 @@ onMounted(async () => {
   if (history.value.length === 0) digitCode.value?.focus()
 })
 
+onMounted(async () => {
+  try {
+    const data = await api.getResources()
+    resources.value = data.referenceDocs || []
+  } catch (e) { /* leave resources empty — not fatal */ }
+  loadingResources.value = false
+})
+
+// First two words of the name as entered by the manager (e.g. "Mohd
+// Hafiz" not just "Mohd") — falls back to whatever's there if only one
+// word exists.
+const firstName = computed(() => (auth.staff?.name || '').trim().split(/\s+/).slice(0, 2).join(' '))
+const avatarInitial = computed(() => (auth.staff?.name || '?').trim().charAt(0).toUpperCase())
+
 const avgPercent = computed(() => {
   if (!history.value.length) return 0
   return Math.round(history.value.reduce((sum, h) => sum + (parseInt(h.Percentage) || 0), 0) / history.value.length)
 })
+
+const recentPractice = computed(() =>
+  [...history.value].sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp)).slice(0, 5)
+)
+function monthAbbr(iso) { return new Date(iso).toLocaleDateString('en-US', { month: 'short' }).toUpperCase() }
+function dayOfMonth(iso) { return new Date(iso).getDate() }
+
+// One card per Resources category — count + up to 3 subcategory tags, not
+// a fake completion ring (nothing in a reference doc is "completed").
+const categoryCards = computed(() => {
+  const map = new Map()
+  for (const r of resources.value) {
+    if (!r.Category) continue
+    if (!map.has(r.Category)) map.set(r.Category, { name: r.Category, count: 0, subcategories: new Set() })
+    const entry = map.get(r.Category)
+    entry.count++
+    if (r.Subcategory) entry.subcategories.add(r.Subcategory)
+  }
+  return [...map.values()].map(c => ({ ...c, subcategories: [...c.subcategories].slice(0, 3) }))
+})
+
+function scrollToJoin() {
+  joinSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  digitCode.value?.focus()
+}
 
 async function joinQuiz() {
   joinError.value = ''
@@ -57,37 +110,94 @@ async function joinQuiz() {
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <header class="bg-deepsea px-6 pt-6 pb-10">
-      <div class="max-w-3xl mx-auto">
-        <p class="text-aqualight text-xs tracking-wide">{{ auth.staff?.outlet }}</p>
-        <h1 class="font-display text-2xl font-semibold text-white mt-0.5">Hi {{ auth.staff?.name?.split(' ')[0] }}</h1>
+    <header class="max-w-5xl mx-auto px-6 pt-6 pb-2 flex items-center justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-slate text-xs tracking-wide truncate">{{ auth.staff?.outlet }}</p>
+        <h1 class="font-display text-2xl font-semibold text-ink mt-0.5 truncate">Hi {{ firstName }}</h1>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-aqualight flex items-center justify-center shrink-0">
+        <span class="font-display font-semibold text-deepsea text-sm">{{ avatarInitial }}</span>
       </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-6 -mt-6 pb-10">
-      <!-- Hero: average practice score, the one thing worth leading with —
-           real data, not a placeholder metric. Reuses the app's existing
-           "ripple ring" signature rather than introducing a second one. -->
-      <div class="bg-white rounded-xl2 shadow-lg p-6 flex items-center gap-5">
-        <ProgressRing v-if="!loadingHistory" :percent="avgPercent" :size="88" :accent="avgPercent >= 70 ? '#17A398' : '#FF8552'" :animate-count="history.length > 0" />
-        <div v-else class="w-[88px] h-[88px] rounded-full bg-seafoam animate-pulse" />
-        <div>
-          <p class="font-display text-lg font-semibold text-ink">
+    <main class="dash-grid max-w-5xl mx-auto px-6 pb-10 pt-4">
+      <!-- Hero: dark card, average practice score. Reuses the app's
+           existing "ripple ring" signature rather than a second gauge style. -->
+      <div class="area-hero bg-deepsea rounded-xl2 shadow-lg p-6 md:p-8 flex items-center gap-5 md:gap-8">
+        <ProgressRing v-if="!loadingHistory" :percent="avgPercent" :size="88" accent="#1E88C7" :animate-count="history.length > 0" />
+        <div v-else class="w-[88px] h-[88px] rounded-full bg-white/10 animate-pulse shrink-0" />
+        <div class="min-w-0">
+          <p class="text-aqualight text-[11px] font-semibold uppercase tracking-wide">Your Progress</p>
+          <p class="font-display text-lg md:text-xl font-semibold text-white mt-1">
             {{ history.length === 0 ? 'No practice yet' : `Averaging ${avgPercent}%` }}
           </p>
-          <p class="text-slate text-sm mt-0.5">
+          <p class="text-white/60 text-sm mt-0.5">
             {{ history.length === 0 ? 'Join a code below to get started' : `${history.length} practice attempt${history.length === 1 ? '' : 's'} so far` }}
           </p>
+          <button type="button" @click="scrollToJoin" class="mt-4 bg-aqua text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+            Join a Quiz
+          </button>
         </div>
       </div>
 
-      <div v-if="!loadingHistory && history.length === 0" class="flex justify-center py-2" aria-hidden="true">
-        <svg viewBox="0 0 24 24" class="w-5 h-5 text-coral nudge-cue" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </div>
+      <!-- Browse Courses: one card per Resources category. -->
+      <section class="area-grid">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-display text-base font-semibold text-ink">Browse Courses</h2>
+          <RouterLink to="/resources" class="text-aqua text-sm font-medium shrink-0">View all</RouterLink>
+        </div>
+        <div v-if="loadingResources" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div v-for="n in 4" :key="n" class="bg-white rounded-xl2 h-28 animate-pulse" />
+        </div>
+        <div v-else-if="categoryCards.length === 0" class="bg-white rounded-xl2 p-6 text-center text-slate text-sm">
+          No course material uploaded yet.
+        </div>
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <RouterLink
+            v-for="c in categoryCards"
+            :key="c.name"
+            :to="{ path: '/resources', query: { category: c.name } }"
+            class="bg-white rounded-xl2 shadow-sm p-4 hover:shadow-md transition-shadow"
+          >
+            <div class="w-9 h-9 rounded-lg bg-aqualight flex items-center justify-center mb-3">
+              <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" fill="none" stroke="#1E88C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13z" />
+              </svg>
+            </div>
+            <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
+            <p class="text-xs text-slate mt-0.5">{{ c.count }} material{{ c.count === 1 ? '' : 's' }}</p>
+            <div v-if="c.subcategories.length" class="flex flex-wrap gap-1 mt-2">
+              <span v-for="s in c.subcategories" :key="s" class="text-[10px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 truncate max-w-full">{{ s }}</span>
+            </div>
+          </RouterLink>
+        </div>
+      </section>
 
-      <section class="mt-6">
+      <!-- Right-rail widget: real AI Practice history, not a fake schedule. -->
+      <aside class="area-widget">
+        <div class="bg-white rounded-xl2 shadow-sm p-5">
+          <h2 class="font-display text-sm font-semibold text-ink mb-3">Recent Practice</h2>
+          <div v-if="loadingHistory" class="space-y-2">
+            <div v-for="n in 3" :key="n" class="h-12 bg-seafoam rounded-lg animate-pulse" />
+          </div>
+          <div v-else-if="recentPractice.length === 0" class="text-slate text-xs">No practice attempts yet.</div>
+          <div v-else class="space-y-3">
+            <div v-for="h in recentPractice" :key="h.AttemptID" class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-lg bg-seafoam flex flex-col items-center justify-center shrink-0">
+                <span class="text-[9px] font-bold text-slate uppercase leading-none">{{ monthAbbr(h.Timestamp) }}</span>
+                <span class="text-sm font-display font-bold text-ink leading-none mt-0.5">{{ dayOfMonth(h.Timestamp) }}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-ink truncate">{{ h.Topic }}</p>
+                <p class="text-xs text-slate">{{ parseInt(h.Percentage) || 0 }}% score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Join a Practice Quiz: unchanged existing feature, just relocated. -->
+      <section ref="joinSection" class="area-join">
         <h2 class="font-display text-base font-semibold text-ink mb-3">Join a Practice Quiz</h2>
         <form @submit.prevent="joinQuiz" class="bg-white rounded-xl2 p-5 shadow-sm">
           <div class="flex items-center justify-center gap-4 flex-wrap">
@@ -110,16 +220,26 @@ async function joinQuiz() {
 </template>
 
 <style scoped>
-/* Exponential ease-out, not a spring/elastic curve — the chevron settles,
-   it doesn't bounce. */
-@keyframes nudge {
-  0%, 100% { transform: translateY(0); opacity: 0.55; }
-  50% { transform: translateY(6px); opacity: 1; }
+/* Mobile: single column, hero -> grid -> widget -> join, top to bottom.
+   Desktop: two columns, widget forms a right rail spanning hero+grid+join. */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas: "hero" "grid" "widget" "join";
+  gap: 1.5rem;
 }
-.nudge-cue {
-  animation: nudge 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+@media (min-width: 768px) {
+  .dash-grid {
+    grid-template-columns: 1fr 18rem;
+    grid-template-areas:
+      "hero   widget"
+      "grid   widget"
+      "join   widget";
+    align-items: start;
+  }
 }
-@media (prefers-reduced-motion: reduce) {
-  .nudge-cue { animation: none; }
-}
+.area-hero { grid-area: hero; }
+.area-grid { grid-area: grid; }
+.area-widget { grid-area: widget; }
+.area-join { grid-area: join; }
 </style>

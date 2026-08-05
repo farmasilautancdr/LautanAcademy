@@ -4,15 +4,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Ocean-depth palette — "lautan" = ocean. Deep teal instead of default
-        // SaaS indigo, coral instead of default green/blue "success" accents.
-        deepsea:  '#0B3D3E',   // headers, nav, deep emphasis
-        seafoam:  '#F3F7F6',   // page background
-        aqua:     '#17A398',   // primary actions, progress rings, links
-        aqualight:'#CFEAE6',   // subtle fills, hover states
-        coral:    '#FF8552',   // streaks, "resume", warm CTA accent — used sparingly
-        ink:      '#12262C',   // primary text
-        slate:    '#5B7B7E',   // secondary/muted text
+        // Brand palette from the actual logo mark (two hands forming a
+        // heart — cool blue on one side, warm orange/red on the other).
+        // Token names kept as-is so every existing bg-aqua/text-coral/etc.
+        // class across the app repoints automatically — single-file edit.
+        deepsea:  '#0E3A5C',   // headers, nav, deep emphasis (was deep teal, now deep blue)
+        seafoam:  '#F1F6FA',   // page background (cool light blue-gray)
+        aqua:     '#1E88C7',   // primary actions, progress rings, links (logo's blue)
+        aqualight:'#D7ECF7',   // subtle fills, hover states
+        coral:    '#E8622C',   // streaks, "resume", warm CTA accent — used sparingly (logo's orange/red)
+        ink:      '#132433',   // primary text
+        slate:    '#5B7180',   // secondary/muted text
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],

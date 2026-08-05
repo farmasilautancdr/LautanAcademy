@@ -7,7 +7,7 @@ import { ref, watch, onMounted } from 'vue'
 const props = defineProps({
   percent: { type: Number, required: true },
   size: { type: Number, default: 72 },
-  accent: { type: String, default: '#17A398' }, // aqua by default
+  accent: { type: String, default: '#1E88C7' }, // aqua by default
   // Opt-in: tide rises from 0 on mount instead of painting at final value.
   // Off by default so every other use of this ring (badges, list rows,
   // manager dashboards) keeps its current instant-paint behavior.

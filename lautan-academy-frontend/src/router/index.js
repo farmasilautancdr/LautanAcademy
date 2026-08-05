@@ -22,6 +22,7 @@ import AreaManagerReviewsView from '../views/AreaManagerReviewsView.vue'
 import SupervisorDashboard from '../views/SupervisorDashboard.vue'
 import SupervisorStaffComparisonView from '../views/SupervisorStaffComparisonView.vue'
 import SupervisorReportsView from '../views/SupervisorReportsView.vue'
+import SupervisorAddResourcesView from '../views/SupervisorAddResourcesView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -59,6 +60,7 @@ const router = createRouter({
     { path: '/supervisor/staff-comparison', name: 'supervisor-staff-comparison', component: SupervisorStaffComparisonView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/reports', name: 'supervisor-reports', component: SupervisorReportsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/resources', name: 'supervisor-resources', component: ResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
+    { path: '/supervisor/add-resources', name: 'supervisor-add-resources', component: SupervisorAddResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
   ],
 })
 

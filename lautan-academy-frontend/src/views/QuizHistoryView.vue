@@ -42,8 +42,15 @@ function relativeTime(iso) {
   return new Date(iso).toLocaleDateString()
 }
 
-function wrongsForStandard(topic) {
-  return wrongAnswers.value.filter((w) => w.Topic === topic)
+// Attempts saved after the attempt_id migration (see backend
+// migrate-add-attempt-id.js) get exact per-attempt matching. Older rows
+// predating it have no AttemptID on either side — for those only, fall
+// back to the old topic-only match so they don't silently show nothing,
+// accepting the old cross-attempt-mixing limitation just for that legacy
+// data rather than reintroducing it for new attempts too.
+function wrongsForStandard(h) {
+  if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
+  return wrongAnswers.value.filter((w) => !w.AttemptID && w.Topic === h.Topic)
 }
 function wrongsForAi(attemptId) {
   return aiWrongAnswers.value.filter((w) => w.AttemptID === attemptId)
@@ -69,15 +76,15 @@ function wrongsForAi(attemptId) {
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
             <details v-for="(h, i) in standardHistory" :key="i" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
-                <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#17A398' : '#FF8552'" />
+                <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ h.Topic }}</p>
                   <p class="text-xs text-slate">{{ relativeTime(h.Timestamp) }}</p>
                 </div>
                 <span class="text-sm font-display font-semibold text-ink shrink-0">{{ h.Score }}</span>
               </summary>
-              <div v-if="wrongsForStandard(h.Topic).length" class="mt-3 space-y-2">
-                <div v-for="(w, j) in wrongsForStandard(h.Topic)" :key="j" class="bg-seafoam rounded-lg p-3">
+              <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
+                <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
                   <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
                   <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
                 </div>
@@ -94,7 +101,7 @@ function wrongsForAi(attemptId) {
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
             <details v-for="h in aiHistory" :key="h.AttemptID" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
-                <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#17A398' : '#FF8552'" />
+                <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ h.Topic }}</p>
                   <p class="text-xs text-slate">{{ relativeTime(h.Timestamp) }}</p>

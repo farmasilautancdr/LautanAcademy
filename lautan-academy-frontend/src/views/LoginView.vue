@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import DigitCode from '../components/DigitCode.vue'
+import logoUrl from '../assets/logo-transparent.png'
 
 // Static outlet list — same 49 codes hardcoded in the vanilla-JS app
 // (index.html's `outletList`). Not fetched from the backend; there's no
@@ -67,18 +68,20 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-deepsea flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
-    <!-- Ambient depth vignette — quiet, not a decoration competing with content -->
-    <div class="pointer-events-none absolute inset-0" style="background: radial-gradient(ellipse at 50% -10%, rgba(23,163,152,0.18), transparent 60%)" />
-
-    <div class="w-full max-w-sm relative motion-safe:animate-[rise_0.5s_ease-out]">
-      <div class="text-center mb-8 relative z-10">
-        <h1 class="font-display text-4xl font-bold text-white tracking-tight leading-none">LAUTAN</h1>
-        <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] mt-1.5">ACADEMY</p>
-        <p class="text-aqualight/80 mt-3 text-sm">Farmasi Lautan staff training</p>
+  <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
+    <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center gap-3">
+          <img :src="logoUrl" alt="Lautan Academy" class="w-16 h-16 shrink-0" />
+          <div class="text-left h-16 flex flex-col justify-center">
+            <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">LAUTAN</h1>
+            <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
+          </div>
+        </div>
+        <p class="text-slate text-sm mt-3">Farmasi Lautan staff training</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl relative z-10 space-y-5">
+      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-5">
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-ink mb-1.5">Division</label>
@@ -135,8 +138,8 @@ async function handleLogin() {
         </button>
       </form>
 
-      <p class="text-center text-aqualight/70 text-xs mt-6">Ask your outlet manager if you don't have a passcode.</p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
+      <p class="text-center text-slate text-xs mt-6">Ask your outlet manager if you don't have a passcode.</p>
+      <p class="text-center text-slate text-xs mt-2">
         Manager? <router-link to="/manager-login" class="underline">Log in here</router-link>
       </p>
     </div>

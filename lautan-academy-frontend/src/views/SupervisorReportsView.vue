@@ -4,11 +4,15 @@
 // every outlet. Same field set as AreaManagerReviewsView's "Filed Reports".
 import { ref, computed, watch } from 'vue'
 import { api } from '../api/client'
+import { AREAS, outletsForArea } from '../config/areas'
 
 const windowMonths = ref(3)
 const loading = ref(true)
 const reports = ref([])
+const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
+
+function onRegionChange() { outletFilter.value = 'ALL' }
 
 async function load() {
   loading.value = true
@@ -21,8 +25,55 @@ async function load() {
 watch(windowMonths, load)
 load()
 
-const outlets = computed(() => [...new Set(reports.value.map(r => r.Outlet))].filter(Boolean).sort())
-const filtered = computed(() => outletFilter.value === 'ALL' ? reports.value : reports.value.filter(r => r.Outlet === outletFilter.value))
+const outlets = computed(() => {
+  if (regionFilter.value !== 'ALL') return outletsForArea(regionFilter.value)
+  return [...new Set(reports.value.map(r => r.Outlet))].filter(Boolean).sort()
+})
+const filtered = computed(() => {
+  let list = reports.value
+  if (regionFilter.value !== 'ALL') {
+    const regionOutlets = new Set(outletsForArea(regionFilter.value))
+    list = list.filter(r => regionOutlets.has(r.Outlet))
+  }
+  if (outletFilter.value !== 'ALL') list = list.filter(r => r.Outlet === outletFilter.value)
+  return list
+})
+
+// Exports exactly what's currently on screen — same region/outlet/window
+// filters already applied to `filtered`, not the full unfiltered dataset.
+const CSV_COLUMNS = [
+  ['Timestamp', r => new Date(r.Timestamp).toISOString()],
+  ['Outlet', r => r.Outlet],
+  ['Staff Name', r => r['Staff Name']],
+  ['Training Title', r => r['Training Title']],
+  ['Manager', r => r.Manager],
+  ['Quiz Score', r => r['Quiz Score']],
+  ['Skill Level', r => r['Skill Level']],
+  ['Competency', r => r.Fluency],
+  ['Performance Gaps', r => r['Performance Gaps']],
+  ['Recommendations', r => r['Recommendations']],
+  ['Product Knowledge Comments', r => r['Product Knowledge Comments']],
+]
+
+function csvEscape(value) {
+  const s = (value ?? '').toString()
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+}
+
+function downloadCsv() {
+  const header = CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
+  const rows = filtered.value.map(r => CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
+  // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
+  const blob = new Blob(['﻿' + [header, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `cluster-reports-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -40,10 +91,18 @@ const filtered = computed(() => outletFilter.value === 'ALL' ? reports.value : r
           <option :value="12">Last 12 months</option>
           <option :value="0">All time</option>
         </select>
+        <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">All regions</option>
+          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
+        </select>
         <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">All outlets</option>
           <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
         </select>
+        <button type="button" @click="downloadCsv" :disabled="filtered.length === 0"
+          class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">
+          Download CSV
+        </button>
       </div>
 
       <div v-if="loading" class="text-slate text-sm">Loading...</div>

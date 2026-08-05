@@ -3,6 +3,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+import logoUrl from '../assets/logo-transparent.png'
 
 const pin = ref('')
 const error = ref('')
@@ -29,14 +30,17 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-deepsea flex items-center justify-center px-6">
+  <div class="min-h-screen bg-seafoam flex items-center justify-center px-6">
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
-        <h1 class="font-display text-3xl font-bold text-white tracking-tight">Lautan Academy</h1>
-        <p class="text-aqualight mt-2 text-sm">Supervisor</p>
+        <div class="flex items-center justify-center gap-3">
+          <img :src="logoUrl" alt="Lautan Academy" class="w-16 h-16 shrink-0" />
+          <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">Lautan Academy</h1>
+        </div>
+        <p class="text-slate mt-2 text-sm">Supervisor</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl space-y-4">
+      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Supervisor PIN</label>
           <input
@@ -59,14 +63,14 @@ async function handleLogin() {
         </button>
       </form>
 
-      <p class="text-center text-aqualight/70 text-xs mt-6">
+      <p class="text-center text-slate text-xs mt-6">
         Staff? <router-link to="/login" class="underline">Log in here</router-link>
       </p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
+      <p class="text-center text-slate text-xs mt-2">
         Outlet/Warehouse Manager?
         <router-link to="/manager-login" class="underline">Log in here</router-link>
       </p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
+      <p class="text-center text-slate text-xs mt-2">
         Area Manager? <router-link to="/area-manager-login" class="underline">Log in here</router-link>
       </p>
     </div>

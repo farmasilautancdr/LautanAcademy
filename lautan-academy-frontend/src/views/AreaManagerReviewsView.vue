@@ -71,6 +71,22 @@ const skillLevel = computed(() => {
 })
 const existingReport = computed(() => reports.value.find(r => r['Staff Name'] === formStaff.value && r.Outlet === formOutlet.value && r['Training Title'] === formTopic.value))
 
+// Submissions filters — separate from the form's own outlet field above.
+// All the region's reports are already loaded via loadAll(), so this
+// filters client-side rather than adding a new backend param.
+const submissionsOutlet = ref('ALL')
+const submissionsWindow = ref('ALL') // 'ALL' | 3 | 6 | 12 (months)
+const filteredReports = computed(() => {
+  let list = reports.value
+  if (submissionsOutlet.value !== 'ALL') list = list.filter(r => r.Outlet === submissionsOutlet.value)
+  if (submissionsWindow.value !== 'ALL') {
+    const cutoff = new Date()
+    cutoff.setMonth(cutoff.getMonth() - Number(submissionsWindow.value))
+    list = list.filter(r => new Date(r.Timestamp) >= cutoff)
+  }
+  return list
+})
+
 function resetForm() {
   formOutlet.value = ''
   formStaff.value = ''
@@ -149,7 +165,7 @@ async function submitReport() {
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
       <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">File a Report</h2>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">Assessment</h2>
         <form @submit.prevent="submitReport" class="bg-white rounded-xl2 p-5 shadow-sm space-y-4">
           <div>
             <label class="block text-sm font-medium text-ink mb-1">Outlet</label>
@@ -217,24 +233,39 @@ async function submitReport() {
           <p v-if="formNotice" class="text-slate text-sm">{{ formNotice }}</p>
 
           <button type="submit" :disabled="submitting" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
-            {{ submitting ? 'Saving...' : (isEdit ? 'Update Report' : 'Submit Report') }}
+            {{ submitting ? 'Saving...' : (isEdit ? 'Update Assessment' : 'Submit Assessment') }}
           </button>
         </form>
       </section>
 
       <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">Filed Reports</h2>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">Submissions</h2>
         <div v-if="loading" class="text-slate text-sm">Loading...</div>
-        <div v-else-if="reports.length === 0" class="text-slate text-sm">No reports filed yet.</div>
-        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <div v-for="(r, i) in reports" :key="i" class="px-5 py-3">
+        <div v-else-if="reports.length === 0" class="text-slate text-sm">No submissions filed yet.</div>
+        <template v-else>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <select v-model="submissionsOutlet" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">All outlets</option>
+              <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
+            </select>
+            <select v-model="submissionsWindow" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">All time</option>
+              <option :value="3">Last 3 months</option>
+              <option :value="6">Last 6 months</option>
+              <option :value="12">Last 12 months</option>
+            </select>
+          </div>
+          <div v-if="filteredReports.length === 0" class="text-slate text-sm">No submissions match this filter.</div>
+          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3">
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r.Outlet }} · {{ r['Training Title'] }}</p>
               <span class="text-xs text-slate">{{ new Date(r.Timestamp).toLocaleDateString() }}</span>
             </div>
             <p class="text-xs text-slate mt-0.5">Filed by {{ r.Manager }} · Competency {{ r.Fluency ?? '—' }}/10</p>
           </div>
-        </div>
+          </div>
+        </template>
       </section>
     </main>
   </div>

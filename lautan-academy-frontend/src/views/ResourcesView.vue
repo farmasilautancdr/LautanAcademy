@@ -7,43 +7,82 @@
 // company-wide with no scoping (matches GAS: every role gets the same
 // referenceDocs), and nothing else here depends on which role is viewing,
 // so one component covers every route rather than 5 near-duplicates.
+//
+// Merges two previously-separate sources into one browsable list:
+// Drive-backed referenceDocs (files/links, GET /resources) and Knowledge
+// entries (text body written directly in-app, GET /content — same data
+// AI quiz creation already draws from). A Knowledge entry's Topic fills
+// the same role as a Drive resource's Subcategory (both are the finer
+// grouping under Category), so they share one category/subcategory filter
+// instead of two disconnected taxonomies.
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 
-const resources = ref([])
+const driveResources = ref([])
+const knowledgeEntries = ref([])
 const loading = ref(true)
-const categoryFilter = ref('ALL')
-const subcategoryFilter = ref('ALL')
+const route = useRoute()
 const auth = useAuthStore()
+// Dashboard's Browse Courses cards link here with ?category=... so the
+// filter is already applied on arrival, not a plain unfiltered landing.
+const categoryFilter = ref(route.query.category || 'ALL')
+const subcategoryFilter = ref('ALL')
+
+// The link between Browse Courses and AI quiz creation — only Outlet/
+// Warehouse Manager have a create-quiz screen at all, so gated to that.
+// Knowledge entries hand off ?topic= (matched against the content table,
+// as before). Drive entries hand off ?sourceType=resource&sourceValue=
+// <drive file id> — the backend now extracts real text from it live
+// (Google Docs/Slides/Sheets via native export, PDF/docx/pptx/xlsx via
+// download + parse, see backend services/drive.js + textExtract.js).
+// Shown for every Drive entry regardless of file type — an unsupported
+// type (legacy .doc/.ppt/.xls, images) just falls back to the generic-
+// knowledge prompt server-side, same graceful fallback an unmatched typed
+// topic already gets, not a hard failure.
+const createQuizPath = computed(() => auth.manager?.role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
+const canCreateQuiz = computed(() => ['outlet_manager', 'warehouse_manager'].includes(auth.manager?.role))
 
 const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
 const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_LABELS[auth.manager?.role] || ''))
 
 onMounted(async () => {
-  try {
-    const data = await api.getResources()
-    resources.value = data.referenceDocs || []
-  } catch (e) { /* leave resources empty — not fatal */ }
+  const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
+  if (resourcesResult.status === 'fulfilled') driveResources.value = resourcesResult.value.referenceDocs || []
+  if (contentResult.status === 'fulfilled') knowledgeEntries.value = contentResult.value.content || []
   loading.value = false
 })
 
-const categories = computed(() => [...new Set(resources.value.map(r => r.Category))].sort())
+// One shared shape for both sources — isContent marks which fields apply
+// (Body/Link vs PreviewURL/Kind).
+const allEntries = computed(() => [
+  ...driveResources.value.map(r => ({
+    id: 'drive-' + r.ID, driveId: r.ID, name: r.Name, category: r.Category, subcategory: r.Subcategory,
+    kind: r.Kind, previewUrl: r.PreviewURL, isContent: false,
+  })),
+  ...knowledgeEntries.value.map(c => ({
+    id: 'content-' + c.ID, name: c.Title, category: c.Category, subcategory: c.Topic,
+    kind: 'Article', link: c.Link, body: c.Body, isContent: true,
+  })),
+])
+
+const categories = computed(() => [...new Set(allEntries.value.map(e => e.category).filter(Boolean))].sort())
 
 // Only meaningful once a specific category is picked — "ALL" spans every
-// category, so subfolder names from different sections would just collide.
+// category, so subfolder/topic names from different sections would just collide.
 const subcategories = computed(() => {
   if (categoryFilter.value === 'ALL') return []
-  return [...new Set(resources.value.filter(r => r.Category === categoryFilter.value && r.Subcategory).map(r => r.Subcategory))].sort()
+  return [...new Set(allEntries.value.filter(e => e.category === categoryFilter.value && e.subcategory).map(e => e.subcategory))].sort()
 })
 
 function onCategoryChange() {
   subcategoryFilter.value = 'ALL'
 }
 
-const filteredResources = computed(() => {
-  let list = categoryFilter.value === 'ALL' ? resources.value : resources.value.filter(r => r.Category === categoryFilter.value)
-  if (subcategoryFilter.value !== 'ALL') list = list.filter(r => r.Subcategory === subcategoryFilter.value)
+const filteredEntries = computed(() => {
+  let list = categoryFilter.value === 'ALL' ? allEntries.value : allEntries.value.filter(e => e.category === categoryFilter.value)
+  if (subcategoryFilter.value !== 'ALL') list = list.filter(e => e.subcategory === subcategoryFilter.value)
   return list
 })
 </script>
@@ -52,13 +91,13 @@ const filteredResources = computed(() => {
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
       <p class="text-aqualight text-xs">{{ headerLabel }}</p>
-      <h1 class="font-display text-xl font-semibold text-white">Resources</h1>
+      <h1 class="font-display text-xl font-semibold text-white">Browse Courses</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
       <div v-if="loading" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="resources.length === 0" class="bg-white rounded-xl2 p-6 text-center">
-        <p class="text-slate text-sm">No reference material uploaded yet.</p>
+      <div v-else-if="allEntries.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+        <p class="text-slate text-sm">No course material added yet.</p>
       </div>
       <template v-else>
         <div class="flex flex-wrap gap-2 mb-3">
@@ -67,19 +106,42 @@ const filteredResources = computed(() => {
             <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
           </select>
           <select v-if="subcategories.length" v-model="subcategoryFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-            <option value="ALL">All folders</option>
+            <option value="ALL">All topics</option>
             <option v-for="s in subcategories" :key="s" :value="s">{{ s }}</option>
           </select>
         </div>
         <div class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <a v-for="r in filteredResources" :key="r.ID" :href="r.PreviewURL" target="_blank" rel="noopener"
-            class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-ink truncate">{{ r.Name }}</p>
-              <p class="text-xs text-slate">{{ r.Category }}{{ r.Subcategory ? ' · ' + r.Subcategory : '' }}</p>
+          <template v-for="e in filteredEntries" :key="e.id">
+            <!-- Drive-backed: opens the file/link directly, same as before. -->
+            <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
+              <a :href="e.previewUrl" target="_blank" rel="noopener" class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}</p>
+              </a>
+              <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
+              <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { sourceType: 'resource', sourceValue: e.driveId, topicLabel: e.name } }"
+                class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1 shrink-0">
+                Create Quiz
+              </RouterLink>
             </div>
-            <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ r.Kind }}</span>
-          </a>
+            <!-- Knowledge entry: no file to link to (unless a link was added) — expands to read the body in place. -->
+            <details v-else class="px-5 py-3 group">
+              <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                  <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}</p>
+                </div>
+                <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
+              </summary>
+              <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
+              <div class="flex items-center gap-4 mt-2">
+                <a v-if="e.link" :href="e.link" target="_blank" rel="noopener" class="text-xs text-aqua font-medium underline">Open attached link</a>
+                <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
+                  Create Quiz from this
+                </RouterLink>
+              </div>
+            </details>
+          </template>
         </div>
       </template>
     </main>

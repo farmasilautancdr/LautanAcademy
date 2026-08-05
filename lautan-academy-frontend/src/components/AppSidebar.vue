@@ -14,6 +14,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+import logoUrl from '../assets/logo-transparent.png'
 
 const props = defineProps({
   // No real "pending reviews" concept exists yet (Reports are just
@@ -50,13 +51,19 @@ const sections = computed(() => {
   const groups = []
 
   if (auth.isStaff) {
-    const items = [{ label: 'My Learning', to: '/', icon: 'home' }]
+    // Restructured to mirror the manager sidebars' multiple-named-groups
+    // pattern instead of one flat list — same collapsible mechanism below,
+    // just more than one group to collapse.
+    groups.push({ label: 'My Learning', items: [{ label: 'Dashboard', to: '/', icon: 'home' }] })
+
     // Module Quiz (Standard Quiz question bank) is retail-only — matches
     // GAS, which never gave warehouse staff anything but AI Practice.
-    if (auth.staff?.division === 'retail') items.push({ label: 'Module Quiz', to: '/module-quiz', icon: 'clipboard' })
-    items.push({ label: 'Quiz History', to: '/history', icon: 'history' })
-    items.push({ label: 'Resources', to: '/resources', icon: 'book' })
-    groups.push({ label: 'My Learning', items })
+    const quizItems = []
+    if (auth.staff?.division === 'retail') quizItems.push({ label: 'Module Quiz', to: '/module-quiz', icon: 'clipboard' })
+    quizItems.push({ label: 'Quiz History', to: '/history', icon: 'history' })
+    groups.push({ label: 'Quizzes', items: quizItems })
+
+    groups.push({ label: 'Browse Courses', items: [{ label: 'Browse Courses', to: '/resources', icon: 'book' }] })
   }
 
   if (isOutletOrWarehouseManager.value) {
@@ -80,8 +87,8 @@ const sections = computed(() => {
       ],
     })
     groups.push({
-      label: 'Resources',
-      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
+      label: 'Browse Courses',
+      items: [{ label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
@@ -96,8 +103,8 @@ const sections = computed(() => {
       ],
     })
     groups.push({
-      label: 'Resources',
-      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
+      label: 'Browse Courses',
+      items: [{ label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
@@ -116,8 +123,11 @@ const sections = computed(() => {
       ],
     })
     groups.push({
-      label: 'Resources',
-      items: [{ label: 'Resources', to: managerResourcesPath.value, icon: 'book' }],
+      label: 'Browse Courses',
+      items: [
+        { label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' },
+        { label: 'Add Resources', to: '/supervisor/add-resources', icon: 'plus' },
+      ],
     })
   }
 
@@ -128,6 +138,11 @@ const sections = computed(() => {
 const collapsed = ref({})
 function isOpen(label) { return !collapsed.value[label] }
 function toggle(label) { collapsed.value[label] = isOpen(label) }
+
+// Mobile bottom nav: the whole <aside> (including its footer logout
+// button) hides below md, so every real destination — logout included —
+// needs to be reachable from this flat icon row instead.
+const flatItems = computed(() => sections.value.flatMap(g => g.items))
 
 async function handleLogout() {
   auth.logout()
@@ -154,10 +169,10 @@ const ICONS = {
 </script>
 
 <template>
-  <aside class="w-64 h-screen bg-white border-r border-seafoam flex flex-col shrink-0">
+  <aside class="hidden md:flex w-64 h-screen sticky top-0 bg-white border-r border-seafoam flex-col shrink-0">
     <div class="px-5 py-6 flex items-center gap-3 border-b border-seafoam">
-      <div class="w-10 h-10 rounded-xl2 bg-aqua flex items-center justify-center shrink-0">
-        <span class="font-display text-white font-bold text-lg">L</span>
+      <div class="w-10 h-10 shrink-0">
+        <img :src="logoUrl" alt="Lautan Academy" class="w-full h-full object-contain" />
       </div>
       <div class="min-w-0">
         <p class="font-display font-semibold text-ink text-sm leading-tight truncate">Lautan Academy</p>
@@ -220,4 +235,32 @@ const ICONS = {
       </button>
     </div>
   </aside>
+
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam flex items-stretch pb-[env(safe-area-inset-bottom)]" aria-label="Primary">
+    <RouterLink
+      v-for="item in flatItems"
+      :key="item.label"
+      :to="item.to"
+      custom
+      v-slot="{ isActive, navigate }"
+    >
+      <button
+        type="button"
+        @click="navigate"
+        class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
+        :class="isActive ? 'text-aqua' : 'text-slate'"
+      >
+        <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path :d="ICONS[item.icon]" />
+        </svg>
+        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.label }}</span>
+      </button>
+    </RouterLink>
+    <button type="button" @click="handleLogout" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" aria-label="Log out">
+      <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path :d="ICONS.logout" />
+      </svg>
+      <span class="text-[10px] font-medium">Log out</span>
+    </button>
+  </nav>
 </template>

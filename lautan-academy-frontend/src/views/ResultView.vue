@@ -22,7 +22,7 @@ function backToDashboard() {
 
     <div v-else class="bg-white rounded-xl2 p-8 max-w-sm w-full shadow-xl">
       <div class="text-center">
-        <ProgressRing :percent="Math.round(result.percentage)" :size="120" :accent="passed ? '#17A398' : '#FF8552'" />
+        <ProgressRing :percent="Math.round(result.percentage)" :size="120" :accent="passed ? '#1E88C7' : '#E8622C'" />
 
         <h1 class="font-display text-xl font-semibold text-ink mt-5">
           {{ passed ? 'Well done!' : 'Keep practicing' }}

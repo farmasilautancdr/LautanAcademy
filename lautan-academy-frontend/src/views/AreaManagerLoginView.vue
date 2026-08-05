@@ -8,20 +8,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
-
-const AREAS = [
-  { id: "R1 - AMIRUL", outlets: ["DG", "DGD", "KMD", "KMN", "KMSK", "MR"] },
-  { id: "R2 - HAZWANI", outlets: ["AJ", "BJR", "BP", "HQCT", "KB", "WM", "PDM"] },
-  { id: "R3 - HARIS", outlets: ["B6", "BB", "CDR", "HL", "HQ", "KL", "PK"] },
-  { id: "R4 - RAIHAN", outlets: ["GB", "GBD", "JTH", "RJ", "ST", "TPOH"] },
-  { id: "R5 - ADNIN", outlets: ["JL", "JLD", "PP", "PSPD", "SMR"] },
-  { id: "R6 - NADHIRAH", outlets: ["KS", "MC", "MLR", "TM", "TMD", "TMT", "MCD"] },
-  { id: "R7 - HASANUL", outlets: ["KBKK", "KBKS", "KBTJ", "PC", "PT"] },
-  { id: "R8 - HAFSHAM", outlets: ["PM", "SLS", "TPT", "KKR", "PPK"] },
-  { id: "R9 - IFFAH / RAIHAN", outlets: ["GM", "CK"] },
-]
-
-function outletsForArea(id) { return AREAS.find(a => a.id === id)?.outlets || [] }
+import logoUrl from '../assets/logo-transparent.png'
+import { AREAS, outletsForArea } from '../config/areas'
 
 const areaId = ref('')
 const pin = ref('')
@@ -53,17 +41,20 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-deepsea flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
-    <div class="pointer-events-none absolute inset-0" style="background: radial-gradient(ellipse at 50% -10%, rgba(23,163,152,0.18), transparent 60%)" />
-
-    <div class="w-full max-w-sm relative motion-safe:animate-[rise_0.5s_ease-out]">
-      <div class="text-center mb-8 relative z-10">
-        <h1 class="font-display text-4xl font-bold text-white tracking-tight leading-none">LAUTAN</h1>
-        <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] mt-1.5">ACADEMY</p>
-        <p class="text-aqualight/80 mt-3 text-sm">Area Manager</p>
+  <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
+    <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center gap-3">
+          <img :src="logoUrl" alt="Lautan Academy" class="w-16 h-16 shrink-0" />
+          <div class="text-left h-16 flex flex-col justify-center">
+            <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">LAUTAN</h1>
+            <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
+          </div>
+        </div>
+        <p class="text-slate text-sm mt-3">Area Manager</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-xl relative z-10 space-y-4">
+      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Area</label>
           <select v-model="areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
@@ -93,14 +84,14 @@ async function handleLogin() {
         </button>
       </form>
 
-      <p class="text-center text-aqualight/70 text-xs mt-6">
+      <p class="text-center text-slate text-xs mt-6">
         Staff? <router-link to="/login" class="underline">Log in here</router-link>
       </p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
+      <p class="text-center text-slate text-xs mt-2">
         Outlet/Warehouse Manager?
         <router-link to="/manager-login" class="underline">Log in here</router-link>
       </p>
-      <p class="text-center text-aqualight/70 text-xs mt-2">
+      <p class="text-center text-slate text-xs mt-2">
         Supervisor? <router-link to="/supervisor-login" class="underline">Log in here</router-link>
       </p>
     </div>

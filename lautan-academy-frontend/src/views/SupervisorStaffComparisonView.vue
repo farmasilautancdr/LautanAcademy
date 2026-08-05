@@ -4,13 +4,17 @@
 // "trend"/"streak" metrics.
 import { ref, computed, watch } from 'vue'
 import { api } from '../api/client'
+import { AREAS, outletsForArea } from '../config/areas'
 
 const windowMonths = ref(3)
 const loading = ref(true)
 const results = ref([])
 const aiResults = ref([])
+const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
 const sortBy = ref('avg') // 'avg' | 'attempts' | 'name'
+
+function onRegionChange() { outletFilter.value = 'ALL' }
 
 async function load() {
   loading.value = true
@@ -24,11 +28,19 @@ async function load() {
 watch(windowMonths, load)
 load()
 
-const outlets = computed(() => [...new Set([...results.value, ...aiResults.value].map(r => r.Outlet))].filter(Boolean).sort())
+const outlets = computed(() => {
+  if (regionFilter.value !== 'ALL') return outletsForArea(regionFilter.value)
+  return [...new Set([...results.value, ...aiResults.value].map(r => r.Outlet))].filter(Boolean).sort()
+})
 
 const rows = computed(() => {
   const all = [...results.value, ...aiResults.value]
-  const filtered = outletFilter.value === 'ALL' ? all : all.filter(r => r.Outlet === outletFilter.value)
+  let filtered = all
+  if (regionFilter.value !== 'ALL') {
+    const regionOutlets = new Set(outletsForArea(regionFilter.value))
+    filtered = filtered.filter(r => regionOutlets.has(r.Outlet))
+  }
+  if (outletFilter.value !== 'ALL') filtered = filtered.filter(r => r.Outlet === outletFilter.value)
   const byStaff = new Map()
   for (const r of filtered) {
     const key = `${r.Name}|${r.Outlet}`
@@ -59,6 +71,10 @@ const rows = computed(() => {
           <option :value="6">Last 6 months</option>
           <option :value="12">Last 12 months</option>
           <option :value="0">All time</option>
+        </select>
+        <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">All regions</option>
+          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
         </select>
         <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">All outlets</option>
