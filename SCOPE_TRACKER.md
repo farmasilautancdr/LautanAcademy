@@ -133,6 +133,35 @@ built AND verified.
       a full process restart (confirmed the old version couldn't), clears
       correctly; check-endpoint throttle confirmed writing/reading
       correctly through a real Railway deploy.
+- [x] `attempt_id` added to `results` + `wrong_answers` (mirrors
+      `ai_results`/`ai_wrong_answers`). Fixes a real bug: Module Quiz
+      wrong-answer review matched by topic only (no per-attempt id
+      existed), so retaking a topic mixed every attempt's wrong answers
+      together in Quiz History — "got Q2 wrong, review showed Q3's
+      content." Migration (`scripts/migrate-add-attempt-id.js`) run
+      against production DB; legacy pre-migration rows (no attempt_id)
+      fall back to the old topic-only match so they don't silently show
+      nothing, new attempts get exact matching. Verified: seeded a real
+      throwaway staff account, two real attempts of the same topic
+      through the running backend, confirmed each attempt's wrong answer
+      maps to itself only, cleaned up test data after.
+- [x] Drive files as AI quiz source (`services/drive.js` +
+      `services/textExtract.js`) — `sourceType: 'resource'` in
+      `POST /quiz/create` was a dead placeholder before (silently skipped
+      to the generic-knowledge fallback); now extracts real text live.
+      Google Docs/Slides/Sheets via Drive's native export (text/plain or
+      csv). PDF/docx/pptx/xlsx via download + parse — docx/pptx/xlsx
+      hand-extracted via `jszip` (all three are zip+XML, one dependency
+      covers all three instead of one parser library per format), PDF via
+      `pdf-parse@1` (pinned — v2 pulls a native-canvas dependency chain
+      and has a different API; v1's own `index.js` has an ESM-import bug,
+      worked around by importing `lib/pdf-parse.js` directly). Legacy
+      binary Office formats (.doc/.ppt/.xls, pre-2007) and images stay
+      unsupported — not zip+XML, would need a real binary parser or OCR.
+      Verified: `getDriveFileText` against a real live Slides file
+      (12.9k chars, coherent real content); docx/pptx/xlsx extractors
+      against hand-built synthetic files; PDF extractor against
+      `pdf-parse`'s own real fixtures.
 
 ## ✅ Frontend — Vue (`lautan-academy-frontend`) — built & tested
 
@@ -226,6 +255,76 @@ built AND verified.
 - [x] Dashboard delight pass — count-up ring animation on load (opt-in,
       other ring usages unaffected), first-use auto-focus + settling cue on
       the join-code form, error message paired with an icon
+- [x] Nav rework — `AppSidebar.vue`: sticky (`sticky top-0`, was scrolling
+      away on tall pages), staff's single flat "My Learning" group split
+      into 3 named groups (My Learning / Quizzes / Browse Courses)
+      mirroring the manager groups' pattern, collapsible per-group
+      (existing mechanism, just needed staff to have >1 group). Mobile
+      (`<768px`): sidebar hides entirely, fixed bottom icon nav bar takes
+      over — including logout, which the hidden sidebar footer would
+      otherwise orphan on mobile.
+- [x] Staff dashboard rebuilt (`DashboardView.vue`) — dark hero card (avg
+      practice score ring, "Join a Quiz" scrolls to the join-code form),
+      Browse Courses category grid (deep-links into `ResourcesView` via a
+      new `?category=` query param), "Recent Practice" right-rail widget
+      from real AI Practice history. CSS Grid with named areas handles
+      mobile single-column vs desktop two-column explicitly. Greeting
+      shows the first two words of the staff name ("Hi Mohd Hafiz", not
+      just "Mohd"), falls back to one word if that's all there is.
+- [x] Brand palette + logo — swapped the teal/coral tokens in
+      `tailwind.config.js` for the logo's blue/orange (single-file edit,
+      propagates everywhere via existing token-based classes). Logo's
+      white-card background wasn't real transparency (a "maskable" PWA
+      icon export) — stripped via flood-fill from the edges so internal
+      highlights survive, verified pixel-by-pixel. Logo placed in
+      `AppSidebar.vue` + all 4 login screens (beside the wordmark, not
+      stacked above it, sized to match the wordmark's height). Login
+      pages: dark `bg-deepsea` → white/`bg-seafoam`, ambient glow removed,
+      light-on-dark text flipped to dark-on-light.
+- [x] Browse Courses (`ResourcesView.vue`) merges two previously-separate
+      systems into one filterable list: Drive-backed referenceDocs
+      (`GET /resources`) and Knowledge/Content entries (`GET /content` —
+      same data AI quiz creation already draws from). A Knowledge entry's
+      Topic fills the same role as a Drive resource's Subcategory (both
+      the finer grouping under Category), so they share one
+      category/subcategory filter instead of two disconnected taxonomies.
+      Knowledge entries expand in-place (`<details>`) to read the body
+      text since they're not always a file with a preview URL.
+- [x] "Create Quiz" hand-off from Browse Courses to AI quiz creation —
+      gated to Outlet/Warehouse Manager (the only roles with a create-quiz
+      screen). Knowledge entries hand off `?topic=`; Drive entries hand
+      off `?sourceType=resource&sourceValue=<drive file id>`, both
+      dashboards read this on mount to prefill the form. The "pick a
+      course" picker itself was rebuilt from a flat Content-topics-only
+      list (which showed nothing for Drive-only Browse Courses content —
+      the common case) into two cascading filters (Category → Topic,
+      same shape Browse Courses itself uses) narrowing to a final course
+      pick spanning both Knowledge entries and Drive files.
+- [x] Add Resources — Supervisor's Content-management UI, split out of
+      the "All Outlets" activity page into its own route
+      (`/supervisor/add-resources`, `SupervisorAddResourcesView.vue`),
+      added as a second item in the sidebar's "Browse Courses" group.
+      Category field changed from a hardcoded disconnected list
+      (`SOP`/`Training Material`/`Note`/`Guideline`, matched nothing in
+      Browse Courses) to a free-text input suggesting (via `datalist`)
+      categories that actually exist in Browse Courses.
+- [x] Supervisor region filter — All Outlets / Staff Comparison / Cluster
+      Reports all gained a region filter ahead of the existing outlet
+      filter (region narrows the outlet dropdown to that region's
+      roster), same two-step pattern `AreaManagerReviewsView.vue` already
+      used. Region→outlet mapping de-duplicated into one shared frontend
+      module (`src/config/areas.js`) instead of adding a 3rd copy
+      alongside the existing ones in `AreaManagerLoginView.vue` (frontend)
+      and `config/areas.js` (backend, canonical).
+- [x] Cluster Reports CSV download — exports exactly what's on screen
+      (respects region/outlet/window filters), proper CSV escaping,
+      UTF-8 BOM so Excel doesn't mangle bilingual (EN/MS) names.
+- [x] Mobile responsiveness pass — viewport meta tag (was already
+      present), bottom-nav clearance padding set to exactly 80px
+      (`pb-20`, was 64px), global fluid-width safety net
+      (`overflow-x: hidden` on body, `max-width: 100%` on
+      img/svg/video/table) so nothing can force horizontal scroll on a
+      small screen regardless of its own intrinsic size.
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
@@ -236,9 +335,7 @@ built AND verified.
       backend. Manage Staff: passcode display replaced with a Reset PIN
       button (hashed storage can't show an existing passcode the way GAS
       could). Reports: assessment-date field stays in the form, not sent
-      (matches the Vue app's existing behavior). Dual-token bridge to GAS
-      remains for **Resources/Content only** now — deliberately out of
-      scope for this pass, see Known Fragility below.
+      (matches the Vue app's existing behavior).
       Found and fixed two real bugs while doing this, both deployed:
       (1) vanilla's Area Manager login sent a plain outlet code, which the
       backend now rejects since Area Manager region-scoping — login was
@@ -250,6 +347,58 @@ built AND verified.
       Also added `id_note` to `staff_roster` (was missing entirely —
       matches GAS's IDNote column for disambiguating duplicate names,
       would have been a silent feature loss otherwise).
+- [x] Resources/Content — the last remaining GAS bridge — repointed to the
+      new backend, dual-token setup removed entirely (`gasSessionToken`
+      gone, one `sessionToken` for everything except a separate
+      `resourceManagerToken` scoped just to Manage Resources mutations).
+      Two real backend gaps found and closed rather than routed around:
+      `POST /auth/verify-pin` added (boolean-only PIN check, no token —
+      backs the shared Manager-category gate and the standalone Knowledge
+      Base unlock, neither of which map onto `/auth/manager-login`'s
+      4-role model); `manager_pins` had no `resources` row seeded despite
+      the app expecting one — seeded (`FLT2026`, confirmed still correct).
+      `POST /resources/upload` added — uploads straight into the matching
+      Drive category folder (finds it by name, creates it if it doesn't
+      exist yet), same behavior as the old GAS action, chosen over
+      matching Vue's Supabase-backed upload to keep vanilla's exact
+      existing behavior. Also fixed a real data-consistency bug found
+      along the way: vanilla's Knowledge Base category dropdown still
+      saved the old internal codes (`SOP`/`Training Material`/`Note`) that
+      predate this session's Vue-side category cleanup — now saves the
+      real category names directly, matching Vue, and 3 of 6 Browse
+      Courses sections (Warehousing Handbook/eLearning Courses/Halal
+      Certificate) that could never show Knowledge content at all
+      (`matchContent: () => false`) now can.
+      Verified: `/auth/verify-pin` tested with correct/incorrect PIN;
+      full Content add → appears in GET → delete → confirmed gone
+      roundtrip tested through the running backend with a real Supervisor
+      token, cleaned up after; extracted vanilla's script and syntax-
+      checked it.
+      **In-app file upload dropped from the UI — a real Google platform
+      constraint, not fixable in code.** Chased two layers deep: (1) the
+      service account only had Viewer access — granted Editor, confirmed
+      fixed (no more "Insufficient permissions"); (2) hit Google's actual
+      hard limit next — **service accounts have zero storage quota on a
+      regular Drive folder**, full stop, regardless of sharing level. Real
+      error: *"Service Accounts do not have storage quota. Leverage shared
+      drives, or use OAuth delegation instead."* Both real fixes
+      (migrating the folder to a Shared Drive, or OAuth delegation acting
+      as a real user) need a Google Workspace account, which isn't
+      available right now. Rather than ship a button that always fails,
+      removed the "Upload a File" UI block and its now-unreachable
+      `uploadResourceFile()` function from vanilla entirely — Supervisors
+      upload into the Drive folder directly, same as before this session.
+      **`POST /resources/upload` stays in the backend, dormant but
+      correct** — re-enable the UI block (removed cleanly, not commented
+      out) if the folder ever moves to a Shared Drive; the endpoint itself
+      needs no changes for that, Shared Drive support is purely a Drive
+      API flag (`supportsAllDrives: true`) not yet added since it isn't
+      needed until the folder actually moves.
+      Not touched, explicitly out of scope: `fetchData()`'s pre-login bulk
+      questions+staffRoster fetch still goes through GAS — the new
+      backend's equivalents are shaped differently (staff-roster needs
+      division+outlet per call, not one bulk list), a separate piece of
+      work from the Resources/Content bridge this was scoped to.
 
 ## ❌ Not built yet
 
@@ -298,14 +447,40 @@ built AND verified.
       builds the native module fine. Re-ran the 20-concurrent-login test
       against production after deploying: **worst case dropped from 134s
       to 2.15s**, 20/20 succeeded. Test accounts deleted after both runs.
+- [x] **Deploy pipeline was silently broken on both platforms** — found
+      while debugging "my phone still shows the old UI" after several
+      `git push`es. Neither `git push` was actually deploying anything;
+      every real deploy this whole time (including ones earlier sessions
+      recorded as "verified on production") had been manual CLI pushes
+      (`vercel --prod` / `railway up`).
+      **Vercel**: Production Branch was set to `main` (the repo's default,
+      old pre-Vue-migration vanilla content — 49 commits of unrelated
+      history), while all real work has only ever lived on `master`.
+      Fixed via Project Settings → Environments → Production → Branch
+      Tracking → `master`. A second issue surfaced once that was fixed:
+      Root Directory wasn't set, so git-triggered builds ran from the
+      repo root (no `package.json` there) instead of
+      `lautan-academy-frontend/` — `vite: command not found`. Fixed via
+      `vercel project update --root-directory lautan-academy-frontend`.
+      **Railway**: the backend service had *no* GitHub connection at all
+      (not a branch mismatch — genuinely unconnected, CLI-deploy-only
+      since creation). Fixed via
+      `railway service source connect --repo farmasilautancdr/farmasilautancdr-lautan-academy-backend- --branch main`.
+      Verified end-to-end on both: real `git push` → confirmed via each
+      platform's API/CLI that a fresh Production deployment was created
+      and the live domain served the new build (bundle content diffed,
+      not just trusted).
 
 ## Known fragility (see CLAUDE.md hard rule 5)
 
-- Vanilla `index.html` juggles two session tokens (new backend JWT +
-  GAS-issued token) to bridge features that haven't migrated yet — now just
-  Resources/Content (Reports and Manage Staff were repointed off it). Real
-  fix is building Resources on the new backend's own terms in vanilla too,
-  so the GAS bridge — and the second token — can be removed entirely.
+- **In-app resource file upload is dormant, not built into any UI** —
+  `POST /resources/upload` exists and is correct, but the Drive service
+  account has zero storage quota on the current (regular, non-Shared)
+  Drive folder — a real Google platform limit, not fixable in code (see
+  the vanilla Resources/Content item above for the full story). Needs the
+  folder moved to a Shared Drive (or OAuth delegation set up) before any
+  UI can call this. Until then, Supervisors upload into the Drive folder
+  directly, outside the app.
 - `GAS_URL` and `BACKEND_URL` are hardcoded constants in `index.html`;
   already caused one real outage this session (stale deployment ID). Now
   also true of `VITE_API_URL` baked into the Vercel build — if the Railway
@@ -325,6 +500,27 @@ built AND verified.
   Local dev keeps using Direct connection since it works fine here; the
   pooler is only required for Railway specifically.
 
+- Both deploy pipelines were silently disconnected/misconfigured until
+  this session (see the Load test section above) — `git push` alone now
+  actually deploys, but if either platform ever needs its project
+  re-created or re-imported, re-check: Vercel's Production Branch
+  (Environments → Production → Branch Tracking) and Root Directory
+  (`lautan-academy-frontend`), Railway's service source connection
+  (`railway service source connect`). Don't assume a green `git push`
+  means it shipped — verify against the live bundle/API, the same way
+  this session caught it being broken.
+- AI quiz creation from a Drive-backed Browse Courses file only works for
+  Google Docs/Slides/Sheets and PDF/docx/pptx/xlsx — legacy binary Office
+  formats (.doc/.ppt/.xls, pre-2007) and images silently fall back to the
+  generic-knowledge prompt instead of using the file's real content
+  (`services/textExtract.js` returns `''` for anything it doesn't
+  recognize, by design — not a bug, just an honest gap).
+- Quiz History's per-attempt wrong-answer matching only works exactly for
+  Module Quiz attempts saved *after* the `attempt_id` migration. Older
+  rows (no `attempt_id`) still fall back to matching by topic only,
+  which can mix a retaken topic's wrong answers together for that old
+  data specifically — new attempts are unaffected.
+
 ## Suggested build order (next)
 
 Every item that was tracked as unbuilt is now done, tested, and deployed —
@@ -335,8 +531,19 @@ login in vanilla, and a report-submission 403 that had been silently
 broken in the already-shipped Vue app since region-scoping). Resources/
 Content is the one remaining GAS bridge in vanilla, deliberately deferred.
 
+Since that was last written, the Vue frontend went through a full UI
+rework (nav, mobile responsiveness, brand palette/logo, Browse Courses
+merged with Knowledge entries, AI quiz creation can now source from Drive
+files directly, Supervisor region filters + CSV export), a real Quiz
+History data bug got fixed (`attempt_id`), and both deploy pipelines got
+fixed after being silently broken (see Known Fragility). Vanilla
+`index.html`'s Resources/Content GAS bridge — the one item deliberately
+deferred above — is now also repointed; **vanilla no longer talks to GAS
+for anything except one pre-login bulk fetch** (see the vanilla section
+above for what's still open there).
+
 That's still not the same as "ready to cut over": GAS stays authoritative
 until the new stack is proven with real staff usage (see CLAUDE.md). The
-honest next steps are the Resources repoint (whenever that's wanted) and
-actual real-staff usage before calling this proven — not more build work,
-a decision about when/how to start relying on this in production.
+honest next step now is real-staff usage before calling any of this
+proven — not more build work, a decision about when/how to start relying
+on this in production.

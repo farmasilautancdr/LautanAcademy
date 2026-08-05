@@ -390,27 +390,23 @@
                     </div>
                     <p id="resource-sync-stats" class="text-[11px] font-data" style="color:var(--text-muted)"></p>
 
-                    <div class="space-y-2 p-3 rounded-xl border" style="background:var(--surface);border-color:var(--accent)">
-                        <p class="text-xs font-black uppercase tracking-widest" style="color:var(--accent-dark)">Upload a File</p>
-                        <select id="upload-category" class="w-full p-3 rounded-xl border bg-white font-bold text-sm" style="border-color:var(--border)">
+                    <!-- In-app file upload dropped (not hidden-but-broken): Drive service
+                         accounts have no storage quota of their own on a regular folder,
+                         only on a Shared Drive — this app's Resources folder isn't one.
+                         Backend route (POST /resources/upload) is still there, correct,
+                         and ready to re-enable this block if the folder ever moves to a
+                         Shared Drive — see SCOPE_TRACKER.md. Until then, upload files into
+                         the Drive folder directly, same as before this session. -->
+
+                    <p class="text-xs font-black uppercase tracking-widest pt-1" style="color:var(--accent-dark)">Add New Content</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="kb-category" class="p-3 rounded-xl border bg-white font-bold text-sm" style="border-color:var(--border)">
                             <option value="101 Guide to Retailing">101 Guide to Retailing</option>
                             <option value="Housebrand Modules">Housebrand Modules</option>
                             <option value="General Policies">General Policies</option>
                             <option value="Warehousing Handbook">Warehousing Handbook</option>
                             <option value="eLearning Courses">eLearning Courses</option>
                             <option value="Halal Certificate">Halal Certificate</option>
-                        </select>
-                        <input type="file" id="upload-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" class="w-full p-2.5 rounded-xl border bg-white text-xs" style="border-color:var(--border)">
-                        <p class="text-[10px]" style="color:var(--text-muted)">PDF, Word, PowerPoint, Excel — up to 15MB. Goes straight into the folder above, same as dropping it into Drive by hand.</p>
-                        <button onclick="uploadResourceFile()" id="upload-file-btn" class="w-full btn-grad p-3 rounded-xl font-bold text-sm">Upload File</button>
-                    </div>
-
-                    <p class="text-xs font-black uppercase tracking-widest pt-1" style="color:var(--accent-dark)">Or Type New Content</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <select id="kb-category" class="p-3 rounded-xl border bg-white font-bold text-sm" style="border-color:var(--border)">
-                            <option value="SOP">101 Guide to Retailing</option>
-                            <option value="Training Material">Housebrand Modules</option>
-                            <option value="Note">General Policies</option>
                         </select>
                         <input list="kb-topic-list" id="kb-topic" placeholder="Topic (existing or new)" class="p-3 rounded-xl border text-sm" style="border-color:var(--border)">
                         <datalist id="kb-topic-list"></datalist>
@@ -713,9 +709,15 @@
     </div>
 
     <script>
+        // Only fetchData()'s pre-login bulk questions+staffRoster fetch still
+        // goes through GAS — the new backend's equivalents (GET /questions,
+        // GET /auth/staff-roster) are shaped differently (staff-roster needs
+        // division+outlet per call, not one bulk list) and repointing that
+        // is a separate piece of work, not part of the Resources/Content
+        // bridge this was scoped to. Everything else — login, quiz, results,
+        // reports, resources, content, manage staff — now goes through
+        // BACKEND_URL exclusively.
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyvioLEJ8tFK3766M8fj7wKxS5_qFDkKEKtniei3MHaP-aNkEq7LcwNqaVhcXgr26wKkg/exec";
-        // New Node/Supabase backend — only login + quiz create/redeem/results routed here so far.
-        // Everything else (reports, resources, manage staff) still goes through GAS_URL.
         const BACKEND_URL = "https://lautan-academy-backend-production.up.railway.app";
         let allQuestions = [], allResults = [], allReports = [], allWrongAnswers = [], allContent = [];
         let allAIResults = [], allAIWrongAnswers = [], allReferenceDocs = [];
@@ -744,8 +746,8 @@
 
         window.onload = fetchData;
 
-        let sessionToken = ''; // new backend JWT — used for /auth and /quiz calls
-        let gasSessionToken = ''; // GAS-issued token — used for every action still routed through GAS_URL
+        let sessionToken = ''; // new backend JWT — used for every backend call except Manage Resources
+        let resourceManagerToken = ''; // separate Supervisor-scoped JWT, only for Manage Resources (content add/delete/upload)
 
         async function fetchData() {
             document.getElementById('sync-error').classList.add('hidden');
@@ -789,12 +791,10 @@
             renderKBList();
         }
 
-        // Overlays results/wrongAnswers/aiResults/aiWrongAnswers/reports from
-        // the new backend on top of whatever applyScopedData(gasData) just
-        // set — new backend is now authoritative for these (migrated history
-        // + all new saves go there). Content/referenceDocs (Resources) stay
-        // whatever GAS gave, untouched here — out of scope for this repoint.
-        // Best-effort: silently keeps GAS's copy on failure.
+        // Results/wrongAnswers/aiResults/aiWrongAnswers/reports, scoped to
+        // whoever's logged in (staff or any manager role) — same endpoint
+        // the Vue app uses. Best-effort: keeps whatever's already loaded on
+        // failure rather than blocking login.
         async function refreshResultsFromBackend() {
             if (!sessionToken) return;
             try {
@@ -809,34 +809,35 @@
                 allAIWrongAnswers = data.aiWrongAnswers || [];
                 allReports = data.reports || [];
                 populateGlobalData();
-            } catch (e) { /* best-effort — GAS bridge data already applied */ }
+            } catch (e) { /* best-effort — keep whatever's already loaded */ }
         }
 
-        // Only needed now if something wants to re-fetch the current scope's
-        // data without a fresh login (e.g. a manual refresh) — every login
-        // flow gets its scoped data directly in the login response instead,
-        // as of v1.27, rather than calling this separately afterward.
-        async function fetchScopedData() {
-            if (!sessionToken) return false;
+        // Content (Knowledge Base) + referenceDocs (Drive-backed Resources) —
+        // company-wide, not scoped to a specific staff/manager, same two
+        // endpoints Browse Courses uses in the Vue app. Was previously only
+        // ever populated via the GAS bridge; now sourced from the new
+        // backend directly. Best-effort: keeps whatever's already loaded on
+        // failure rather than blocking login.
+        async function refreshResourcesAndContent() {
+            if (!sessionToken) return;
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_scoped_data', token: gasSessionToken })
-                });
-                const data = await res.json();
-                if (!data.authorized) {
-                    alert(data.error || "Your session has expired — please log in again.");
-                    location.reload();
-                    return false;
+                const [resRes, contentRes] = await Promise.all([
+                    fetch(BACKEND_URL + '/resources', { headers: { 'Authorization': 'Bearer ' + sessionToken } }),
+                    fetch(BACKEND_URL + '/content', { headers: { 'Authorization': 'Bearer ' + sessionToken } }),
+                ]);
+                const resData = await resRes.json();
+                const contentData = await contentRes.json();
+                allReferenceDocs = resData.referenceDocs || [];
+                allContent = contentData.content || [];
+                if (resData.resourceSyncStats) {
+                    const s = resData.resourceSyncStats;
+                    const breakdown = s.byCategory ? Object.entries(s.byCategory).map(([cat, n]) => `${cat}: ${n}`).join(' · ') : '';
+                    document.getElementById('resource-sync-stats').innerText = `Last sync: ${s.foldersVisited} folder(s) checked, ${s.filesFound} file(s) found${(s.fileErrors || s.folderErrors) ? `, ${s.fileErrors + s.folderErrors} skipped due to an error` : ''}.${breakdown ? '  (' + breakdown + ')' : ''}`;
                 }
-                applyScopedData(data);
-                return true;
-            } catch (e) {
-                alert("Couldn't reach the server — check your connection and try again.");
-                return false;
-            }
+                renderResourceList();
+                renderKBList();
+            } catch (e) { /* best-effort — keep whatever's already loaded */ }
         }
-
 
         function showView(id) {
             document.querySelectorAll('.max-w-4xl > div').forEach(v => {
@@ -867,9 +868,10 @@
         async function verifyPin(role, pin) {
             if(!pin) return { authorized: false };
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/auth/verify-pin', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'verify_pin', role, pin })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role, pin })
                 });
                 const data = await res.json();
                 if(data.error) { alert(data.error); return { authorized: false }; }
@@ -888,8 +890,6 @@
             setLoader(false);
             if (!result.authorized) return alert("That PIN doesn't look right.");
             managerCategoryPin = pin;
-            sessionToken = result.token || '';
-            applyScopedData(result); // v1.27: comes back in this same response now
             selectCategory(cat);
         }
 
@@ -958,10 +958,29 @@
                 const pin = prompt("Enter Supervisor / Top Management password to add or manage resources:");
                 if (pin === null) return;
                 setLoader(true, "Checking...");
-                const result = await verifyPin('supervisor', pin);
+                // A real Supervisor-scoped JWT, not just a pass/fail check —
+                // Content add/delete/upload on the new backend require a
+                // proper scoped session (requireScope('supervisor')), same
+                // as the Vue app's Add Resources. Kept separate from
+                // sessionToken: whoever's already logged in here (staff or
+                // any manager) keeps their own session untouched: this token
+                // is only ever used for the three Manage Resources calls.
+                let result;
+                try {
+                    const res = await fetch(BACKEND_URL + '/auth/manager-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: 'supervisor', outlet: '', pin })
+                    });
+                    result = await res.json();
+                } catch (e) {
+                    setLoader(false);
+                    return alert("Couldn't reach the server — check your connection and try again.");
+                }
                 setLoader(false);
-                if (!result.authorized) return alert("That password doesn't look right.");
+                if (!result.authorized) return alert(result.error || "That password doesn't look right.");
                 unlockedSupervisorPin = pin;
+                resourceManagerToken = result.token || '';
             }
             document.getElementById('resource-manager-panel').classList.remove('hidden');
             document.getElementById('resource-manager-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1341,49 +1360,6 @@
         }
 
         /** KNOWLEDGE BASE (Supervisor / Top Management add; everyone can view) **/
-        async function uploadResourceFile() {
-            const fileInput = document.getElementById('upload-file-input');
-            const file = fileInput.files[0];
-            if(!file) return alert("Choose a file first.");
-            if(file.size > 15 * 1024 * 1024) return alert("That file is over 15MB — please use a smaller file, or upload it directly into Drive instead.");
-
-            const category = document.getElementById('upload-category').value;
-            const btn = document.getElementById('upload-file-btn');
-            const originalLabel = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = 'Uploading...';
-            setLoader(true, "Uploading file...");
-
-            try {
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error("Couldn't read that file."));
-                    reader.readAsDataURL(file);
-                });
-
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'upload_resource_file', category,
-                        fileName: file.name, mimeType: file.type || 'application/octet-stream',
-                        base64Data, pin: unlockedSupervisorPin
-                    })
-                });
-                const data = await res.json();
-                if(data.status !== 'ok') { throw new Error(data.error || "Upload failed."); }
-
-                fileInput.value = '';
-                alert(`Uploaded — it'll appear under "${category}" the next time the page loads.`);
-            } catch(e) {
-                alert(e.message || "Couldn't reach the server — check your connection and try again.");
-            }
-
-            btn.disabled = false;
-            btn.innerText = originalLabel;
-            setLoader(false);
-        }
-
         async function addKnowledgeItem() {
             const category = document.getElementById('kb-category').value;
             const topic = document.getElementById('kb-topic').value.trim();
@@ -1393,12 +1369,14 @@
             if(!topic || !title || !body) return alert("Please fill in the topic, title, and content.");
             setLoader(true, "Saving...");
             try {
-                const res = await fetch(GAS_URL, {
+                const res = await fetch(BACKEND_URL + '/content', {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'save_content', topic, category, title, body, link, pin: unlockedSupervisorPin })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + resourceManagerToken },
+                    body: JSON.stringify({ topic, category, title, body, link })
                 });
                 const data = await res.json();
-                if (data.status === 'unauthorized') { setLoader(false); return alert(data.error || "That password doesn't look right anymore — reopen Manage and try again."); }
+                if (res.status === 403) { setLoader(false); return alert("That password doesn't look right anymore — reopen Manage and try again."); }
+                if (data.status !== 'ok') { setLoader(false); return alert(data.error || "Could not save."); }
                 allContent.unshift({ ID: data.id || ('local-' + Date.now()), Topic: topic, Category: category, Title: title, Body: body, Link: link, Timestamp: new Date().toISOString() });
                 document.getElementById('kb-title').value = '';
                 document.getElementById('kb-body').value = '';
@@ -1433,12 +1411,11 @@
             if(!confirm("Remove this item from the knowledge base?")) return;
             setLoader(true, "Removing...");
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'delete_content', id, pin: unlockedSupervisorPin })
+                const res = await fetch(BACKEND_URL + '/content/' + encodeURIComponent(id), {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + resourceManagerToken }
                 });
-                const data = await res.json();
-                if (data.status === 'unauthorized') { setLoader(false); return alert(data.error || "That password doesn't look right anymore — reopen Manage and try again."); }
+                if (res.status === 403) { setLoader(false); return alert("That password doesn't look right anymore — reopen Manage and try again."); }
                 allContent = allContent.filter(c => c.ID !== id);
                 renderKBList();
             } catch(e) {
@@ -1607,15 +1584,15 @@
             const icoCap = '<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M6 10.5V16c0 1.5 2.5 3 6 3s6-1.5 6-3v-5.5"/></svg>';
             const icoChevron = '<svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
             const sections = [
-                { id: 'guide', label: '101 Guide to Retailing', icon: icoClipboard, matchContent: c => (c.Category||'') === 'SOP' },
-                { id: 'housebrand', label: 'Housebrand Modules', icon: icoBook, matchContent: c => (c.Category||'') === 'Training Material' },
-                { id: 'policies', label: 'General Policies', icon: icoDoc, matchContent: c => (c.Category||'') === 'Note' || (c.Category||'') === 'Guideline' },
-                { id: 'warehouse', label: 'Warehousing Handbook', icon: icoBox, matchContent: () => false },
-                { id: 'elearning', label: 'eLearning Courses', icon: icoCap, matchContent: () => false },
-                { id: 'halal', label: 'Halal Certificate', icon: icoFolder, matchContent: () => false }
+                { id: 'guide', label: '101 Guide to Retailing', icon: icoClipboard },
+                { id: 'housebrand', label: 'Housebrand Modules', icon: icoBook },
+                { id: 'policies', label: 'General Policies', icon: icoDoc },
+                { id: 'warehouse', label: 'Warehousing Handbook', icon: icoBox },
+                { id: 'elearning', label: 'eLearning Courses', icon: icoCap },
+                { id: 'halal', label: 'Halal Certificate', icon: icoFolder }
             ];
             document.getElementById('res-list').innerHTML = sections.map(sec => {
-                const contentArr = items.filter(sec.matchContent);
+                const contentArr = items.filter(c => (c.Category || '') === sec.label);
                 const docArr = allReferenceDocs.filter(d => d.Category === sec.label);
                 const total = contentArr.length + docArr.length;
                 return `
@@ -1714,21 +1691,10 @@
 
             applyScopedData(loginData); // v1.27: comes back in this same response now
 
-            // Bridge: new backend doesn't serve results/reports/content/resources yet,
-            // so also hit GAS (still source of truth for that data) to populate the UI.
-            // Its token is discarded — sessionToken stays the new-backend JWT above.
             // Loader stays up through this whole sequence — hiding it before these
             // finish made the screen look idle mid-login, prompting a second click.
             setLoader(true, "Loading your data...");
-            try {
-                const gasRes = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'verify_staff_login', division, outlet, name, passcode })
-                });
-                const gasData = await gasRes.json();
-                if (gasData.authorized) { gasSessionToken = gasData.token || ''; applyScopedData(gasData); }
-            } catch (e) { /* best-effort — login already succeeded above */ }
-            await refreshResultsFromBackend();
+            await Promise.all([refreshResultsFromBackend(), refreshResourcesAndContent()]);
             setLoader(false);
 
             loggedInStaffName = name; loggedInStaffOutlet = outlet; loggedInDivision = division;
@@ -2158,9 +2124,8 @@
             const note = document.getElementById('sup-window-note');
             setLoader(true, months === 0 ? 'Loading full history...' : 'Loading...');
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_scoped_data', token: gasSessionToken, windowMonths: months })
+                const res = await fetch(BACKEND_URL + '/data/scoped-data' + (months ? '?windowMonths=' + months : ''), {
+                    headers: { 'Authorization': 'Bearer ' + sessionToken }
                 });
                 const data = await res.json();
                 if (!data.authorized) {
@@ -2168,7 +2133,12 @@
                     location.reload();
                     return;
                 }
-                applyScopedData(data);
+                allResults = data.results || [];
+                allWrongAnswers = data.wrongAnswers || [];
+                allAIResults = data.aiResults || [];
+                allAIWrongAnswers = data.aiWrongAnswers || [];
+                allReports = data.reports || [];
+                populateGlobalData();
                 note.innerText = months === 0
                     ? 'Showing all available history.'
                     : `Showing the last ${months} months. Older history is available from the Data range control.`;
@@ -2319,21 +2289,9 @@
                 });
                 const data = await res.json();
                 if (!data.authorized) { alert(data.error || "That PIN doesn't look right."); return false; }
-                sessionToken = data.token || ''; // new backend's JWT — used for quiz API calls
+                sessionToken = data.token || ''; // new backend's JWT — used for every API call
 
-                // Bridge: new backend doesn't serve content/results/reports/resources yet,
-                // so also hit GAS (still the source of truth for that data) just to populate
-                // the UI. Its own session token is discarded — sessionToken above stays the
-                // new-backend JWT. Best-effort: login still succeeds if this fails.
-                try {
-                    const gasRes = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'establish_session', role, outlet: outlet || '', pin })
-                    });
-                    const gasData = await gasRes.json();
-                    if (gasData.authorized) { gasSessionToken = gasData.token || ''; applyScopedData(gasData); }
-                } catch (e) { /* best-effort — quiz login already succeeded above */ }
-                await refreshResultsFromBackend();
+                await Promise.all([refreshResultsFromBackend(), refreshResourcesAndContent()]);
 
                 return true;
             } catch(e) {
