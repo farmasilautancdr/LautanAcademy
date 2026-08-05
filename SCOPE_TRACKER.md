@@ -570,3 +570,20 @@ the Vue app, both fixed and verified live:
   existing app icons) and a `vercel.json` catch-all rewrite to
   `index.html`. Verified live: manifest and service worker serve
   correctly, and deep-linked routes return 200 instead of 404.
+- New: Assessment Review section added to Quiz History, retail staff
+  only — surfaces each staff member's own Area Manager-filed reports
+  (topic, skill level, competency, quiz score, product knowledge/gaps/
+  recommendations), with year + topic filters and a month/day badge per
+  entry. The backend already scoped and returned this data in
+  `getScopedData()` for `staff_retail` sessions (`reports.js`/`data.js`
+  were untouched) — only the frontend was missing. Warehouse staff have
+  no report capability end-to-end (data.js doesn't query reports for
+  `staff_warehouse`, and the report form can only target retail staff),
+  so the section is gated to retail. Verified live against a real
+  filed report. Also fixed a display bug caught right after shipping:
+  Quiz Score already includes `%` from the backend, template was
+  appending a second one ("73%%").
+- Explicitly declined for now: moving "Join a Practice Quiz" off the
+  Dashboard into the Quizzes nav group — no page under that group is
+  visible to both retail and warehouse staff without further changes,
+  so it stays on Dashboard as-is.
