@@ -553,3 +553,20 @@ until the new stack is proven with real staff usage (see CLAUDE.md). The
 honest next step now is real-staff usage before calling any of this
 proven — not more build work, a decision about when/how to start relying
 on this in production.
+
+Since that was last written, real staff usage surfaced two more issues in
+the Vue app, both fixed and verified live:
+- Manage Staff's Add row and Reset PIN row overflowed the viewport on
+  phones (flex-item `<input>` doesn't shrink below its intrinsic content
+  width without an explicit `min-w-0` — see the Manage Staff UI item
+  above). Checked the rest of the app for the same pattern; no other
+  instances.
+- The Vue app had zero PWA setup (no manifest, icons, or service
+  worker), so "Add to Home Screen" only ever produced a bare browser
+  shortcut, and — separately — reloading or deep-linking to any
+  non-root route (e.g. a mid-scroll pull-to-refresh) 404'd on Vercel
+  because there was no SPA rewrite for the router's history mode. Fixed
+  with `vite-plugin-pwa` (manifest + service worker, reusing the
+  existing app icons) and a `vercel.json` catch-all rewrite to
+  `index.html`. Verified live: manifest and service worker serve
+  correctly, and deep-linked routes return 200 instead of 404.
