@@ -41,6 +41,7 @@ export const api = {
   // outlet is ignored server-side for supervisor (unscoped, 'ALL').
   managerLogin: (role, outlet, pin) =>
     request('/auth/manager-login', { method: 'POST', body: JSON.stringify({ role, outlet, pin }) }),
+  managerRegister: (payload) => request('/auth/manager-register', { method: 'POST', body: JSON.stringify(payload) }),
   getScopedData: (windowMonths) =>
     request(`/data/scoped-data${windowMonths ? `?windowMonths=${windowMonths}` : ''}`),
   createAiQuiz: (payload) => request('/quiz/create', { method: 'POST', body: JSON.stringify(payload) }),
@@ -75,4 +76,5 @@ export const api = {
   checkStandardAnswer: (id, chosen) => request(`/questions/${id}/check`, { method: 'POST', body: JSON.stringify({ chosen }) }),
   checkAiAnswer: (outlet, passcode, index, chosen) =>
     request(`/quiz/${encodeURIComponent(outlet)}/check`, { method: 'POST', body: JSON.stringify({ passcode, index, chosen }) }),
+  rotateMasterPin: (payload) => request('/auth/rotate-master-pin', { method: 'POST', body: JSON.stringify(payload) }),
 }

@@ -48,6 +48,20 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('lautan_staff')
     },
 
+    // Same response shape as loginManager (manager-register returns
+    // { authorized, token } on success too) — registering also logs you
+    // in immediately, no separate login step needed after.
+    async registerManager(role, outlet, masterPin, newPassword, label = '', outlets = null) {
+      const data = await api.managerRegister({ role, outlet, masterPin, newPassword })
+      if (!data.authorized) throw new Error(data.error || 'Registration failed')
+      this.token = data.token
+      this.manager = { role, outlet, label, outlets }
+      this.staff = null
+      localStorage.setItem('lautan_token', data.token)
+      localStorage.setItem('lautan_manager', JSON.stringify(this.manager))
+      localStorage.removeItem('lautan_staff')
+    },
+
     logout() {
       this.token = null
       this.staff = null
