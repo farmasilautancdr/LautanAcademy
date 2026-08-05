@@ -232,8 +232,24 @@ built AND verified.
 - [x] Staff login, all 4 manager role logins, quiz create/redeem/active/end
       routed through the new backend instead of GAS
 - [x] Results/wrong-answers/AI-history routed through new backend
-- [x] Dual-token bridge to GAS for whatever isn't migrated yet (Reports,
-      Resources, Manage Staff) — known stopgap, see Known Fragility below
+- [x] Reports and Manage Staff repointed off the GAS bridge onto the new
+      backend. Manage Staff: passcode display replaced with a Reset PIN
+      button (hashed storage can't show an existing passcode the way GAS
+      could). Reports: assessment-date field stays in the form, not sent
+      (matches the Vue app's existing behavior). Dual-token bridge to GAS
+      remains for **Resources/Content only** now — deliberately out of
+      scope for this pass, see Known Fragility below.
+      Found and fixed two real bugs while doing this, both deployed:
+      (1) vanilla's Area Manager login sent a plain outlet code, which the
+      backend now rejects since Area Manager region-scoping — login was
+      fully broken until fixed; (2) `POST /reports` compared
+      `scopeKey !== outlet` directly, but scopeKey has been the area id
+      since that same region-scoping change — **every Area Manager report
+      submission had been silently 403ing in the already-shipped Vue app
+      too**, not just something the vanilla work would have hit.
+      Also added `id_note` to `staff_roster` (was missing entirely —
+      matches GAS's IDNote column for disambiguating duplicate names,
+      would have been a silent feature loss otherwise).
 
 ## ❌ Not built yet
 
@@ -284,9 +300,10 @@ built AND verified.
 ## Known fragility (see CLAUDE.md hard rule 5)
 
 - Vanilla `index.html` juggles two session tokens (new backend JWT +
-  GAS-issued token) to bridge features that haven't migrated yet. Real fix
-  is finishing the backend endpoints above so the GAS bridge — and the
-  second token — can be removed entirely.
+  GAS-issued token) to bridge features that haven't migrated yet — now just
+  Resources/Content (Reports and Manage Staff were repointed off it). Real
+  fix is building Resources on the new backend's own terms in vanilla too,
+  so the GAS bridge — and the second token — can be removed entirely.
 - `GAS_URL` and `BACKEND_URL` are hardcoded constants in `index.html`;
   already caused one real outage this session (stale deployment ID). Now
   also true of `VITE_API_URL` baked into the Vercel build — if the Railway
@@ -309,12 +326,15 @@ built AND verified.
 ## Suggested build order (next)
 
 Every item that was tracked as unbuilt is now done, tested, and deployed —
-no open checkboxes remain anywhere in this document. That's not the same
-as "ready to cut over": GAS stays authoritative until the new stack is
-proven with real staff usage (see CLAUDE.md), and vanilla `index.html`'s
-dual-token bridge to GAS for Reports/Resources/Manage Staff (see Known
-fragility below) is still real — those features work on the new backend
-now, vanilla just hasn't been repointed to use its own backend's endpoints
-for them instead of GAS's. That repoint, plus actual real-staff usage
-before calling this proven, are the honest next steps — not new build
-work, a decision about when/how to start relying on this in production.
+no open checkboxes remain anywhere in this document. Reports and Manage
+Staff have also been repointed off the GAS bridge in vanilla, and two real
+bugs that surfaced along the way are fixed and deployed (Area Manager
+login in vanilla, and a report-submission 403 that had been silently
+broken in the already-shipped Vue app since region-scoping). Resources/
+Content is the one remaining GAS bridge in vanilla, deliberately deferred.
+
+That's still not the same as "ready to cut over": GAS stays authoritative
+until the new stack is proven with real staff usage (see CLAUDE.md). The
+honest next steps are the Resources repoint (whenever that's wanted) and
+actual real-staff usage before calling this proven — not more build work,
+a decision about when/how to start relying on this in production.
