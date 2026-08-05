@@ -106,7 +106,7 @@ async function removeStaff(name) {
           </div>
           <div v-if="resettingName === s.Name" class="mt-3 flex items-center gap-2">
             <input v-model="resetPin" type="password" inputmode="numeric" maxlength="4" placeholder="New 4-digit PIN"
-              class="flex-1 border border-slate/30 rounded-lg py-1.5 px-3 text-sm" />
+              class="flex-1 min-w-0 border border-slate/30 rounded-lg py-1.5 px-3 text-sm" />
             <button @click="submitReset" :disabled="resetting" class="bg-aqua text-white text-xs font-medium px-3 py-1.5 rounded-lg disabled:opacity-60">
               {{ resetting ? '...' : 'Save' }}
             </button>
@@ -118,7 +118,7 @@ async function removeStaff(name) {
     </div>
 
     <form @submit.prevent="addStaff" class="border-t border-seafoam p-5 flex items-center gap-2">
-      <input v-model="addName" type="text" placeholder="Name" class="flex-1 border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+      <input v-model="addName" type="text" placeholder="Name" class="flex-1 min-w-0 border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="addPin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" class="w-32 border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <button type="submit" :disabled="adding" class="bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60 shrink-0">
         {{ adding ? 'Adding...' : 'Add' }}
