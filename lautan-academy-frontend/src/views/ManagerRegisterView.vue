@@ -1,9 +1,8 @@
 <script setup>
-// Retail/Warehouse division picks between Outlet Manager and Warehouse
-// Manager — same pattern as staff login. These are genuinely different
-// backend roles (outlet_manager vs warehouse_manager), not variants of one
-// role, so the toggle drives both which option list shows and which role
-// gets sent to /auth/manager-login.
+// Mirrors ManagerLoginView.vue's division toggle and outlet list. Used for
+// first-time signup, a forgotten password, or outlet handover — all three
+// are the same action here: prove you know today's master PIN, set a new
+// password. See docs/superpowers/specs/2026-08-06-manager-auth-design.md.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
@@ -14,7 +13,9 @@ const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
 
 const division = ref('retail')
 const outlet = ref('')
-const pin = ref('')
+const masterPin = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
 const error = ref('')
 const loading = ref(false)
 const router = useRouter()
@@ -27,23 +28,31 @@ function switchDivision(d) {
   outlet.value = ''
 }
 
-async function handleLogin() {
+async function handleRegister() {
   error.value = ''
   if (!outlet.value) {
     error.value = division.value === 'warehouse' ? 'Select your location.' : 'Select your outlet.'
     return
   }
-  if (!pin.value.trim()) {
-    error.value = 'Enter the manager PIN.'
+  if (!masterPin.value.trim()) {
+    error.value = "Enter today's master PIN."
+    return
+  }
+  if (newPassword.value.length < 6) {
+    error.value = 'New password must be at least 6 characters.'
+    return
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    error.value = 'Passwords do not match.'
     return
   }
   loading.value = true
   const role = division.value === 'warehouse' ? 'warehouse_manager' : 'outlet_manager'
   try {
-    await auth.loginManager(role, outlet.value, pin.value.trim())
+    await auth.registerManager(role, outlet.value, masterPin.value.trim(), newPassword.value)
     router.push(role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
   } catch (err) {
-    error.value = err.message || 'That PIN doesn\'t look right.'
+    error.value = err.message || 'Could not register. Check the master PIN.'
   } finally {
     loading.value = false
   }
@@ -52,7 +61,7 @@ async function handleLogin() {
 
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
-    <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+    <div class="w-full max-w-sm">
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
           <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
@@ -61,10 +70,10 @@ async function handleLogin() {
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3 text-center">Outlet / Warehouse Manager</p>
+        <p class="text-slate text-sm mt-3 text-center">Register — Outlet / Warehouse Manager</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
+      <form @submit.prevent="handleRegister" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1.5">Division</label>
           <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Division">
@@ -96,13 +105,36 @@ async function handleLogin() {
         </div>
 
         <div>
-          <label for="pin" class="block text-sm font-medium text-ink mb-1">Manager PIN</label>
+          <label for="master-pin" class="block text-sm font-medium text-ink mb-1">Master PIN</label>
           <input
-            id="pin"
-            v-model="pin"
+            id="master-pin"
+            v-model="masterPin"
             type="password"
             placeholder="••••••"
             class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+          />
+          <p class="text-xs text-slate mt-1">Get this from Supervisor/HQ — it proves you're the legitimate manager for this {{ division === 'warehouse' ? 'location' : 'outlet' }}.</p>
+        </div>
+
+        <div>
+          <label for="new-password" class="block text-sm font-medium text-ink mb-1">New Password</label>
+          <input
+            id="new-password"
+            v-model="newPassword"
+            type="password"
+            placeholder="At least 6 characters"
+            class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+          />
+        </div>
+
+        <div>
+          <label for="confirm-password" class="block text-sm font-medium text-ink mb-1">Confirm Password</label>
+          <input
+            id="confirm-password"
+            v-model="confirmPassword"
+            type="password"
+            placeholder="Re-enter password"
+            class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 
@@ -113,29 +145,13 @@ async function handleLogin() {
           :disabled="loading"
           class="w-full bg-aqua text-white font-medium py-3 rounded-lg hover:bg-deepsea transition-colors disabled:opacity-60"
         >
-          {{ loading ? 'Checking...' : 'Log in' }}
+          {{ loading ? 'Registering...' : 'Register' }}
         </button>
       </form>
 
       <p class="text-center text-slate text-xs mt-6">
-        Staff? <router-link to="/login" class="underline">Log in here</router-link>
-      </p>
-      <p class="text-center text-slate text-xs mt-2">
-        Area Manager? <router-link to="/area-manager-login" class="underline">Log in here</router-link>
-      </p>
-      <p class="text-center text-slate text-xs mt-2">
-        Supervisor? <router-link to="/supervisor-login" class="underline">Log in here</router-link>
-      </p>
-      <p class="text-center text-slate text-xs mt-2">
-        First time? <router-link to="/manager-register" class="underline">Register your outlet</router-link>
+        Already registered? <router-link to="/manager-login" class="underline">Log in here</router-link>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-@keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>

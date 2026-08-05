@@ -94,6 +94,9 @@ async function handleLogin() {
       <p class="text-center text-slate text-xs mt-2">
         Supervisor? <router-link to="/supervisor-login" class="underline">Log in here</router-link>
       </p>
+      <p class="text-center text-slate text-xs mt-2">
+        First time? <router-link to="/area-manager-register" class="underline">Register your region</router-link>
+      </p>
     </div>
   </div>
 </template>

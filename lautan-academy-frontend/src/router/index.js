@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/auth'
 import LoginView from '../views/LoginView.vue'
 import ManagerLoginView from '../views/ManagerLoginView.vue'
 import AreaManagerLoginView from '../views/AreaManagerLoginView.vue'
+import ManagerRegisterView from '../views/ManagerRegisterView.vue'
+import AreaManagerRegisterView from '../views/AreaManagerRegisterView.vue'
 import SupervisorLoginView from '../views/SupervisorLoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import QuizHistoryView from '../views/QuizHistoryView.vue'
@@ -33,6 +35,8 @@ const router = createRouter({
     // pattern as staff login (see ManagerLoginView.vue).
     { path: '/manager-login', name: 'manager-login', component: ManagerLoginView, meta: { managerRoles: ['outlet_manager', 'warehouse_manager'] } },
     { path: '/area-manager-login', name: 'area-manager-login', component: AreaManagerLoginView, meta: { managerRoles: ['area_manager'] } },
+    { path: '/manager-register', name: 'manager-register', component: ManagerRegisterView },
+    { path: '/area-manager-register', name: 'area-manager-register', component: AreaManagerRegisterView },
     { path: '/supervisor-login', name: 'supervisor-login', component: SupervisorLoginView, meta: { managerRoles: ['supervisor'] } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/history', name: 'history', component: QuizHistoryView, meta: { requiresAuth: true, role: 'staff' } },
