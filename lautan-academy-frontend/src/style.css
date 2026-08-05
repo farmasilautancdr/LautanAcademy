@@ -5,6 +5,14 @@
 body {
   font-family: 'Inter', sans-serif;
   color: #132433;
+  overflow-x: hidden;
+}
+
+/* Fluid-width safety net: nothing should be able to force horizontal
+   scroll on a small screen regardless of its own intrinsic size. */
+img, svg, video, table {
+  max-width: 100%;
+  height: auto;
 }
 
 h1, h2, h3, .font-display {

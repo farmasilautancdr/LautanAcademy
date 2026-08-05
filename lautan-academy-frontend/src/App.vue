@@ -13,7 +13,7 @@ const showSidebar = computed(() => auth.isStaff || auth.isManager)
 <template>
   <div v-if="showSidebar" class="flex">
     <AppSidebar />
-    <div class="flex-1 min-w-0 pb-16 md:pb-0">
+    <div class="flex-1 min-w-0 pb-20 md:pb-0">
       <router-view />
     </div>
   </div>

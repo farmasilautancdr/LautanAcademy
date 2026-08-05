@@ -184,7 +184,7 @@ built AND verified.
       Verified: region mapping logic (9 regions, no outlet in >1 region,
       unknown area rejected), the `ANY($1)` scoping query against the real
       schema, and a real Area Manager login end-to-end on production
-      (https://lautan-academy-frontend.vercel.app) — login, dashboard, and
+      (https://lautan-academy.vercel.app) — login, dashboard, and
       Reviews' outlet-then-staff picker all confirmed working.
 - [x] Supervisor dashboard — unscoped PIN-only login, `windowMonths` filter
       (3/6/12 months/all-time), company-wide stats (staff/outlets/avg score)
@@ -275,7 +275,9 @@ built AND verified.
       not Direct — see Known Fragility). Verified: health check, staff
       login, scoped-data, content — all real DB round-trips.
 - [x] Vue frontend — deployed to Vercel:
-      https://lautan-academy-frontend.vercel.app
+      https://lautan-academy.vercel.app
+      (domain changed from lautan-academy-frontend.vercel.app after initial
+      deploy — same Vercel project, just the custom domain)
       `VITE_API_URL` set to the Railway URL above. Verified: bundle
       contains the correct backend URL (not localhost), CORS confirmed
       working between the two live origins.
