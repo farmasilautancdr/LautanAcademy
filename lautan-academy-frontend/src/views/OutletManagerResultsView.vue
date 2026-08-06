@@ -11,7 +11,7 @@
 // that topic's wrong answers together, not just the one being expanded, a
 // pre-existing schema limitation shared with AreaManagerDashboard.vue). AI
 // Practice matches by the real AttemptID, exact per-attempt.
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 
@@ -23,6 +23,33 @@ const aiHistory = ref([])
 const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
 const loading = ref(true)
+
+const standardYear = ref('ALL')
+const standardTopic = ref('ALL')
+const aiYear = ref('ALL')
+const aiTopic = ref('ALL')
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+function dateBadge(iso) {
+  const d = new Date(iso)
+  return { month: MONTHS[d.getMonth()], day: d.getDate() }
+}
+
+const standardYears = computed(() => [...new Set(standardHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const standardTopics = computed(() => [...new Set(standardHistory.value.map((h) => h.Topic))].sort())
+const filteredStandardHistory = computed(() => standardHistory.value.filter((h) => {
+  if (standardYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== standardYear.value) return false
+  if (standardTopic.value !== 'ALL' && h.Topic !== standardTopic.value) return false
+  return true
+}))
+
+const aiYears = computed(() => [...new Set(aiHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const aiTopics = computed(() => [...new Set(aiHistory.value.map((h) => h.Topic))].sort())
+const filteredAiHistory = computed(() => aiHistory.value.filter((h) => {
+  if (aiYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== aiYear.value) return false
+  if (aiTopic.value !== 'ALL' && h.Topic !== aiTopic.value) return false
+  return true
+}))
 
 onMounted(async () => {
   try {
@@ -57,49 +84,81 @@ function wrongsForAi(attemptId) {
         <section>
           <h2 class="font-display text-base font-semibold text-ink mb-3">Module Quiz</h2>
           <div v-if="standardHistory.length === 0" class="text-slate text-sm">No attempts yet.</div>
-          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(h, i) in standardHistory" :key="i" class="px-5 py-3">
-              <summary class="flex items-center justify-between cursor-pointer">
-                <div>
-                  <p class="text-sm font-medium text-ink">{{ h.Name }} · {{ h.Topic }}</p>
-                  <p class="text-xs text-slate">{{ new Date(h.Timestamp).toLocaleDateString() }}</p>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="standardYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All years</option>
+                <option v-for="y in standardYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="standardTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All topics</option>
+                <option v-for="t in standardTopics" :key="t" :value="t">{{ t }}</option>
+              </select>
+            </div>
+            <div v-if="filteredStandardHistory.length === 0" class="text-slate text-sm">No attempts match this filter.</div>
+            <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+              <details v-for="(h, i) in filteredStandardHistory" :key="i" class="px-5 py-3">
+                <summary class="flex items-center gap-3 cursor-pointer">
+                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
+                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(h.Timestamp).day }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ h.Name }} · {{ h.Topic }}</p>
+                  </div>
+                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                    {{ h.Score }}
+                  </span>
+                </summary>
+                <div v-if="wrongsForStandard(h.Name, h.Topic).length" class="mt-3 space-y-2">
+                  <div v-for="(w, j) in wrongsForStandard(h.Name, h.Topic)" :key="j" class="bg-seafoam rounded-lg p-3">
+                    <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
+                  </div>
                 </div>
-                <span class="text-sm font-display font-semibold shrink-0 ml-3" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-                  {{ h.Score }}
-                </span>
-              </summary>
-              <div v-if="wrongsForStandard(h.Name, h.Topic).length" class="mt-3 space-y-2">
-                <div v-for="(w, j) in wrongsForStandard(h.Name, h.Topic)" :key="j" class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
-                  <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
-                </div>
-              </div>
-            </details>
-          </div>
+              </details>
+            </div>
+          </template>
         </section>
 
         <section class="mt-8">
           <h2 class="font-display text-base font-semibold text-ink mb-3">AI Practice</h2>
           <div v-if="aiHistory.length === 0" class="text-slate text-sm">No attempts yet.</div>
-          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="h in aiHistory" :key="h.AttemptID" class="px-5 py-3">
-              <summary class="flex items-center justify-between cursor-pointer">
-                <div>
-                  <p class="text-sm font-medium text-ink">{{ h.Name }} · {{ h.Topic }}</p>
-                  <p class="text-xs text-slate">{{ new Date(h.Timestamp).toLocaleDateString() }}</p>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="aiYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All years</option>
+                <option v-for="y in aiYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="aiTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+                <option value="ALL">All topics</option>
+                <option v-for="t in aiTopics" :key="t" :value="t">{{ t }}</option>
+              </select>
+            </div>
+            <div v-if="filteredAiHistory.length === 0" class="text-slate text-sm">No attempts match this filter.</div>
+            <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+              <details v-for="h in filteredAiHistory" :key="h.AttemptID" class="px-5 py-3">
+                <summary class="flex items-center gap-3 cursor-pointer">
+                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
+                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(h.Timestamp).day }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ h.Name }} · {{ h.Topic }}</p>
+                  </div>
+                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                    {{ h.Score }}
+                  </span>
+                </summary>
+                <div v-if="wrongsForAi(h.AttemptID).length" class="mt-3 space-y-2">
+                  <div v-for="(w, j) in wrongsForAi(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
+                    <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
+                  </div>
                 </div>
-                <span class="text-sm font-display font-semibold shrink-0 ml-3" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-                  {{ h.Score }}
-                </span>
-              </summary>
-              <div v-if="wrongsForAi(h.AttemptID).length" class="mt-3 space-y-2">
-                <div v-for="(w, j) in wrongsForAi(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
-                  <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
-                </div>
-              </div>
-            </details>
-          </div>
+              </details>
+            </div>
+          </template>
         </section>
       </template>
     </main>
