@@ -80,12 +80,11 @@ const sections = computed(() => {
       // working feature that fits this section better than dead-ending.
       items: [{ label: 'Staff Roster', to: managerStaffPath.value, icon: 'send' }],
     })
-    groups.push({
-      label: 'Outlet Performance',
-      items: [
-        { label: 'Staff Results', to: managerResultsPath.value, icon: 'chart' },
-      ],
-    })
+    const performanceItems = [{ label: 'Staff Results', to: managerResultsPath.value, icon: 'chart' }]
+    if (managerRole.value === 'outlet_manager') {
+      performanceItems.push({ label: 'Staff Review', to: '/manager/staff-review', icon: 'clipboard' })
+    }
+    groups.push({ label: 'Outlet Performance', items: performanceItems })
     groups.push({
       label: 'Browse Courses',
       items: [{ label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' }],
