@@ -587,3 +587,26 @@ the Vue app, both fixed and verified live:
   Dashboard into the Quizzes nav group — no page under that group is
   visible to both retail and warehouse staff without further changes,
   so it stays on Dashboard as-is.
+- New: topic/year filters + month/day date badges added to Staff Results
+  on all three manager roles (Outlet Manager, Warehouse Manager, Area
+  Manager — Area Manager's is cascading, year/topic options narrow to
+  the outlet filter's current selection), matching the pattern already
+  shipped in staff's Assessment Review. New: "Staff Review" page for
+  Outlet Manager only (sidebar-gated, not shown to Warehouse Manager) —
+  read-only view of Area Manager-filed assessment reports for that
+  outlet's staff, same year/topic filter + date badge pattern, each card
+  also shows Staff Name since it spans the whole outlet. No backend
+  changes — reused `getScopedData()`'s already-outlet-scoped `reports`
+  array. Label fix: Area Manager's Assessment form dropped the stray
+  "— comments" suffix on the Product Knowledge field. Final whole-branch
+  review caught two real runtime bugs the no-test-framework build-only
+  verification couldn't have: Area Manager's cascading filter left a
+  stale year/topic selection after switching outlets (blank dropdown,
+  empty list); the year filter narrowed the visible list but not the
+  wrong-answer detail lookup, which still scanned unfiltered data by
+  name+topic instead of the real `AttemptID` the backend already
+  provides — fixed by porting Quiz History's existing AttemptID-based
+  match. A second review pass then caught the fix itself dropping the
+  staff-name check in the legacy fallback (cross-staff wrong-answer leak
+  for pre-migration rows) — fixed and re-verified. Verified live on
+  phone across all 3 manager roles + the new Staff Review page.
