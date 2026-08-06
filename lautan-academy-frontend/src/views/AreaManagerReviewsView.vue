@@ -217,7 +217,7 @@ async function submitReport() {
             <input v-model="competency" type="number" min="0" max="10" placeholder="0-10" class="w-24 border border-slate/30 rounded-lg py-2 px-3 text-center" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Product Knowledge — comments</label>
+            <label class="block text-sm font-medium text-ink mb-1">Product Knowledge</label>
             <textarea v-model="productKnowledgeComments" rows="2" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
           </div>
           <div>
