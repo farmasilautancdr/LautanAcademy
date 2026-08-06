@@ -65,7 +65,7 @@ onMounted(async () => {
 
 function wrongsForStandard(h) {
   if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
-  return wrongAnswers.value.filter((w) => !w.AttemptID && w.Topic === h.Topic)
+  return wrongAnswers.value.filter((w) => !w.AttemptID && w['Staff Name'] === h.Name && w.Topic === h.Topic)
 }
 function wrongsForAi(attemptId) {
   return aiWrongAnswers.value.filter((w) => w.AttemptID === attemptId)
