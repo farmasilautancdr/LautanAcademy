@@ -20,6 +20,14 @@ const allResults = ref([])
 const wrongAnswers = ref([])
 const loading = ref(true)
 const outletFilter = ref('ALL')
+const yearFilter = ref('ALL')
+const topicFilter = ref('ALL')
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+function dateBadge(iso) {
+  const d = new Date(iso)
+  return { month: MONTHS[d.getMonth()], day: d.getDate() }
+}
 
 onMounted(async () => {
   try {
@@ -30,7 +38,14 @@ onMounted(async () => {
   loading.value = false
 })
 
-const results = computed(() => outletFilter.value === 'ALL' ? allResults.value : allResults.value.filter((r) => r.Outlet === outletFilter.value))
+const outletScopedResults = computed(() => outletFilter.value === 'ALL' ? allResults.value : allResults.value.filter((r) => r.Outlet === outletFilter.value))
+const resultYears = computed(() => [...new Set(outletScopedResults.value.map((r) => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const resultTopics = computed(() => [...new Set(outletScopedResults.value.map((r) => r.Topic))].sort())
+const results = computed(() => outletScopedResults.value.filter((r) => {
+  if (yearFilter.value !== 'ALL' && new Date(r.Timestamp).getFullYear() !== yearFilter.value) return false
+  if (topicFilter.value !== 'ALL' && r.Topic !== topicFilter.value) return false
+  return true
+}))
 
 // Staff names aren't unique across a region's outlets, so wrong-answers
 // must match on outlet too, not just name+topic.
@@ -47,23 +62,35 @@ function wrongsFor(name, outlet, topic) {
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
-      <div class="mb-6">
+      <div class="flex flex-wrap gap-2 mb-6">
         <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">All outlets in region</option>
           <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
         </select>
+        <select v-model="yearFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">All years</option>
+          <option v-for="y in resultYears" :key="y" :value="y">{{ y }}</option>
+        </select>
+        <select v-model="topicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">All topics</option>
+          <option v-for="t in resultTopics" :key="t" :value="t">{{ t }}</option>
+        </select>
       </div>
 
       <div v-if="loading" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="results.length === 0" class="text-slate text-sm">No results yet{{ outletFilter === 'ALL' ? ' for this region' : ` for ${outletFilter}` }}.</div>
+      <div v-else-if="results.length === 0" class="text-slate text-sm">No results match this filter.</div>
       <div v-else class="space-y-3">
         <details v-for="(r, i) in results" :key="i" class="bg-white rounded-xl2 shadow-sm">
-          <summary class="flex items-center justify-between px-5 py-3 cursor-pointer">
-            <div>
-              <p class="text-sm font-medium text-ink">{{ r.Name }} · {{ r.Topic }}</p>
-              <p class="text-xs text-slate">{{ r.Outlet }} · {{ new Date(r.Timestamp).toLocaleDateString() }}</p>
+          <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
+            <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+              <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+              <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
             </div>
-            <span class="text-sm font-display font-semibold" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+              <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+            </div>
+            <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
               {{ r.Score }}
             </span>
           </summary>
