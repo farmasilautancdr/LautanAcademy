@@ -5,11 +5,12 @@
 //
 // Module Quiz and AI Practice shown as two separate sections, not merged
 // (same reasoning as staff's QuizHistoryView.vue) — plus wrong-answer
-// review per attempt, which this page never had. Module Quiz matches
-// wrong answers by name+topic (no shared attempt id in that table — a
-// staff member retaking the same topic on a different day shows all of
-// that topic's wrong answers together, not just the one being expanded, a
-// pre-existing schema limitation shared with AreaManagerDashboard.vue). AI
+// review per attempt, which this page never had. Module Quiz matches wrong
+// answers by AttemptID, same approach as QuizHistoryView.vue and
+// AreaManagerDashboard.vue: rows saved after the attempt_id migration (see
+// backend migrate-add-attempt-id.js) get exact per-attempt matching; older
+// rows predating it have no AttemptID on either side, so those fall back
+// to the old name+topic match instead of silently showing nothing. AI
 // Practice matches by the real AttemptID, exact per-attempt.
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
@@ -62,8 +63,9 @@ onMounted(async () => {
   loading.value = false
 })
 
-function wrongsForStandard(name, topic) {
-  return wrongAnswers.value.filter((w) => w['Staff Name'] === name && w.Topic === topic)
+function wrongsForStandard(h) {
+  if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
+  return wrongAnswers.value.filter((w) => !w.AttemptID && w.Topic === h.Topic)
 }
 function wrongsForAi(attemptId) {
   return aiWrongAnswers.value.filter((w) => w.AttemptID === attemptId)
@@ -86,18 +88,18 @@ function wrongsForAi(attemptId) {
           <div v-if="standardHistory.length === 0" class="text-slate text-sm">No attempts yet.</div>
           <template v-else>
             <div class="flex flex-wrap gap-2 mb-3">
-              <select v-model="standardYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <select v-model="standardYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">All years</option>
                 <option v-for="y in standardYears" :key="y" :value="y">{{ y }}</option>
               </select>
-              <select v-model="standardTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <select v-model="standardTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">All topics</option>
                 <option v-for="t in standardTopics" :key="t" :value="t">{{ t }}</option>
               </select>
             </div>
             <div v-if="filteredStandardHistory.length === 0" class="text-slate text-sm">No attempts match this filter.</div>
             <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-              <details v-for="(h, i) in filteredStandardHistory" :key="i" class="px-5 py-3">
+              <details v-for="h in filteredStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
                 <summary class="flex items-center gap-3 cursor-pointer">
                   <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                     <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
@@ -110,8 +112,8 @@ function wrongsForAi(attemptId) {
                     {{ h.Score }}
                   </span>
                 </summary>
-                <div v-if="wrongsForStandard(h.Name, h.Topic).length" class="mt-3 space-y-2">
-                  <div v-for="(w, j) in wrongsForStandard(h.Name, h.Topic)" :key="j" class="bg-seafoam rounded-lg p-3">
+                <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
+                  <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
                     <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
                     <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
                   </div>
@@ -126,11 +128,11 @@ function wrongsForAi(attemptId) {
           <div v-if="aiHistory.length === 0" class="text-slate text-sm">No attempts yet.</div>
           <template v-else>
             <div class="flex flex-wrap gap-2 mb-3">
-              <select v-model="aiYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <select v-model="aiYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">All years</option>
                 <option v-for="y in aiYears" :key="y" :value="y">{{ y }}</option>
               </select>
-              <select v-model="aiTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <select v-model="aiTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">All topics</option>
                 <option v-for="t in aiTopics" :key="t" :value="t">{{ t }}</option>
               </select>

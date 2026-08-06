@@ -7,7 +7,7 @@
 // auth.manager.outlet is the area id ("R1 - AMIRUL") for this role, not one
 // outlet — scoped-data now returns every outlet in the region, so each
 // result needs its own outlet shown rather than assuming a single one.
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
@@ -22,6 +22,15 @@ const loading = ref(true)
 const outletFilter = ref('ALL')
 const yearFilter = ref('ALL')
 const topicFilter = ref('ALL')
+
+// yearFilter/topicFilter options are derived from outletScopedResults, so a
+// value picked under one outlet can be meaningless under another (renders
+// blank, list goes empty) — reset both back to ALL whenever the outlet
+// scope changes.
+watch(outletFilter, () => {
+  yearFilter.value = 'ALL'
+  topicFilter.value = 'ALL'
+})
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 function dateBadge(iso) {
@@ -47,10 +56,15 @@ const results = computed(() => outletScopedResults.value.filter((r) => {
   return true
 }))
 
-// Staff names aren't unique across a region's outlets, so wrong-answers
-// must match on outlet too, not just name+topic.
-function wrongsFor(name, outlet, topic) {
-  return wrongAnswers.value.filter(w => w['Staff Name'] === name && w.Outlet === outlet && w.Topic === topic)
+// Matches by AttemptID, same approach as QuizHistoryView.vue and
+// OutletManagerResultsView.vue: rows saved after the attempt_id migration
+// (see backend migrate-add-attempt-id.js) get exact per-attempt matching.
+// Older rows predating it have no AttemptID on either side — for those
+// only, fall back to the old name+outlet+topic match (staff names aren't
+// unique across a region's outlets, so the fallback must check outlet too).
+function wrongsFor(h) {
+  if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
+  return wrongAnswers.value.filter((w) => !w.AttemptID && w['Staff Name'] === h.Name && w.Outlet === h.Outlet && w.Topic === h.Topic)
 }
 </script>
 
@@ -62,46 +76,49 @@ function wrongsFor(name, outlet, topic) {
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
-      <div class="flex flex-wrap gap-2 mb-6">
-        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">All outlets in region</option>
-          <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
-        </select>
-        <select v-model="yearFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">All years</option>
-          <option v-for="y in resultYears" :key="y" :value="y">{{ y }}</option>
-        </select>
-        <select v-model="topicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">All topics</option>
-          <option v-for="t in resultTopics" :key="t" :value="t">{{ t }}</option>
-        </select>
-      </div>
-
       <div v-if="loading" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="results.length === 0" class="text-slate text-sm">No results match this filter.</div>
-      <div v-else class="space-y-3">
-        <details v-for="(r, i) in results" :key="i" class="bg-white rounded-xl2 shadow-sm">
-          <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
-            <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
-              <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
-              <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+      <div v-else-if="allResults.length === 0" class="text-slate text-sm">No results yet.</div>
+      <template v-else>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+            <option value="ALL">All outlets in region</option>
+            <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
+          </select>
+          <select v-model="yearFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+            <option value="ALL">All years</option>
+            <option v-for="y in resultYears" :key="y" :value="y">{{ y }}</option>
+          </select>
+          <select v-model="topicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+            <option value="ALL">All topics</option>
+            <option v-for="t in resultTopics" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div v-if="results.length === 0" class="text-slate text-sm">No results match this filter.</div>
+        <div v-else class="space-y-3">
+          <details v-for="r in results" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
+            <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
+              <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+                <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+              </div>
+              <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                {{ r.Score }}
+              </span>
+            </summary>
+            <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
+              <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
+                <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
+                <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
+              </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
-              <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
-            </div>
-            <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-              {{ r.Score }}
-            </span>
-          </summary>
-          <div v-if="wrongsFor(r.Name, r.Outlet, r.Topic).length" class="px-5 pb-4 space-y-2">
-            <div v-for="(w, j) in wrongsFor(r.Name, r.Outlet, r.Topic)" :key="j" class="bg-seafoam rounded-lg p-3">
-              <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
-              <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
-            </div>
-          </div>
-        </details>
-      </div>
+          </details>
+        </div>
+      </template>
     </main>
   </div>
 </template>

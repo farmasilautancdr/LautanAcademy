@@ -58,11 +58,11 @@ function wrongsFor(attemptId) {
       <div v-else-if="history.length === 0" class="text-slate text-sm">No attempts yet.</div>
       <template v-else>
         <div class="flex flex-wrap gap-2 mb-3">
-          <select v-model="filterYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <select v-model="filterYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option value="ALL">All years</option>
             <option v-for="y in filterYears" :key="y" :value="y">{{ y }}</option>
           </select>
-          <select v-model="filterTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <select v-model="filterTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option value="ALL">All topics</option>
             <option v-for="t in filterTopics" :key="t" :value="t">{{ t }}</option>
           </select>

@@ -63,11 +63,11 @@ function dateBadge(iso) {
       </div>
       <template v-else>
         <div class="flex flex-wrap gap-2 mb-3">
-          <select v-model="reportYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <select v-model="reportYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option value="ALL">All years</option>
             <option v-for="y in reportYears" :key="y" :value="y">{{ y }}</option>
           </select>
-          <select v-model="reportTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <select v-model="reportTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option value="ALL">All topics</option>
             <option v-for="t in reportTopics" :key="t" :value="t">{{ t }}</option>
           </select>
@@ -76,7 +76,7 @@ function dateBadge(iso) {
           <p class="text-slate text-sm">No assessments match this filter.</p>
         </div>
         <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <details v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3.5">
+          <details v-for="r in filteredReports" :key="`${r['Staff Name']}|${r['Training Title']}|${r.Timestamp}`" class="px-5 py-3.5">
             <summary class="flex items-center gap-4 cursor-pointer">
               <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                 <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
