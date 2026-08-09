@@ -13,4 +13,5 @@
 - Area Manager scoping bypassed in vanilla login (Fixed).
 [FRAGILITY]: In-app Drive resource upload UI is dormant due to Google Workspace service account storage quotas.
 [ACTIVE TASK]: None.
-[NEXT STEPS]: Awaiting task from user.
+[NEXT STEPS]: User to visually verify PasswordField eye-toggle in browser (dev server running at localhost:5173) — no browser tool available this session, only verified via Vite compile (no errors) + code review.
+[DECISIONS]: Added shared `src/components/PasswordField.vue` (eye-toggle show/hide) for Manager/Area Manager/Supervisor PIN+password fields (7 views, 10 inputs). Spec: `docs/superpowers/specs/2026-08-09-password-visibility-toggle-design.md`. NOT applied to ManageStaffPanel.vue (staff PIN, out of scope).

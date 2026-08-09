@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
+import PasswordField from '../components/PasswordField.vue'
 
 const pin = ref('')
 const error = ref('')
@@ -43,12 +44,11 @@ async function handleLogin() {
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Supervisor PIN</label>
-          <input
+          <PasswordField
             v-model="pin"
-            type="password"
             placeholder="••••••"
             autofocus
-            class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua"
+            input-class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua"
           />
         </div>
 

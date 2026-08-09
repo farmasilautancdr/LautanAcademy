@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import { AREAS, outletsForArea } from '../config/areas'
+import PasswordField from '../components/PasswordField.vue'
 
 const areaId = ref('')
 const pin = ref('')
@@ -65,11 +66,10 @@ async function handleLogin() {
 
         <div>
           <label class="block text-sm font-medium text-ink mb-1">Manager PIN</label>
-          <input
+          <PasswordField
             v-model="pin"
-            type="password"
             placeholder="••••••"
-            class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+            input-class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 

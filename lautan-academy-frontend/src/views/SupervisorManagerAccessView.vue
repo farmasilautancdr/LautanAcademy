@@ -4,6 +4,7 @@
 // recoverable). See docs/superpowers/specs/2026-08-06-manager-auth-design.md.
 import { ref } from 'vue'
 import { api } from '../api/client'
+import PasswordField from '../components/PasswordField.vue'
 
 const ROLES = [
   { role: 'outlet_manager', label: 'Outlet Manager' },
@@ -61,20 +62,20 @@ async function rotate(role) {
         <p class="text-sm font-medium text-ink mb-2">{{ r.label }}</p>
         <form @submit.prevent="rotate(r.role)" class="flex items-center gap-2">
           <label :for="`pin-${r.role}`" class="sr-only">New master PIN for {{ r.label }}</label>
-          <input
+          <PasswordField
             :id="`pin-${r.role}`"
             v-model="pins[r.role]"
-            type="password"
             placeholder="New master PIN"
-            class="flex-1 min-w-0 border border-slate/30 rounded-lg py-2 px-3 text-sm"
+            class="flex-1 min-w-0"
+            input-class="w-full border border-slate/30 rounded-lg py-2 pl-3 pr-9 text-sm"
           />
           <label :for="`confirm-${r.role}`" class="sr-only">Confirm new master PIN for {{ r.label }}</label>
-          <input
+          <PasswordField
             :id="`confirm-${r.role}`"
             v-model="confirmPins[r.role]"
-            type="password"
             placeholder="Confirm master PIN"
-            class="flex-1 min-w-0 border border-slate/30 rounded-lg py-2 px-3 text-sm"
+            class="flex-1 min-w-0"
+            input-class="w-full border border-slate/30 rounded-lg py-2 pl-3 pr-9 text-sm"
           />
           <button
             type="submit"

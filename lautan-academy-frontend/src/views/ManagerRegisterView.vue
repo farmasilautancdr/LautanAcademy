@@ -7,6 +7,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
+import PasswordField from '../components/PasswordField.vue'
 
 const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
 const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
@@ -106,35 +107,32 @@ async function handleRegister() {
 
         <div>
           <label for="master-pin" class="block text-sm font-medium text-ink mb-1">Master PIN</label>
-          <input
+          <PasswordField
             id="master-pin"
             v-model="masterPin"
-            type="password"
             placeholder="••••••"
-            class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+            input-class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
           <p class="text-xs text-slate mt-1">Get this from Supervisor/HQ — it proves you're the legitimate manager for this {{ division === 'warehouse' ? 'location' : 'outlet' }}.</p>
         </div>
 
         <div>
           <label for="new-password" class="block text-sm font-medium text-ink mb-1">New Password</label>
-          <input
+          <PasswordField
             id="new-password"
             v-model="newPassword"
-            type="password"
             placeholder="At least 6 characters"
-            class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+            input-class="w-full border border-slate/30 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 
         <div>
           <label for="confirm-password" class="block text-sm font-medium text-ink mb-1">Confirm Password</label>
-          <input
+          <PasswordField
             id="confirm-password"
             v-model="confirmPassword"
-            type="password"
             placeholder="Re-enter password"
-            class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
+            input-class="w-full border border-slate/30 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 
