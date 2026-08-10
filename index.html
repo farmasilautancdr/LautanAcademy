@@ -2060,11 +2060,16 @@
 
             for(let i = answeredCount; i < currentQuizData.length; i++) {
                 const q = currentQuizData[i];
-                const correctIdx = parseInt(q.correct);
+                // AI Practice questions have no local `correct` field (see
+                // handleChoice) — showing the actual right answer here would
+                // need a live check call per leftover question for a purely
+                // informational summary line, not worth it. Standard Quiz
+                // still has it locally, so its exit-early summary is unchanged.
+                const correctIdx = isAIQuiz ? null : parseInt(q.correct);
                 staffWrongs.push({
                     qText: currentLang === 'en' ? q.question_en : (q.question_ms || q.question_en),
                     userChoice: '(no answer — exited early)',
-                    correctText: currentLang === 'en' ? q[`opt${correctIdx + 1}_en`] : (q[`opt${correctIdx + 1}_ms`] || q[`opt${correctIdx + 1}_en`])
+                    correctText: correctIdx === null ? '(not shown)' : (currentLang === 'en' ? q[`opt${correctIdx + 1}_en`] : (q[`opt${correctIdx + 1}_ms`] || q[`opt${correctIdx + 1}_en`]))
                 });
             }
 
@@ -2363,11 +2368,39 @@
             const pct = Math.round((quizIdx / currentQuizData.length) * 100);
             document.getElementById('progress-fill').style.width = pct + '%';
         }
-        function handleChoice(idx, btn, q) {
-            const correctIdx = parseInt(q.correct), buttons = document.querySelectorAll('.opt-btn');
-            buttons.forEach(b => b.style.pointerEvents = 'none'); 
+        // AI Practice questions never carry `correct` (backend strips it from
+        // POST /quiz/redeem — server grades attempts itself, see quiz.js) —
+        // parseInt(q.correct) here would always be NaN, so every AI Practice
+        // answer used to show as wrong regardless of what was picked. Fixed
+        // by asking the backend live per answer, same pattern QuizView.vue
+        // already uses. Standard Quiz still reads q.correct locally for
+        // now — that data still comes from GAS's bulk fetch, which is a
+        // separate, tracked piece of work (see docs/superpowers/specs).
+        async function handleChoice(idx, btn, q) {
+            const buttons = document.querySelectorAll('.opt-btn');
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+
+            let correctIdx;
+            if (isAIQuiz) {
+                try {
+                    const res = await fetch(BACKEND_URL + '/quiz/' + encodeURIComponent(loggedInStaffOutlet) + '/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                        body: JSON.stringify({ passcode: joinedPasscode, index: quizIdx, chosen: idx })
+                    });
+                    const data = await res.json();
+                    correctIdx = data.correctIndex;
+                } catch (e) {
+                    buttons.forEach(b => b.style.pointerEvents = 'auto');
+                    alert("Couldn't check your answer — check your connection and try again.");
+                    return;
+                }
+            } else {
+                correctIdx = parseInt(q.correct);
+            }
+
             if (idx === correctIdx) { btn.classList.add('opt-correct'); score++; } else {
-                btn.classList.add('opt-wrong'); buttons[correctIdx].classList.add('opt-correct'); 
+                btn.classList.add('opt-wrong'); buttons[correctIdx].classList.add('opt-correct');
                 staffWrongs.push({ qText: currentLang === 'en' ? q.question_en : (q.question_ms || q.question_en), userChoice: btn.innerText, correctText: currentLang === 'en' ? q[`opt${correctIdx + 1}_en`] : (q[`opt${correctIdx+1}_ms`] || q[`opt${correctIdx+1}_en`]) });
             }
             if (quizIdx < currentQuizData.length - 1) document.getElementById('next-btn').classList.remove('hidden');
