@@ -5,7 +5,8 @@
 
 [STACK]: Vue 3, Vite, Tailwind | Node.js, Express, Postgres (Supabase) | JWT auth, native bcrypt.
 [STRUCTURE]: Frontend repo `lautan-academy-frontend/` (this repo). Backend is a SEPARATE sibling repo `C:\Users\Hafiz\projects\lautan-academy-backend` (not `/backend` in this repo, despite CLAUDE.md). Branch -> `master`, direct commits (no feature-branch workflow used).
-[RULES]: Bilingual (EN/MS) for UI strings. No new frameworks/libs without asking. Match existing file styles. Old GAS version remains authoritative until full migration.
+[RULES]: Bilingual (EN/MS) for UI strings. No new frameworks/libs without asking. Match existing file styles. GAS→Postgres migration COMPLETE (2026-08-11) — Postgres is sole source of truth, GAS web app deployment decommissioned, no code path anywhere talks to GAS.
+[CUTOVER]: Full cutover from GAS completed 2026-08-11 — 3 steps, sequential, each user-confirmed: (1) confirmed nobody hand-edits the Google Sheet anymore, everyone uses the app; (2) GAS web app deployment archived/disabled via Apps Script's Deploy → Manage deployments — verified dead (`GET` on the old GAS URL now 404s); (3) CLAUDE.md rule 6 + this file's [RULES] line updated to declare Postgres authoritative. The underlying Sheet/script data itself was left untouched (not deleted), only the web app deployment killed — reversible if ever needed, but not expected to be.
 [DECISIONS]: Switched to native bcrypt to prevent single-thread blocking during concurrent logins.
 [MISTAKES]:
 - `standard_questions.id` string/int mismatch caused 0 scoring (Fixed).

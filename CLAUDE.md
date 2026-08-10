@@ -7,7 +7,7 @@
 4. Log all mistakes & fixes. Never repeat them.
 5. Upon task completion, summarize outcomes to MEMORY.md, check off the item in SCOPE_TRACKER.md (ONLY after verifying programmatically), then prompt the user to `/clear` chat history to reset token burn.
 6. Target: Lautan Academy (Internal PWA for Farmasi Lautan. Lautan Academy (formerly PharmAcademy) is an internal PWA for Farmasi Lautan,
-a Malaysian pharmacy retail chain (50+ outlets, R1–R9 clusters). It's a staff training/quiz platform: role-scoped sessions, AI-generated quizzes, per-attempt tracking, outlet-scoped data access. Full production migration from GAS to Vue/Node/Postgres).
+a Malaysian pharmacy retail chain (50+ outlets, R1–R9 clusters). It's a staff training/quiz platform: role-scoped sessions, AI-generated quizzes, per-attempt tracking, outlet-scoped data access. **Migration from GAS to Vue/Node/Postgres is COMPLETE as of 2026-08-11** — GAS web app deployment decommissioned, Postgres is sole source of truth, no code path anywhere talks to GAS.
 7. Stack (new): Vue 3 + Vite + Tailwind (frontend), Node.js + Express + Postgres (backend), Supabase for hosted DB. No other frameworks/libraries added without asking first.
 
 # About me
