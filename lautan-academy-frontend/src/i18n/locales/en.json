@@ -192,5 +192,15 @@
     "submitting": "Submitting...",
     "submitQuiz": "Submit quiz",
     "errorSubmitFailed": "Could not submit your answers. Check your connection and try again."
+  },
+  "resultView": {
+    "noResult": "No result found.",
+    "backToDashboard": "Back to My Learning",
+    "passedTitle": "Well done!",
+    "practiceTitle": "Keep practicing",
+    "scoreLine": "You scored {correct} out of {total}",
+    "missedQuestions": "Missed questions",
+    "questionPrefix": "Q: {text}",
+    "correctLabel": "✓ Correct: {text}"
   }
 }

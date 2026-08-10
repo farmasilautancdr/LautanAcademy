@@ -192,5 +192,15 @@
     "submitting": "Menghantar...",
     "submitQuiz": "Hantar kuiz",
     "errorSubmitFailed": "Tidak dapat menghantar jawapan anda. Semak sambungan anda dan cuba lagi."
+  },
+  "resultView": {
+    "noResult": "Tiada keputusan dijumpai.",
+    "backToDashboard": "Kembali ke Pembelajaran Saya",
+    "passedTitle": "Syabas!",
+    "practiceTitle": "Terus berlatih",
+    "scoreLine": "Anda mendapat {correct} daripada {total}",
+    "missedQuestions": "Soalan tersilap",
+    "questionPrefix": "S: {text}",
+    "correctLabel": "✓ Betul: {text}"
   }
 }
