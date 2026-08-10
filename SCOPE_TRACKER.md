@@ -331,6 +331,22 @@ built AND verified.
       (`overflow-x: hidden` on body, `max-width: 100%` on
       img/svg/video/table) so nothing can force horizontal scroll on a
       small screen regardless of its own intrinsic size.
+- [x] i18n Phase 1 (EN/BM) — `vue-i18n` wired app-wide
+      (`src/i18n/index.js`, `legacy: false`, persisted to
+      `localStorage['lautan_lang']`). `LanguageSwitcher.vue` — segmented
+      pill, text-only EN/BM (no flags, dropped after user feedback),
+      active side highlighted. Migrated: 6 standalone login/register
+      screens (staff, outlet/warehouse manager, area manager, supervisor
+      login + manager/area-manager register) and `AppSidebar.vue` (desktop
+      nav, mobile bottom nav — same `sections` data, no separate
+      translation site needed — role labels, logout). BM text authored
+      directly (no paid translation API, per explicit instruction).
+      Verified: `npm run build` clean, EN/BM key-parity check clean (no
+      keys missing either direction), user confirmed live in browser on
+      `/login` and `/manager-login` (switcher toggles, both languages
+      render). Remaining ~22 views (dashboards, quiz flow, results, staff
+      panels, resources, reports) and `QuizView.vue`'s pre-existing local
+      `lang` toggle are Phase 2, not started — see MEMORY.md.
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
