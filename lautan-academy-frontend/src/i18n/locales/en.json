@@ -402,5 +402,22 @@
     "last12Months": "Last 12 months",
     "noSubmissionsFiltered": "No submissions match this filter.",
     "filedByCompetency": "Filed by {manager} · Competency {competency}/10"
+  },
+  "supervisorDashboard": {
+    "title": "Company-wide",
+    "last3Months": "Last 3 months",
+    "last6Months": "Last 6 months",
+    "last12Months": "Last 12 months",
+    "allTime": "All time",
+    "allRegions": "All regions",
+    "allOutlets": "All outlets",
+    "loading": "Loading...",
+    "staffActive": "Staff active",
+    "outletsActive": "Outlets active",
+    "averageScore": "Average score",
+    "activityLog": "Activity Log",
+    "noActivity": "No activity in this window.",
+    "kindStandard": "Standard",
+    "kindAiPractice": "AI Practice"
   }
 }

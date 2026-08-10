@@ -402,5 +402,22 @@
     "last12Months": "12 bulan lepas",
     "noSubmissionsFiltered": "Tiada penyerahan sepadan dengan penapis ini.",
     "filedByCompetency": "Difailkan oleh {manager} · Kecekapan {competency}/10"
+  },
+  "supervisorDashboard": {
+    "title": "Seluruh Syarikat",
+    "last3Months": "3 bulan lepas",
+    "last6Months": "6 bulan lepas",
+    "last12Months": "12 bulan lepas",
+    "allTime": "Sepanjang masa",
+    "allRegions": "Semua wilayah",
+    "allOutlets": "Semua cawangan",
+    "loading": "Memuatkan...",
+    "staffActive": "Staf aktif",
+    "outletsActive": "Cawangan aktif",
+    "averageScore": "Skor purata",
+    "activityLog": "Log Aktiviti",
+    "noActivity": "Tiada aktiviti dalam tempoh ini.",
+    "kindStandard": "Standard",
+    "kindAiPractice": "Latihan AI"
   }
 }
