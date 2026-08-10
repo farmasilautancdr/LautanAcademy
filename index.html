@@ -725,6 +725,7 @@
         // used to read a free-text name field now reads these instead.
         let loggedInStaffName = '', loggedInStaffOutlet = '', loggedInDivision = '';
         let currentWarehouseMgrLocation = '';
+        let staffReviewRoster = [];
 
         const outletList = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
         const managerData = [
@@ -1231,7 +1232,7 @@
             setLoader(false);
         }
 
-        function populateOutletMgrDropdowns(scope) {
+        async function populateOutletMgrDropdowns(scope) {
             scope = scope || 'retail';
             const prefix = scope === 'warehouse' ? 'wh-' : '';
             const outlet = scope === 'warehouse' ? currentWarehouseMgrLocation : currentOutletMgrOutlet;
@@ -1254,6 +1255,11 @@
                 document.getElementById('staff-review-quiz-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + quizTopics.map(t => `<option value="${t}">${t}</option>`).join('');
                 document.getElementById('staff-review-ai-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + outletAITopics.map(t => `<option value="${t}">${t}</option>`).join('');
                 document.getElementById('staff-review-report-topic-filter').innerHTML = '<option value="ALL">All topics</option>' + reportTopics.map(t => `<option value="${t}">${t}</option>`).join('');
+                try {
+                    const res = await fetch(BACKEND_URL + '/auth/staff-roster?division=retail&outlet=' + encodeURIComponent(outlet.toUpperCase()));
+                    const data = await res.json();
+                    staffReviewRoster = data.staff || [];
+                } catch (e) { staffReviewRoster = []; }
                 renderStaffReviewSummary();
             }
 
@@ -1862,12 +1868,12 @@
             const aiFilter = document.getElementById('staff-review-ai-topic-filter').value || 'ALL';
             const reportFilter = document.getElementById('staff-review-report-topic-filter').value || 'ALL';
             const outlet = currentOutletMgrOutlet.toUpperCase();
-            const staffHere = allStaffRoster.filter(r => (r.Division||'').toString().trim().toLowerCase() === 'retail' && (r.Outlet||'').toString().trim().toUpperCase() === outlet);
+            const staffHere = staffReviewRoster;
 
             if (!staffHere.length) { list.innerHTML = '<p class="text-xs text-center py-3" style="color:var(--text-muted)">No staff added for this outlet yet.</p>'; return; }
 
             list.innerHTML = staffHere.map((s, i) => {
-                const name = s.Name.toString().trim().toUpperCase();
+                const name = s.name.toString().trim().toUpperCase();
                 // Each filter narrows only its own section — selecting a Standard
                 // Quiz topic no longer hides AI Practice or Report entries for the
                 // same person, and vice versa.
