@@ -22,6 +22,9 @@ user-facing text.
 - Backend Root: `/backend` -> `cd backend && npm run dev`
 - Root Files: `CLAUDE.md`, `MEMORY.md`, `SCOPE_TRACKER.md`
 
+# ACTIVE INITIATIVES
+- Master User / Super Admin role + Control Panel — 8-subsystem build (A-H), see MEMORY.md for breakdown + order. Security-sensitive: RBAC bypass, hard delete, impersonation. Full brainstorm/spec/plan cycle per subsystem, no shortcuts.
+
 # HARD RULES
 - **Ask First:** Never assume ambiguous fields, data shapes, or locations.
 - **Show the Plan:** Before touching files for anything beyond a 1-line fix, explain the changes and wait for clearance.

@@ -14,6 +14,17 @@
 [FRAGILITY]: In-app Drive resource upload UI is dormant due to Google Workspace service account storage quotas.
 
 [ACTIVE TASK]: i18n (EN/BM) rollout — Phase 1 + Phase 2 (all 4 batches, 32 views/components) COMPLETE. Batch 3 (Warehouse+Area Manager) and Batch 4 (Supervisor) manual browser click-through + BM native-speaker spot-check done live 2026-08-10 (user confirmed both OK, no issues) — closes the last outstanding item. i18n rollout fully done end to end, nothing left open.
+
+[ACTIVE TASK]: Master User / Super Admin role + Control Panel — requested 2026-08-10, in brainstorming/design stage, starting with subsystem A. Decomposed into 8 sub-projects (each own spec/plan cycle), build order agreed with user:
+- A. Master role + auth + panel shell (foundation) — STARTING NOW
+- B. PIN reset override + master bypass on existing permission checks
+- C. Test-data purge + hard delete (high-risk, needs confirm flow)
+- D. Maintenance kill-switch (global flag + middleware check on every route)
+- E. Audit logs (new table + hooks into every existing write endpoint — biggest, most invasive)
+- F. DB backup/export (standalone one-click)
+- G. Active sessions + force-logout (real architecture change — current auth is fully stateless JWT, zero session tracking exists in DB today)
+- H. Outlet/role impersonation switcher (security-sensitive "view as", own scoping design needed)
+Current auth architecture (checked before decomposing): no roles table — roles are hardcoded scopeType strings baked into the JWT (`staff_retail`, `outlet_manager`, etc via `middleware/auth.js` + `routes/auth.js`), bcrypt PIN in `manager_pins`/`manager_credentials`. No sessions table, no audit_log table exist yet — G and E need real new infra, not just UI.
 [DECISIONS]:
 - `vue-i18n` (Composition API, `legacy: false`) wired app-wide. `src/i18n/index.js`, locale files `src/i18n/locales/{en,ms}.json` (flat, one top-level namespace per view). `LanguageSwitcher.vue` toggles + persists to `localStorage['lautan_lang']`.
 - BM text authored directly by Claude (no paid translation API) — native-speaker spot-check done live 2026-08-10, confirmed OK.
