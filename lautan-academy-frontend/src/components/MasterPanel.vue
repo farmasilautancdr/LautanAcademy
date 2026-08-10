@@ -4,16 +4,17 @@ import { useI18n } from 'vue-i18n'
 import { useMasterAuthStore } from '../store/masterAuth'
 import MasterPinReset from './MasterPinReset.vue'
 import MasterDataPurge from './MasterDataPurge.vue'
+import MasterMaintenance from './MasterMaintenance.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
 
-// Subsystems D-H (see docs/superpowers/specs/2026-08-10-master-admin-
-// subsystem-a-design.md) each fill one of these in — pinReset and dataPurge
-// are real, the rest stay disabled placeholders.
+// Subsystems E-H (see docs/superpowers/specs/2026-08-10-master-admin-
+// subsystem-a-design.md) each fill one of these in — pinReset, dataPurge,
+// and maintenanceMode are real, the rest stay disabled placeholders.
 const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset', 'dataPurge']
+const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode']
 
 const activeTab = ref(null)
 
@@ -34,6 +35,7 @@ function handleLogout() {
 
         <MasterPinReset v-if="activeTab === 'pinReset'" @close="activeTab = null" />
         <MasterDataPurge v-else-if="activeTab === 'dataPurge'" @close="activeTab = null" />
+        <MasterMaintenance v-else-if="activeTab === 'maintenanceMode'" @close="activeTab = null" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button

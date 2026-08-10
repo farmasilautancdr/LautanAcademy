@@ -530,6 +530,23 @@
       "successUpdated": "PIN Supervisor telah dikemas kini.",
       "errorUpdateFailed": "Gagal mengemas kini."
     },
+    "maintenanceMode": {
+      "title": "Mod Penyelenggaraan",
+      "intro": "Apabila aktif, semua sesi staf dan pengurus disekat daripada menggunakan aplikasi (mereka masih boleh log masuk) sehingga anda matikannya semula. Sesi Master anda sendiri tidak terjejas.",
+      "back": "Kembali",
+      "loading": "Memuatkan...",
+      "statusOn": "Penyelenggaraan AKTIF",
+      "statusOff": "Penyelenggaraan TIDAK AKTIF",
+      "messageLabel": "Mesej untuk pengguna yang disekat (pilihan)",
+      "messagePlaceholder": "cth. Kembali online jam 3 petang",
+      "enable": "Aktifkan",
+      "disable": "Matikan",
+      "saving": "Menyimpan...",
+      "successEnabled": "Mod penyelenggaraan diaktifkan.",
+      "successDisabled": "Mod penyelenggaraan dimatikan.",
+      "errorLoadFailed": "Gagal memuatkan status semasa.",
+      "errorSaveFailed": "Gagal mengemas kini."
+    },
     "dataPurge": {
       "title": "Padam Data Ujian",
       "back": "Kembali",

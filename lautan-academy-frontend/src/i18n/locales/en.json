@@ -530,6 +530,23 @@
       "successUpdated": "Supervisor PIN updated.",
       "errorUpdateFailed": "Could not update."
     },
+    "maintenanceMode": {
+      "title": "Maintenance Mode",
+      "intro": "When on, every staff and manager session is blocked from using the app (they can still log in) until you turn it back off. Your own Master session is never affected.",
+      "back": "Back",
+      "loading": "Loading...",
+      "statusOn": "Maintenance is ON",
+      "statusOff": "Maintenance is OFF",
+      "messageLabel": "Message shown to blocked users (optional)",
+      "messagePlaceholder": "e.g. Back online by 3pm",
+      "enable": "Turn On",
+      "disable": "Turn Off",
+      "saving": "Saving...",
+      "successEnabled": "Maintenance mode turned on.",
+      "successDisabled": "Maintenance mode turned off.",
+      "errorLoadFailed": "Could not load current status.",
+      "errorSaveFailed": "Could not update."
+    },
     "dataPurge": {
       "title": "Test Data Purge",
       "back": "Back",
