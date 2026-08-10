@@ -21,5 +21,28 @@
     "errorMissingFields": "Enter your outlet and name.",
     "errorBadPasscode": "Enter your 4-digit passcode.",
     "errorNotRecognized": "That name/passcode combination was not recognized. Check with your outlet manager."
+  },
+  "managerLogin": {
+    "subtitle": "Outlet / Warehouse Manager",
+    "division": "Division",
+    "retail": "Retail",
+    "warehouse": "Warehouse",
+    "outletLabel": "Outlet",
+    "locationLabel": "Location",
+    "selectOutlet": "Select outlet...",
+    "selectLocation": "Select location...",
+    "managerPin": "Manager PIN",
+    "checking": "Checking...",
+    "logIn": "Log in",
+    "errorSelectOutlet": "Select your outlet.",
+    "errorSelectLocation": "Select your location.",
+    "errorEnterPin": "Enter the manager PIN.",
+    "errorBadPin": "That PIN doesn't look right.",
+    "staffPrompt": "Staff? ",
+    "areaManagerPrompt": "Area Manager? ",
+    "supervisorPrompt": "Supervisor? ",
+    "firstTimePrompt": "First time? ",
+    "logInHere": "Log in here",
+    "registerOutlet": "Register your outlet"
   }
 }

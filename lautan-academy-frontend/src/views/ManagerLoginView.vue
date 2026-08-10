@@ -6,9 +6,13 @@
 // gets sent to /auth/manager-login.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import PasswordField from '../components/PasswordField.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
 const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
@@ -31,11 +35,11 @@ function switchDivision(d) {
 async function handleLogin() {
   error.value = ''
   if (!outlet.value) {
-    error.value = division.value === 'warehouse' ? 'Select your location.' : 'Select your outlet.'
+    error.value = division.value === 'warehouse' ? t('managerLogin.errorSelectLocation') : t('managerLogin.errorSelectOutlet')
     return
   }
   if (!pin.value.trim()) {
-    error.value = 'Enter the manager PIN.'
+    error.value = t('managerLogin.errorEnterPin')
     return
   }
   loading.value = true
@@ -44,7 +48,7 @@ async function handleLogin() {
     await auth.loginManager(role, outlet.value, pin.value.trim())
     router.push(role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
   } catch (err) {
-    error.value = err.message || 'That PIN doesn\'t look right.'
+    error.value = err.message || t('managerLogin.errorBadPin')
   } finally {
     loading.value = false
   }
@@ -54,6 +58,9 @@ async function handleLogin() {
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
     <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="flex justify-end mb-2">
+        <LanguageSwitcher />
+      </div>
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
           <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
@@ -62,13 +69,13 @@ async function handleLogin() {
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3 text-center">Outlet / Warehouse Manager</p>
+        <p class="text-slate text-sm mt-3 text-center">{{ t('managerLogin.subtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
-          <label class="block text-sm font-medium text-ink mb-1.5">Division</label>
-          <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Division">
+          <label class="block text-sm font-medium text-ink mb-1.5">{{ t('managerLogin.division') }}</label>
+          <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="t('managerLogin.division')">
             <button
               type="button"
               role="radio"
@@ -76,7 +83,7 @@ async function handleLogin() {
               @click="switchDivision('retail')"
               class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="division === 'retail' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-            >Retail</button>
+            >{{ t('managerLogin.retail') }}</button>
             <button
               type="button"
               role="radio"
@@ -84,20 +91,20 @@ async function handleLogin() {
               @click="switchDivision('warehouse')"
               class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="division === 'warehouse' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-            >Warehouse</button>
+            >{{ t('managerLogin.warehouse') }}</button>
           </div>
         </div>
 
         <div>
-          <label for="outlet" class="block text-sm font-medium text-ink mb-1">{{ division === 'warehouse' ? 'Location' : 'Outlet' }}</label>
+          <label for="outlet" class="block text-sm font-medium text-ink mb-1">{{ division === 'warehouse' ? t('managerLogin.locationLabel') : t('managerLogin.outletLabel') }}</label>
           <select id="outlet" v-model="outlet" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-            <option value="">{{ division === 'warehouse' ? 'Select location...' : 'Select outlet...' }}</option>
+            <option value="">{{ division === 'warehouse' ? t('managerLogin.selectLocation') : t('managerLogin.selectOutlet') }}</option>
             <option v-for="o in outletOptions" :key="o" :value="o">{{ o }}</option>
           </select>
         </div>
 
         <div>
-          <label for="pin" class="block text-sm font-medium text-ink mb-1">Manager PIN</label>
+          <label for="pin" class="block text-sm font-medium text-ink mb-1">{{ t('managerLogin.managerPin') }}</label>
           <PasswordField
             id="pin"
             v-model="pin"
@@ -113,21 +120,21 @@ async function handleLogin() {
           :disabled="loading"
           class="w-full bg-aqua text-white font-medium py-3 rounded-lg hover:bg-deepsea transition-colors disabled:opacity-60"
         >
-          {{ loading ? 'Checking...' : 'Log in' }}
+          {{ loading ? t('managerLogin.checking') : t('managerLogin.logIn') }}
         </button>
       </form>
 
       <p class="text-center text-slate text-xs mt-6">
-        Staff? <router-link to="/login" class="underline">Log in here</router-link>
+        {{ t('managerLogin.staffPrompt') }}<router-link to="/login" class="underline">{{ t('managerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        Area Manager? <router-link to="/area-manager-login" class="underline">Log in here</router-link>
+        {{ t('managerLogin.areaManagerPrompt') }}<router-link to="/area-manager-login" class="underline">{{ t('managerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        Supervisor? <router-link to="/supervisor-login" class="underline">Log in here</router-link>
+        {{ t('managerLogin.supervisorPrompt') }}<router-link to="/supervisor-login" class="underline">{{ t('managerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        First time? <router-link to="/manager-register" class="underline">Register your outlet</router-link>
+        {{ t('managerLogin.firstTimePrompt') }}<router-link to="/manager-register" class="underline">{{ t('managerLogin.registerOutlet') }}</router-link>
       </p>
     </div>
   </div>

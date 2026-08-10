@@ -21,5 +21,28 @@
     "errorMissingFields": "Masukkan cawangan dan nama anda.",
     "errorBadPasscode": "Masukkan kod laluan 4-digit anda.",
     "errorNotRecognized": "Kombinasi nama/kod laluan tidak dikenali. Sila semak dengan pengurus cawangan anda."
+  },
+  "managerLogin": {
+    "subtitle": "Pengurus Cawangan / Gudang",
+    "division": "Bahagian",
+    "retail": "Runcit",
+    "warehouse": "Gudang",
+    "outletLabel": "Cawangan",
+    "locationLabel": "Lokasi",
+    "selectOutlet": "Pilih cawangan...",
+    "selectLocation": "Pilih lokasi...",
+    "managerPin": "PIN Pengurus",
+    "checking": "Menyemak...",
+    "logIn": "Log Masuk",
+    "errorSelectOutlet": "Pilih cawangan anda.",
+    "errorSelectLocation": "Pilih lokasi anda.",
+    "errorEnterPin": "Masukkan PIN pengurus.",
+    "errorBadPin": "PIN tidak sah.",
+    "staffPrompt": "Staf? ",
+    "areaManagerPrompt": "Pengurus Kawasan? ",
+    "supervisorPrompt": "Penyelia? ",
+    "firstTimePrompt": "Kali pertama? ",
+    "logInHere": "Log masuk di sini",
+    "registerOutlet": "Daftar cawangan anda"
   }
 }
