@@ -100,5 +100,25 @@
     "errorPasswordLength": "Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.",
     "errorPasswordMismatch": "Kata laluan tidak sepadan.",
     "errorRegisterFailed": "Pendaftaran gagal. Sila semak PIN induk."
+  },
+  "areaManagerRegister": {
+    "subtitle": "Pendaftaran — Pengurus Kawasan",
+    "area": "Kawasan",
+    "selectArea": "Pilih kawasan anda...",
+    "masterPin": "PIN Induk",
+    "masterPinHint": "Dapatkan ini daripada Penyelia/Ibu Pejabat — ia mengesahkan anda pengurus sah untuk kawasan ini.",
+    "newPassword": "Kata Laluan Baharu",
+    "newPasswordPlaceholder": "Sekurang-kurangnya 6 aksara",
+    "confirmPassword": "Sahkan Kata Laluan",
+    "confirmPasswordPlaceholder": "Masukkan semula kata laluan",
+    "registering": "Mendaftar...",
+    "register": "Daftar",
+    "alreadyRegisteredPrompt": "Sudah berdaftar? ",
+    "logInHere": "Log masuk di sini",
+    "errorSelectArea": "Pilih kawasan anda.",
+    "errorMasterPin": "Masukkan PIN induk hari ini.",
+    "errorPasswordLength": "Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.",
+    "errorPasswordMismatch": "Kata laluan tidak sepadan.",
+    "errorRegisterFailed": "Pendaftaran gagal. Sila semak PIN induk."
   }
 }

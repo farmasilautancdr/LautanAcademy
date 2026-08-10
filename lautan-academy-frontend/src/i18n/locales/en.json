@@ -100,5 +100,25 @@
     "errorPasswordLength": "New password must be at least 6 characters.",
     "errorPasswordMismatch": "Passwords do not match.",
     "errorRegisterFailed": "Could not register. Check the master PIN."
+  },
+  "areaManagerRegister": {
+    "subtitle": "Register — Area Manager",
+    "area": "Area",
+    "selectArea": "Select your area...",
+    "masterPin": "Master PIN",
+    "masterPinHint": "Get this from Supervisor/HQ — it proves you're the legitimate manager for this region.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "At least 6 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter password",
+    "registering": "Registering...",
+    "register": "Register",
+    "alreadyRegisteredPrompt": "Already registered? ",
+    "logInHere": "Log in here",
+    "errorSelectArea": "Select your area.",
+    "errorMasterPin": "Enter today's master PIN.",
+    "errorPasswordLength": "New password must be at least 6 characters.",
+    "errorPasswordMismatch": "Passwords do not match.",
+    "errorRegisterFailed": "Could not register. Check the master PIN."
   }
 }
