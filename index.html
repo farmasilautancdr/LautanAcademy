@@ -2371,35 +2371,34 @@
             const pct = Math.round((quizIdx / currentQuizData.length) * 100);
             document.getElementById('progress-fill').style.width = pct + '%';
         }
-        // AI Practice questions never carry `correct` (backend strips it from
-        // POST /quiz/redeem — server grades attempts itself, see quiz.js) —
-        // parseInt(q.correct) here would always be NaN, so every AI Practice
-        // answer used to show as wrong regardless of what was picked. Fixed
-        // by asking the backend live per answer, same pattern QuizView.vue
-        // already uses. Standard Quiz still reads q.correct locally for
-        // now — that data still comes from GAS's bulk fetch, which is a
-        // separate, tracked piece of work (see docs/superpowers/specs).
+        // Neither quiz type carries a local `correct` field anymore —
+        // Standard Quiz questions come from GET /questions (backend strips
+        // it, same as AI Practice's POST /quiz/redeem) since the GAS bridge
+        // was closed. Both paths now ask the backend live, per answer,
+        // differing only in which check endpoint and body shape they use.
         async function handleChoice(idx, btn, q) {
             const buttons = document.querySelectorAll('.opt-btn');
             buttons.forEach(b => b.style.pointerEvents = 'none');
 
             let correctIdx;
-            if (isAIQuiz) {
-                try {
-                    const res = await fetch(BACKEND_URL + '/quiz/' + encodeURIComponent(loggedInStaffOutlet) + '/check', {
+            try {
+                const res = isAIQuiz
+                    ? await fetch(BACKEND_URL + '/quiz/' + encodeURIComponent(loggedInStaffOutlet) + '/check', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
                         body: JSON.stringify({ passcode: joinedPasscode, index: quizIdx, chosen: idx })
+                    })
+                    : await fetch(BACKEND_URL + '/questions/' + q.id + '/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+                        body: JSON.stringify({ chosen: idx })
                     });
-                    const data = await res.json();
-                    correctIdx = data.correctIndex;
-                } catch (e) {
-                    buttons.forEach(b => b.style.pointerEvents = 'auto');
-                    alert("Couldn't check your answer — check your connection and try again.");
-                    return;
-                }
-            } else {
-                correctIdx = parseInt(q.correct);
+                const data = await res.json();
+                correctIdx = data.correctIndex;
+            } catch (e) {
+                buttons.forEach(b => b.style.pointerEvents = 'auto');
+                alert("Couldn't check your answer — check your connection and try again.");
+                return;
             }
 
             if (idx === correctIdx) { btn.classList.add('opt-correct'); score++; } else {
