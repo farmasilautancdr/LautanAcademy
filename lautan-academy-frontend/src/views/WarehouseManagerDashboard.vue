@@ -5,11 +5,13 @@
 // scope never included those fields for warehouse).
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
 const auth = useAuthStore()
 const route = useRoute()
+const { t } = useI18n()
 const location = auth.manager?.outlet // reused field name in store — holds location for this role
 const managerLabel = `Warehouse Manager - ${location}`
 
@@ -86,7 +88,7 @@ function startCountdown() {
     if (!activeQuiz.value) { remaining.value = ''; return }
     const expiresAt = new Date(activeQuiz.value.createdAt).getTime() + 60 * 60 * 1000
     const ms = expiresAt - Date.now()
-    if (ms <= 0) { remaining.value = 'Expired'; activeQuiz.value = null; return }
+    if (ms <= 0) { remaining.value = t('warehouseManagerDashboard.expired'); activeQuiz.value = null; return }
     const mins = Math.floor(ms / 60000)
     const secs = Math.floor((ms % 60000) / 1000)
     remaining.value = `${mins}:${secs.toString().padStart(2, '0')}`
@@ -123,7 +125,7 @@ onUnmounted(() => { if (timerHandle) clearInterval(timerHandle) })
 async function createQuiz() {
   createError.value = ''
   if (!topicLabel.value.trim()) {
-    createError.value = 'Enter a topic.'
+    createError.value = t('warehouseManagerDashboard.errorEnterTopic')
     return
   }
   creating.value = true
@@ -143,14 +145,14 @@ async function createQuiz() {
     extraNotes.value = ''
     clearResourceSource()
   } catch (err) {
-    createError.value = err.message || 'Could not generate the quiz.'
+    createError.value = err.message || t('warehouseManagerDashboard.errorGenerateFailed')
   } finally {
     creating.value = false
   }
 }
 
 async function endQuiz() {
-  if (!confirm("End this code now? Staff won't be able to join with it anymore.")) return
+  if (!confirm(t('warehouseManagerDashboard.confirmEndQuiz'))) return
   try {
     await api.endQuiz(location)
   } catch (e) { /* best-effort */ }
@@ -163,63 +165,63 @@ async function endQuiz() {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
-      <p class="text-aqualight text-xs">Warehouse Manager</p>
+      <p class="text-aqualight text-xs">{{ t('sidebar.roleWarehouseManager') }}</p>
       <h1 class="font-display text-xl font-semibold text-white">{{ location }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
       <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">AI Practice Quiz</h2>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('warehouseManagerDashboard.aiPracticeQuiz') }}</h2>
 
         <div v-if="activeQuiz" class="bg-white rounded-xl2 p-5 shadow-sm mb-4">
-          <p class="text-xs text-slate uppercase tracking-wide">Active code</p>
+          <p class="text-xs text-slate uppercase tracking-wide">{{ t('warehouseManagerDashboard.activeCode') }}</p>
           <p class="font-display text-3xl font-bold text-aqua tracking-[0.3em]">{{ activeQuiz.passcode }}</p>
-          <p class="text-sm text-ink mt-1">{{ activeQuiz.topic }} · {{ activeQuiz.count }} questions</p>
-          <p class="text-xs text-slate mt-1">Expires in {{ remaining }}</p>
-          <button @click="endQuiz" class="mt-3 text-coral text-xs font-medium underline">End this code now</button>
+          <p class="text-sm text-ink mt-1">{{ t('warehouseManagerDashboard.quizSummary', { topic: activeQuiz.topic, count: activeQuiz.count }) }}</p>
+          <p class="text-xs text-slate mt-1">{{ t('warehouseManagerDashboard.expiresIn', { remaining }) }}</p>
+          <button @click="endQuiz" class="mt-3 text-coral text-xs font-medium underline">{{ t('warehouseManagerDashboard.endCodeNow') }}</button>
         </div>
 
         <form @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
           <div v-if="resourceSource" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
-            <span>Sourced from a Browse Courses file — content will be pulled from it directly.</span>
-            <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">Use topic instead</button>
+            <span>{{ t('warehouseManagerDashboard.sourcedFromCourse') }}</span>
+            <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('warehouseManagerDashboard.useTopicInstead') }}</button>
           </div>
           <div v-if="allCourseOptions.length">
-            <label class="block text-sm font-medium text-ink mb-1">Pick a course from Browse Courses (optional)</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.pickCourseOptional') }}</label>
             <div class="grid grid-cols-2 gap-2 mb-2">
               <select v-model="categoryFilter" @change="onCategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
-                <option value="ALL">All categories</option>
+                <option value="ALL">{{ t('warehouseManagerDashboard.allCategories') }}</option>
                 <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
               </select>
               <select v-if="subcategories.length" v-model="subcategoryFilter" @change="onSubcategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
-                <option value="ALL">All topics</option>
+                <option value="ALL">{{ t('warehouseManagerDashboard.allTopics') }}</option>
                 <option v-for="s in subcategories" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
             <select v-model="selectedCourseKey" @change="onCourseSelect" class="w-full border border-slate/30 rounded-lg py-2 px-3">
-              <option value="">— or type a topic below —</option>
+              <option value="">{{ t('warehouseManagerDashboard.orTypeTopicBelow') }}</option>
               <option v-for="o in filteredCourseOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Topic</label>
-            <input v-model="topicLabel" @input="clearResourceSource" type="text" placeholder="e.g. Stock Rotation Basics"
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.topicLabel') }}</label>
+            <input v-model="topicLabel" @input="clearResourceSource" type="text" :placeholder="t('warehouseManagerDashboard.topicPlaceholder')"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Notes for the AI (optional)</label>
-            <input v-model="extraNotes" type="text" placeholder="Emphasize..."
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.notesLabel') }}</label>
+            <input v-model="extraNotes" type="text" :placeholder="t('warehouseManagerDashboard.notesPlaceholder')"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Question count</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.questionCountLabel') }}</label>
             <input v-model.number="count" type="number" min="1" max="25"
               class="w-24 border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <p v-if="createError" class="text-coral text-sm">{{ createError }}</p>
           <button type="submit" :disabled="creating"
             class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
-            {{ creating ? 'Generating...' : (activeQuiz ? 'Replace active code' : 'Generate code') }}
+            {{ creating ? t('warehouseManagerDashboard.generating') : (activeQuiz ? t('warehouseManagerDashboard.replaceCode') : t('warehouseManagerDashboard.generateCode')) }}
           </button>
         </form>
       </section>

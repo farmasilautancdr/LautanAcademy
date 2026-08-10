@@ -312,5 +312,30 @@
     "productKnowledge": "Product knowledge",
     "performanceGaps": "Performance gaps",
     "recommendations": "Recommendations"
+  },
+  "warehouseManagerDashboard": {
+    "aiPracticeQuiz": "AI Practice Quiz",
+    "activeCode": "Active code",
+    "quizSummary": "{topic} · {count} questions",
+    "expiresIn": "Expires in {remaining}",
+    "expired": "Expired",
+    "endCodeNow": "End this code now",
+    "confirmEndQuiz": "End this code now? Staff won't be able to join with it anymore.",
+    "sourcedFromCourse": "Sourced from a Browse Courses file — content will be pulled from it directly.",
+    "useTopicInstead": "Use topic instead",
+    "pickCourseOptional": "Pick a course from Browse Courses (optional)",
+    "allCategories": "All categories",
+    "allTopics": "All topics",
+    "orTypeTopicBelow": "— or type a topic below —",
+    "topicLabel": "Topic",
+    "topicPlaceholder": "e.g. Stock Rotation Basics",
+    "notesLabel": "Notes for the AI (optional)",
+    "notesPlaceholder": "Emphasize...",
+    "questionCountLabel": "Question count",
+    "errorEnterTopic": "Enter a topic.",
+    "errorGenerateFailed": "Could not generate the quiz.",
+    "generating": "Generating...",
+    "replaceCode": "Replace active code",
+    "generateCode": "Generate code"
   }
 }

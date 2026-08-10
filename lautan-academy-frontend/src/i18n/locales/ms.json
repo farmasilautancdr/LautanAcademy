@@ -312,5 +312,30 @@
     "productKnowledge": "Pengetahuan produk",
     "performanceGaps": "Jurang prestasi",
     "recommendations": "Cadangan"
+  },
+  "warehouseManagerDashboard": {
+    "aiPracticeQuiz": "Kuiz Latihan AI",
+    "activeCode": "Kod aktif",
+    "quizSummary": "{topic} · {count} soalan",
+    "expiresIn": "Luput dalam {remaining}",
+    "expired": "Luput",
+    "endCodeNow": "Tamatkan kod ini sekarang",
+    "confirmEndQuiz": "Tamatkan kod ini sekarang? Staf tidak akan dapat menyertai dengannya lagi.",
+    "sourcedFromCourse": "Diambil daripada fail Semak Kursus — kandungan akan diambil terus daripadanya.",
+    "useTopicInstead": "Guna topik sebaliknya",
+    "pickCourseOptional": "Pilih kursus daripada Semak Kursus (pilihan)",
+    "allCategories": "Semua kategori",
+    "allTopics": "Semua topik",
+    "orTypeTopicBelow": "— atau taip topik di bawah —",
+    "topicLabel": "Topik",
+    "topicPlaceholder": "cth. Asas Pusingan Stok",
+    "notesLabel": "Nota untuk AI (pilihan)",
+    "notesPlaceholder": "Tekankan...",
+    "questionCountLabel": "Bilangan soalan",
+    "errorEnterTopic": "Masukkan topik.",
+    "errorGenerateFailed": "Tidak dapat menjana kuiz.",
+    "generating": "Menjana...",
+    "replaceCode": "Ganti kod aktif",
+    "generateCode": "Jana kod"
   }
 }
