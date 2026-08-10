@@ -489,6 +489,11 @@
     "successUpdated": "Master PIN updated.",
     "errorUpdateFailed": "Could not update."
   },
+  "maintenanceOverlay": {
+    "title": "Under Maintenance",
+    "body": "The app is temporarily unavailable while we make some changes. Please check back shortly.",
+    "tryAgain": "Try Again"
+  },
   "masterPanel": {
     "loginTitle": "Master Login",
     "username": "Username",

@@ -489,6 +489,11 @@
     "successUpdated": "PIN induk dikemas kini.",
     "errorUpdateFailed": "Tidak dapat mengemas kini."
   },
+  "maintenanceOverlay": {
+    "title": "Dalam Penyelenggaraan",
+    "body": "Aplikasi tidak tersedia buat sementara waktu semasa kami membuat perubahan. Sila cuba semula sebentar lagi.",
+    "tryAgain": "Cuba Lagi"
+  },
   "masterPanel": {
     "loginTitle": "Log Masuk Master",
     "username": "Nama Pengguna",
