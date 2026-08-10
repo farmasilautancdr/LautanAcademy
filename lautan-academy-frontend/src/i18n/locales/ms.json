@@ -337,5 +337,15 @@
     "generating": "Menjana...",
     "replaceCode": "Ganti kod aktif",
     "generateCode": "Jana kod"
+  },
+  "warehouseManagerResultsView": {
+    "title": "Keputusan Staf — {location}",
+    "loading": "Memuatkan...",
+    "noAttemptsYet": "Belum ada percubaan.",
+    "allYears": "Semua tahun",
+    "allTopics": "Semua topik",
+    "noAttemptsFiltered": "Tiada percubaan sepadan dengan penapis ini.",
+    "questionPrefix": "S: {text}",
+    "correctLabel": "✓ Betul: {text}"
   }
 }

@@ -6,11 +6,13 @@
 // (matches GAS), so there's only ever one type to show, no segregation
 // needed. Wrong-answer review per attempt added, same as elsewhere.
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 
 const auth = useAuthStore()
 const location = auth.manager?.outlet
+const { t } = useI18n()
 const history = ref([])
 const wrongAnswers = ref([])
 const loading = ref(true)
@@ -49,25 +51,25 @@ function wrongsFor(attemptId) {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
-      <p class="text-aqualight text-xs">Warehouse Manager</p>
-      <h1 class="font-display text-xl font-semibold text-white">Staff Results — {{ location }}</h1>
+      <p class="text-aqualight text-xs">{{ t('sidebar.roleWarehouseManager') }}</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ t('warehouseManagerResultsView.title', { location }) }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
-      <div v-if="loading" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="history.length === 0" class="text-slate text-sm">No attempts yet.</div>
+      <div v-if="loading" class="text-slate text-sm">{{ t('warehouseManagerResultsView.loading') }}</div>
+      <div v-else-if="history.length === 0" class="text-slate text-sm">{{ t('warehouseManagerResultsView.noAttemptsYet') }}</div>
       <template v-else>
         <div class="flex flex-wrap gap-2 mb-3">
           <select v-model="filterYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
-            <option value="ALL">All years</option>
+            <option value="ALL">{{ t('warehouseManagerResultsView.allYears') }}</option>
             <option v-for="y in filterYears" :key="y" :value="y">{{ y }}</option>
           </select>
           <select v-model="filterTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
-            <option value="ALL">All topics</option>
-            <option v-for="t in filterTopics" :key="t" :value="t">{{ t }}</option>
+            <option value="ALL">{{ t('warehouseManagerResultsView.allTopics') }}</option>
+            <option v-for="t2 in filterTopics" :key="t2" :value="t2">{{ t2 }}</option>
           </select>
         </div>
-        <div v-if="filteredHistory.length === 0" class="text-slate text-sm">No attempts match this filter.</div>
+        <div v-if="filteredHistory.length === 0" class="text-slate text-sm">{{ t('warehouseManagerResultsView.noAttemptsFiltered') }}</div>
         <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
           <details v-for="h in filteredHistory" :key="h.AttemptID" class="px-5 py-3">
             <summary class="flex items-center gap-3 cursor-pointer">
@@ -84,8 +86,8 @@ function wrongsFor(attemptId) {
             </summary>
             <div v-if="wrongsFor(h.AttemptID).length" class="mt-3 space-y-2">
               <div v-for="(w, j) in wrongsFor(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
-                <p class="text-xs font-medium text-coral">Q: {{ w['Question Text'] }}</p>
-                <p class="text-xs text-aqua font-semibold mt-1">✓ Correct: {{ w['Correct Answer'] }}</p>
+                <p class="text-xs font-medium text-coral">{{ t('warehouseManagerResultsView.questionPrefix', { text: w['Question Text'] }) }}</p>
+                <p class="text-xs text-aqua font-semibold mt-1">{{ t('warehouseManagerResultsView.correctLabel', { text: w['Correct Answer'] }) }}</p>
               </div>
             </div>
           </details>
