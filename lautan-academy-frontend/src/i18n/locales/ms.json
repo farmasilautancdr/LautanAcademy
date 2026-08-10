@@ -524,6 +524,15 @@
       "errorTooShort": "PIN mesti sekurang-kurangnya 6 aksara.",
       "successUpdated": "PIN Supervisor telah dikemas kini.",
       "errorUpdateFailed": "Gagal mengemas kini."
+    },
+    "dataPurge": {
+      "confirmModal": {
+        "typeToConfirm": "Taip DELETE untuk sahkan",
+        "placeholder": "DELETE",
+        "cancel": "Batal",
+        "deleteButton": "Padam",
+        "deleting": "Memadam..."
+      }
     }
   }
 }
