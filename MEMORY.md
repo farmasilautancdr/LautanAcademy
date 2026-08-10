@@ -15,16 +15,16 @@
 
 [ACTIVE TASK]: i18n (EN/BM) rollout — Phase 1 + Phase 2 (all 4 batches, 32 views/components) COMPLETE. Batch 3 (Warehouse+Area Manager) and Batch 4 (Supervisor) manual browser click-through + BM native-speaker spot-check done live 2026-08-10 (user confirmed both OK, no issues) — closes the last outstanding item. i18n rollout fully done end to end, nothing left open.
 
-[ACTIVE TASK]: Master User / Super Admin role + Control Panel — requested 2026-08-10, in brainstorming/design stage, starting with subsystem A. Decomposed into 8 sub-projects (each own spec/plan cycle), build order agreed with user:
-- A. Master role + auth + panel shell (foundation) — STARTING NOW
-- B. PIN reset override + master bypass on existing permission checks
-- C. Test-data purge + hard delete (high-risk, needs confirm flow)
-- D. Maintenance kill-switch (global flag + middleware check on every route)
-- E. Audit logs (new table + hooks into every existing write endpoint — biggest, most invasive)
-- F. DB backup/export (standalone one-click)
-- G. Active sessions + force-logout (real architecture change — current auth is fully stateless JWT, zero session tracking exists in DB today)
-- H. Outlet/role impersonation switcher (security-sensitive "view as", own scoping design needed)
-Current auth architecture (checked before decomposing): no roles table — roles are hardcoded scopeType strings baked into the JWT (`staff_retail`, `outlet_manager`, etc via `middleware/auth.js` + `routes/auth.js`), bcrypt PIN in `manager_pins`/`manager_credentials`. No sessions table, no audit_log table exist yet — G and E need real new infra, not just UI.
+[ACTIVE TASK]: Master User / Super Admin role + Control Panel — requested 2026-08-10, decomposed into 8 sub-projects (each own spec/plan cycle), build order agreed with user:
+- A. Master role + auth + panel shell (foundation) — DONE 2026-08-10. `master_users` table (backend), CLI-only seed script `scripts/create-master-user.js` (interactive prompts, not argv — avoids shell-history leak; had to rewrite from readline/promises' sequential question()/question() to a persistent 'line'-event listener, the promises version reliably hung on the 2nd prompt over non-TTY stdin, a real Node quirk found during verification), `POST /auth/master-login` (bcrypt + existing rate_limits lockout pattern, 2h JWT via new `issueMasterToken`), `requireMaster` middleware. Frontend: Key icon (hand-drawn SVG, matches existing icon convention — no icon library added) on all 6 standalone login/register views + AppSidebar (desktop header + mobile bottom nav), `MasterKeyButton`/`MasterLoginModal`/`MasterPanel` components, separate `masterAuth` Pinia store + separate localStorage key (`lautan_master_token`) so it never touches the existing staff/manager session. Panel shell has all 8 future-subsystem tabs rendered as disabled "Coming Soon" placeholders — no functional modules yet. Verified: backend via curl (correct/wrong login, 5-fail lockout, requireMaster 403/200 gating via a temporary test route removed before commit, JWT decode confirms scopeType/expiry), frontend via `npm run build` clean + user's own live browser click-through (icon placement on all 6 views + sidebar desktop/mobile, login→panel flow, session isolation confirmed by refreshing while both a role session and master session were active, logout clears only the master token, both EN/BM render correctly) — user confirmed "semua ok". Spec: `docs/superpowers/specs/2026-08-10-master-admin-subsystem-a-design.md`. Plan: `docs/superpowers/plans/2026-08-10-master-admin-subsystem-a.md`.
+- B. PIN reset override + master bypass on existing permission checks — NOT STARTED
+- C. Test-data purge + hard delete (high-risk, needs confirm flow) — NOT STARTED
+- D. Maintenance kill-switch (global flag + middleware check on every route) — NOT STARTED
+- E. Audit logs (new table + hooks into every existing write endpoint — biggest, most invasive) — NOT STARTED
+- F. DB backup/export (standalone one-click) — NOT STARTED
+- G. Active sessions + force-logout (real architecture change — current auth is fully stateless JWT, zero session tracking exists in DB today) — NOT STARTED
+- H. Outlet/role impersonation switcher (security-sensitive "view as", own scoping design needed) — NOT STARTED
+Each of B-H needs its own brainstorm/spec/plan cycle before building — matches subsystem A's process. Current auth architecture (checked before decomposing): no roles table — roles are hardcoded scopeType strings baked into the JWT (`staff_retail`, `outlet_manager`, etc via `middleware/auth.js` + `routes/auth.js`), bcrypt PIN in `manager_pins`/`manager_credentials`. `master_users` (subsystem A) is the first table outside that model. No sessions table, no audit_log table exist yet — G and E need real new infra, not just UI.
 [DECISIONS]:
 - `vue-i18n` (Composition API, `legacy: false`) wired app-wide. `src/i18n/index.js`, locale files `src/i18n/locales/{en,ms}.json` (flat, one top-level namespace per view). `LanguageSwitcher.vue` toggles + persists to `localStorage['lautan_lang']`.
 - BM text authored directly by Claude (no paid translation API) — native-speaker spot-check done live 2026-08-10, confirmed OK.
