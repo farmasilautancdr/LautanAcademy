@@ -579,6 +579,25 @@
         "legacyWarning": "{count} selected attempt(s) have no attempt link — their wrong answers will not be removed.",
         "successDeleted": "Deleted {count} row(s).",
         "errorDeleteFailed": "Delete failed."
+      },
+      "managerAccounts": {
+        "roleAll": "All roles",
+        "roleOutletManager": "Outlet Manager",
+        "roleWarehouseManager": "Warehouse Manager",
+        "roleAreaManager": "Area Manager",
+        "scopeKeyPlaceholder": "Outlet / area code",
+        "search": "Search",
+        "searching": "Searching...",
+        "errorSearchFailed": "Search failed.",
+        "noResults": "No manager accounts found.",
+        "colRole": "Role",
+        "colScopeKey": "Outlet / Area",
+        "colCreated": "Created",
+        "deleteSelected": "Delete Selected ({count})",
+        "confirmTitle": "Delete manager account(s)?",
+        "breakdownAccounts": "Manager accounts",
+        "successDeleted": "Deleted {count} account(s).",
+        "errorDeleteFailed": "Delete failed."
       }
     }
   }

@@ -579,6 +579,25 @@
         "legacyWarning": "{count} percubaan terpilih tiada pautan percubaan — jawapan salah tidak akan dipadam.",
         "successDeleted": "{count} baris dipadam.",
         "errorDeleteFailed": "Padam gagal."
+      },
+      "managerAccounts": {
+        "roleAll": "Semua peranan",
+        "roleOutletManager": "Pengurus Outlet",
+        "roleWarehouseManager": "Pengurus Gudang",
+        "roleAreaManager": "Pengurus Kawasan",
+        "scopeKeyPlaceholder": "Kod outlet / kawasan",
+        "search": "Cari",
+        "searching": "Mencari...",
+        "errorSearchFailed": "Carian gagal.",
+        "noResults": "Tiada akaun pengurus dijumpai.",
+        "colRole": "Peranan",
+        "colScopeKey": "Outlet / Kawasan",
+        "colCreated": "Dicipta",
+        "deleteSelected": "Padam Terpilih ({count})",
+        "confirmTitle": "Padam akaun pengurus?",
+        "breakdownAccounts": "Akaun pengurus",
+        "successDeleted": "{count} akaun dipadam.",
+        "errorDeleteFailed": "Padam gagal."
       }
     }
   }
