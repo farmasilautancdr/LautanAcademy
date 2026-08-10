@@ -23,6 +23,21 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
   const data = await res.json().catch(() => ({}))
 
+  if (res.status === 503 && data.maintenance === true) {
+    // Dynamic import, not a static top-of-file import: store/maintenance.js
+    // imports `api` from this same file, so a static import here would be a
+    // circular module reference — client.js could reach this line before
+    // its own `export const api = {...}` (further down this file) has run,
+    // leaving the store's `api` binding uninitialized. The dynamic import
+    // only resolves once this function actually runs, by which point this
+    // module has already finished loading, so the cycle never bites.
+    const { useMaintenanceStore } = await import('../store/maintenance')
+    const maintenance = useMaintenanceStore()
+    maintenance.active = true
+    maintenance.message = data.message || ''
+    throw new Error(data.error || 'Maintenance')
+  }
+
   if (!res.ok) {
     throw new Error(data.error || `Request failed (${res.status})`)
   }
