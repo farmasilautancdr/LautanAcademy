@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMasterAuthStore } from '../store/masterAuth'
+import PasswordField from './PasswordField.vue'
 
 const emit = defineEmits(['close', 'success'])
 const { t } = useI18n()
@@ -44,7 +45,7 @@ async function handleSubmit() {
           </div>
           <div>
             <label class="block text-sm font-medium text-ink mb-1.5">{{ t('masterPanel.password') }}</label>
-            <input v-model="password" type="password" autocomplete="off" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua" />
+            <PasswordField v-model="password" input-class="w-full border border-slate/30 rounded-lg py-2.5 pl-3 pr-9 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua" />
           </div>
           <p v-if="error" class="text-coral text-sm">{{ error }}</p>
           <div class="flex gap-2">
