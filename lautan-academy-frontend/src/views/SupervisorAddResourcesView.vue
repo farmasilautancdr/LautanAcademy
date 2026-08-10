@@ -8,7 +8,10 @@
 // AI grounding material, and which also show up in Browse Courses
 // (ResourcesView.vue) merged alongside Drive-backed referenceDocs.
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
+
+const { t } = useI18n()
 
 // Categories are suggested from whatever categories already exist in
 // Browse Courses (Drive referenceDocs + other Content entries), so a new
@@ -53,7 +56,7 @@ async function handleFileSelect(e) {
     cLink.value = data.url
     cUploadedName.value = file.name
   } catch (err) {
-    cError.value = err.message || 'Upload failed.'
+    cError.value = err.message || t('supervisorAddResourcesView.errorUploadFailed')
     if (cFileInput.value) cFileInput.value.value = ''
   } finally {
     cUploading.value = false
@@ -63,7 +66,7 @@ async function handleFileSelect(e) {
 async function addContent() {
   cError.value = ''
   if (!cTopic.value.trim() || !cCategory.value.trim() || !cTitle.value.trim() || !cBody.value.trim()) {
-    cError.value = 'Topic, category, title, and body are required.'
+    cError.value = t('supervisorAddResourcesView.errorRequiredFields')
     return
   }
   cSaving.value = true
@@ -77,14 +80,14 @@ async function addContent() {
     if (cFileInput.value) cFileInput.value.value = ''
     await loadContent()
   } catch (err) {
-    cError.value = err.message || 'Could not save.'
+    cError.value = err.message || t('supervisorAddResourcesView.errorSaveFailed')
   } finally {
     cSaving.value = false
   }
 }
 
 async function removeContent(item) {
-  if (!confirm(`Remove "${item.Title}"? Quizzes sourced from this topic will fall back to general knowledge.`)) return
+  if (!confirm(t('supervisorAddResourcesView.confirmRemove', { title: item.Title }))) return
   try {
     await api.deleteContent(item.ID)
     await loadContent()
@@ -95,59 +98,59 @@ async function removeContent(item) {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
-      <p class="text-aqualight text-xs">Supervisor</p>
-      <h1 class="font-display text-xl font-semibold text-white">Add Resources</h1>
+      <p class="text-aqualight text-xs">{{ t('sidebar.roleSupervisor') }}</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ t('supervisorAddResourcesView.title') }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
-      <div v-if="loadingContent" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="content.length === 0" class="text-slate text-sm mb-4">No entries yet — add one below.</div>
+      <div v-if="loadingContent" class="text-slate text-sm">{{ t('supervisorAddResourcesView.loading') }}</div>
+      <div v-else-if="content.length === 0" class="text-slate text-sm mb-4">{{ t('supervisorAddResourcesView.noEntriesYet') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
         <div v-for="item in content" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">{{ item.Title }}</p>
             <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}</p>
           </div>
-          <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">Remove</button>
+          <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
         </div>
       </div>
 
       <form @submit.prevent="addContent" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Topic</label>
-            <input v-model="cTopic" type="text" placeholder="e.g. Handwashing Basics" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.topicLabel') }}</label>
+            <input v-model="cTopic" type="text" :placeholder="t('supervisorAddResourcesView.topicPlaceholder')" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Category</label>
-            <input v-model="cCategory" list="category-options" type="text" placeholder="e.g. Housebrand Modules"
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.categoryLabel') }}</label>
+            <input v-model="cCategory" list="category-options" type="text" :placeholder="t('supervisorAddResourcesView.categoryPlaceholder')"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
             <datalist id="category-options">
               <option v-for="c in categoryOptions" :key="c" :value="c" />
             </datalist>
-            <p class="text-xs text-slate mt-1">Matches Browse Courses' existing categories — pick one to keep it there, or type a new one.</p>
+            <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.categoryHelper') }}</p>
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">Title</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.titleLabel') }}</label>
           <input v-model="cTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">Body</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.bodyLabel') }}</label>
           <textarea v-model="cBody" rows="3" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">File (optional)</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.fileLabel') }}</label>
           <input ref="cFileInput" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" @change="handleFileSelect"
             class="w-full text-sm text-slate file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-aqualight file:text-deepsea file:font-medium" />
-          <p v-if="cUploading" class="text-xs text-slate mt-1">Uploading...</p>
-          <p v-else-if="cUploadedName" class="text-xs text-aqua mt-1">✓ {{ cUploadedName }} uploaded</p>
-          <p class="text-xs text-slate mt-1">PDF, Word, PowerPoint, Excel, or images — 20MB max. Or paste a link instead:</p>
-          <input v-model="cLink" type="text" placeholder="https://..." class="w-full border border-slate/30 rounded-lg py-2 px-3 mt-1" />
+          <p v-if="cUploading" class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.uploading') }}</p>
+          <p v-else-if="cUploadedName" class="text-xs text-aqua mt-1">{{ t('supervisorAddResourcesView.uploaded', { name: cUploadedName }) }}</p>
+          <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.fileHelper') }}</p>
+          <input v-model="cLink" type="text" :placeholder="t('supervisorAddResourcesView.linkPlaceholder')" class="w-full border border-slate/30 rounded-lg py-2 px-3 mt-1" />
         </div>
         <p v-if="cError" class="text-coral text-sm">{{ cError }}</p>
         <button type="submit" :disabled="cSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
-          {{ cSaving ? 'Saving...' : 'Add entry' }}
+          {{ cSaving ? t('supervisorAddResourcesView.saving') : t('supervisorAddResourcesView.addEntry') }}
         </button>
       </form>
     </main>

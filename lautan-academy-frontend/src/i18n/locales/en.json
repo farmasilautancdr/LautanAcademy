@@ -419,5 +419,29 @@
     "noActivity": "No activity in this window.",
     "kindStandard": "Standard",
     "kindAiPractice": "AI Practice"
+  },
+  "supervisorAddResourcesView": {
+    "title": "Add Resources",
+    "loading": "Loading...",
+    "noEntriesYet": "No entries yet — add one below.",
+    "remove": "Remove",
+    "confirmRemove": "Remove \"{title}\"? Quizzes sourced from this topic will fall back to general knowledge.",
+    "topicLabel": "Topic",
+    "topicPlaceholder": "e.g. Handwashing Basics",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "e.g. Housebrand Modules",
+    "categoryHelper": "Matches Browse Courses' existing categories — pick one to keep it there, or type a new one.",
+    "titleLabel": "Title",
+    "bodyLabel": "Body",
+    "fileLabel": "File (optional)",
+    "uploading": "Uploading...",
+    "uploaded": "✓ {name} uploaded",
+    "fileHelper": "PDF, Word, PowerPoint, Excel, or images — 20MB max. Or paste a link instead:",
+    "linkPlaceholder": "https://...",
+    "errorRequiredFields": "Topic, category, title, and body are required.",
+    "errorUploadFailed": "Upload failed.",
+    "errorSaveFailed": "Could not save.",
+    "saving": "Saving...",
+    "addEntry": "Add entry"
   }
 }

@@ -419,5 +419,29 @@
     "noActivity": "Tiada aktiviti dalam tempoh ini.",
     "kindStandard": "Standard",
     "kindAiPractice": "Latihan AI"
+  },
+  "supervisorAddResourcesView": {
+    "title": "Tambah Sumber",
+    "loading": "Memuatkan...",
+    "noEntriesYet": "Belum ada entri — tambah satu di bawah.",
+    "remove": "Alih Keluar",
+    "confirmRemove": "Alih keluar \"{title}\"? Kuiz yang bersumberkan topik ini akan kembali kepada pengetahuan umum.",
+    "topicLabel": "Topik",
+    "topicPlaceholder": "cth. Asas Membasuh Tangan",
+    "categoryLabel": "Kategori",
+    "categoryPlaceholder": "cth. Modul Housebrand",
+    "categoryHelper": "Sepadan dengan kategori sedia ada dalam Semak Kursus — pilih satu untuk kekal di situ, atau taip satu yang baharu.",
+    "titleLabel": "Tajuk",
+    "bodyLabel": "Kandungan",
+    "fileLabel": "Fail (pilihan)",
+    "uploading": "Memuat naik...",
+    "uploaded": "✓ {name} dimuat naik",
+    "fileHelper": "PDF, Word, PowerPoint, Excel, atau imej — maksimum 20MB. Atau tampal pautan sebaliknya:",
+    "linkPlaceholder": "https://...",
+    "errorRequiredFields": "Topik, kategori, tajuk, dan kandungan diperlukan.",
+    "errorUploadFailed": "Muat naik gagal.",
+    "errorSaveFailed": "Tidak dapat menyimpan.",
+    "saving": "Menyimpan...",
+    "addEntry": "Tambah entri"
   }
 }
