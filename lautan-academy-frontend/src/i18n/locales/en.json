@@ -459,5 +459,20 @@
     "productKnowledge": "Product Knowledge:",
     "gaps": "Gaps:",
     "recommendations": "Recommendations:"
+  },
+  "supervisorStaffComparisonView": {
+    "title": "Staff Comparison",
+    "last3Months": "Last 3 months",
+    "last6Months": "Last 6 months",
+    "last12Months": "Last 12 months",
+    "allTime": "All time",
+    "allRegions": "All regions",
+    "allOutlets": "All outlets",
+    "sortAvg": "Sort: Avg score",
+    "sortAttempts": "Sort: Attempts",
+    "sortName": "Sort: Name",
+    "loading": "Loading...",
+    "noActivity": "No activity in this window.",
+    "attemptsCount": "{count} attempt | {count} attempts"
   }
 }

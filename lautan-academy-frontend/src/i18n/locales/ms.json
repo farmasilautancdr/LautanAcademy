@@ -459,5 +459,20 @@
     "productKnowledge": "Pengetahuan Produk:",
     "gaps": "Jurang:",
     "recommendations": "Cadangan:"
+  },
+  "supervisorStaffComparisonView": {
+    "title": "Perbandingan Staf",
+    "last3Months": "3 bulan lepas",
+    "last6Months": "6 bulan lepas",
+    "last12Months": "12 bulan lepas",
+    "allTime": "Sepanjang masa",
+    "allRegions": "Semua wilayah",
+    "allOutlets": "Semua cawangan",
+    "sortAvg": "Susun: Skor purata",
+    "sortAttempts": "Susun: Percubaan",
+    "sortName": "Susun: Nama",
+    "loading": "Memuatkan...",
+    "noActivity": "Tiada aktiviti dalam tempoh ini.",
+    "attemptsCount": "{count} percubaan"
   }
 }

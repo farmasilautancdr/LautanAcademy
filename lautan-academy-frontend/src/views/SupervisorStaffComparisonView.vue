@@ -3,9 +3,11 @@
 // combined, same fields SupervisorDashboard already uses), no fabricated
 // "trend"/"streak" metrics.
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { AREAS, outletsForArea } from '../config/areas'
 
+const { t } = useI18n()
 const windowMonths = ref(3)
 const loading = ref(true)
 const results = ref([])
@@ -60,40 +62,40 @@ const rows = computed(() => {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
-      <p class="text-aqualight text-xs">Supervisor</p>
-      <h1 class="font-display text-xl font-semibold text-white">Staff Comparison</h1>
+      <p class="text-aqualight text-xs">{{ t('sidebar.roleSupervisor') }}</p>
+      <h1 class="font-display text-xl font-semibold text-white">{{ t('supervisorStaffComparisonView.title') }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
       <div class="flex flex-wrap items-center gap-3 mb-6">
         <select v-model.number="windowMonths" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option :value="3">Last 3 months</option>
-          <option :value="6">Last 6 months</option>
-          <option :value="12">Last 12 months</option>
-          <option :value="0">All time</option>
+          <option :value="3">{{ t('supervisorStaffComparisonView.last3Months') }}</option>
+          <option :value="6">{{ t('supervisorStaffComparisonView.last6Months') }}</option>
+          <option :value="12">{{ t('supervisorStaffComparisonView.last12Months') }}</option>
+          <option :value="0">{{ t('supervisorStaffComparisonView.allTime') }}</option>
         </select>
         <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">All regions</option>
+          <option value="ALL">{{ t('supervisorStaffComparisonView.allRegions') }}</option>
           <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
         </select>
         <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">All outlets</option>
+          <option value="ALL">{{ t('supervisorStaffComparisonView.allOutlets') }}</option>
           <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
         </select>
         <select v-model="sortBy" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="avg">Sort: Avg score</option>
-          <option value="attempts">Sort: Attempts</option>
-          <option value="name">Sort: Name</option>
+          <option value="avg">{{ t('supervisorStaffComparisonView.sortAvg') }}</option>
+          <option value="attempts">{{ t('supervisorStaffComparisonView.sortAttempts') }}</option>
+          <option value="name">{{ t('supervisorStaffComparisonView.sortName') }}</option>
         </select>
       </div>
 
-      <div v-if="loading" class="text-slate text-sm">Loading...</div>
-      <div v-else-if="rows.length === 0" class="text-slate text-sm">No activity in this window.</div>
+      <div v-if="loading" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.loading') }}</div>
+      <div v-else-if="rows.length === 0" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.noActivity') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
         <div v-for="(r, i) in rows" :key="i" class="flex items-center justify-between px-5 py-3">
           <div>
             <p class="text-sm font-medium text-ink">{{ r.name }}</p>
-            <p class="text-xs text-slate">{{ r.outlet }} · {{ r.attempts }} attempt{{ r.attempts === 1 ? '' : 's' }}</p>
+            <p class="text-xs text-slate">{{ r.outlet }} · {{ t('supervisorStaffComparisonView.attemptsCount', r.attempts) }}</p>
           </div>
           <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
         </div>
