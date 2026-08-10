@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import DigitCode from '../components/DigitCode.vue'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+import MasterKeyButton from '../components/MasterKeyButton.vue'
 import logoUrl from '../assets/logo-transparent.png'
 
 const { t } = useI18n()
@@ -74,7 +75,8 @@ async function handleLogin() {
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
     <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
-      <div class="flex justify-end mb-2">
+      <div class="flex justify-end items-center gap-2 mb-2">
+        <MasterKeyButton />
         <LanguageSwitcher />
       </div>
       <div class="mb-8 flex items-center justify-center gap-3 w-full">
