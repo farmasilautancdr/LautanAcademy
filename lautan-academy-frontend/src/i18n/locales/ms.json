@@ -61,5 +61,17 @@
     "firstTimePrompt": "Kali pertama? ",
     "logInHere": "Log masuk di sini",
     "registerRegion": "Daftar kawasan anda"
+  },
+  "supervisorLogin": {
+    "subtitle": "Penyelia",
+    "supervisorPin": "PIN Penyelia",
+    "checking": "Menyemak...",
+    "logIn": "Log Masuk",
+    "errorEnterPin": "Masukkan PIN Penyelia.",
+    "errorBadPin": "PIN tidak sah.",
+    "staffPrompt": "Staf? ",
+    "outletManagerPrompt": "Pengurus Cawangan/Gudang?",
+    "areaManagerPrompt": "Pengurus Kawasan? ",
+    "logInHere": "Log masuk di sini"
   }
 }

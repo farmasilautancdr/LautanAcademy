@@ -61,5 +61,17 @@
     "firstTimePrompt": "First time? ",
     "logInHere": "Log in here",
     "registerRegion": "Register your region"
+  },
+  "supervisorLogin": {
+    "subtitle": "Supervisor",
+    "supervisorPin": "Supervisor PIN",
+    "checking": "Checking...",
+    "logIn": "Log in",
+    "errorEnterPin": "Enter the Supervisor PIN.",
+    "errorBadPin": "That PIN doesn't look right.",
+    "staffPrompt": "Staff? ",
+    "outletManagerPrompt": "Outlet/Warehouse Manager?",
+    "areaManagerPrompt": "Area Manager? ",
+    "logInHere": "Log in here"
   }
 }
