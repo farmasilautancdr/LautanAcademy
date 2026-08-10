@@ -181,5 +181,16 @@
     "errorAlreadyAttempted": "Anda telah mencuba \"{topic}\" hari ini. Cuba lagi esok.",
     "errorNoQuestions": "Tiada soalan tersedia untuk modul ini lagi.",
     "startQuiz": "Mula kuiz"
+  },
+  "quizView": {
+    "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
+    "questionProgress": "Soalan {current} daripada {total}",
+    "checking": "Menyemak...",
+    "errorCheckFailed": "Tidak dapat menyemak jawapan itu — semak sambungan anda dan cuba lagi.",
+    "back": "← Kembali",
+    "next": "Seterusnya",
+    "submitting": "Menghantar...",
+    "submitQuiz": "Hantar kuiz",
+    "errorSubmitFailed": "Tidak dapat menghantar jawapan anda. Semak sambungan anda dan cuba lagi."
   }
 }

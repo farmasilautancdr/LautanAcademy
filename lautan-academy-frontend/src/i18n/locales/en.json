@@ -181,5 +181,16 @@
     "errorAlreadyAttempted": "You've already attempted \"{topic}\" today. Try again tomorrow.",
     "errorNoQuestions": "No questions available for this module yet.",
     "startQuiz": "Start quiz"
+  },
+  "quizView": {
+    "noActiveQuiz": "No active quiz — join one from the dashboard first.",
+    "questionProgress": "Question {current} of {total}",
+    "checking": "Checking...",
+    "errorCheckFailed": "Could not check that answer — check your connection and try again.",
+    "back": "← Back",
+    "next": "Next",
+    "submitting": "Submitting...",
+    "submitQuiz": "Submit quiz",
+    "errorSubmitFailed": "Could not submit your answers. Check your connection and try again."
   }
 }

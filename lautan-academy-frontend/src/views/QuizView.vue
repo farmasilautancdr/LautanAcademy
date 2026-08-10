@@ -10,13 +10,21 @@
 // authoritative. submit() sends the raw {id/index, chosen} answer set and
 // the server independently grades the whole attempt from its own stored
 // data, so a tampered/faked check response can't change what gets saved.
+//
+// Question-content language (_en/_ms field suffix) follows the shared
+// vue-i18n locale, same as the rest of the app's UI chrome — this used to
+// be a separate local `lang` ref with its own toggle button; reconciled
+// onto the one shared mechanism (see Phase 1 spec's flagged open risk).
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const { t, locale } = useI18n()
 
 const stored = JSON.parse(sessionStorage.getItem('lautan_active_quiz') || 'null')
 const topic = stored?.topic || 'Practice'
@@ -26,7 +34,6 @@ const questions = ref(stored?.questions || [])
 
 const currentIndex = ref(0)
 const answers = ref({}) // { questionIndex: { chosen, correct, correctIndex } }
-const lang = ref('en')
 const checking = ref(false)
 const checkError = ref('')
 const submitting = ref(false)
@@ -38,7 +45,7 @@ const answeredCount = computed(() => Object.keys(answers.value).length)
 const currentAnswer = computed(() => answers.value[currentIndex.value])
 
 function optionsFor(q) {
-  const suffix = lang.value === 'en' ? '_en' : '_ms'
+  const suffix = locale.value === 'en' ? '_en' : '_ms'
   return [q['opt1' + suffix], q['opt2' + suffix], q['opt3' + suffix], q['opt4' + suffix]]
 }
 
@@ -57,7 +64,7 @@ async function selectAnswer(optIndex) {
       : await api.checkAiAnswer(auth.staff.outlet, passcode, currentIndex.value, optIndex)
     answers.value[currentIndex.value] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
   } catch (err) {
-    checkError.value = 'Could not check that answer — check your connection and try again.'
+    checkError.value = t('quizView.errorCheckFailed')
   } finally {
     checking.value = false
   }
@@ -102,7 +109,7 @@ async function submit() {
       if (a && a.chosen !== a.correctIndex) {
         const opts = optionsFor(q)
         wrongAnswers.push({
-          qText: lang.value === 'en' ? q.question_en : q.question_ms,
+          qText: locale.value === 'en' ? q.question_en : q.question_ms,
           userChoice: opts[a.chosen] ?? '',
           correctText: opts[a.correctIndex] ?? '',
         })
@@ -113,7 +120,7 @@ async function submit() {
     sessionStorage.removeItem('lautan_active_quiz')
     router.push('/result')
   } catch (err) {
-    errorMsg.value = err.message || 'Could not submit your answers. Check your connection and try again.'
+    errorMsg.value = err.message || t('quizView.errorSubmitFailed')
   } finally {
     submitting.value = false
   }
@@ -122,17 +129,12 @@ async function submit() {
 
 <template>
   <div class="min-h-screen bg-seafoam">
-    <div v-if="questions.length === 0" class="p-6 text-coral text-sm">No active quiz — join one from the dashboard first.</div>
+    <div v-if="questions.length === 0" class="p-6 text-coral text-sm">{{ t('quizView.noActiveQuiz') }}</div>
 
     <div v-else class="max-w-lg mx-auto px-6 py-8">
       <div class="flex items-center justify-between mb-4">
-        <span class="text-slate text-xs">Question {{ currentIndex + 1 }} of {{ questions.length }}</span>
-        <button
-          @click="lang = lang === 'en' ? 'ms' : 'en'"
-          class="text-xs font-medium text-aqua border border-aqua/40 rounded-full px-3 py-1"
-        >
-          {{ lang === 'en' ? 'BM' : 'EN' }}
-        </button>
+        <span class="text-slate text-xs">{{ t('quizView.questionProgress', { current: currentIndex + 1, total: questions.length }) }}</span>
+        <LanguageSwitcher />
       </div>
 
       <div class="w-full bg-white/60 rounded-full h-1.5 mb-6">
@@ -141,7 +143,7 @@ async function submit() {
 
       <div class="bg-white rounded-xl2 p-6 shadow-sm">
         <p class="font-display font-semibold text-ink text-lg mb-5">
-          {{ lang === 'en' ? currentQuestion.question_en : currentQuestion.question_ms }}
+          {{ locale === 'en' ? currentQuestion.question_en : currentQuestion.question_ms }}
         </p>
 
         <div class="space-y-3">
@@ -158,7 +160,7 @@ async function submit() {
           </button>
         </div>
 
-        <p v-if="checking" class="text-slate text-xs mt-3 text-center">Checking...</p>
+        <p v-if="checking" class="text-slate text-xs mt-3 text-center">{{ t('quizView.checking') }}</p>
         <p v-if="checkError" class="text-coral text-xs mt-3 text-center">{{ checkError }}</p>
       </div>
 
@@ -170,7 +172,7 @@ async function submit() {
           :disabled="currentIndex === 0"
           class="text-slate text-sm disabled:opacity-30"
         >
-          ← Back
+          {{ t('quizView.back') }}
         </button>
 
         <button
@@ -178,7 +180,7 @@ async function submit() {
           @click="next"
           class="bg-deepsea text-white text-sm font-medium px-6 py-2.5 rounded-lg"
         >
-          Next
+          {{ t('quizView.next') }}
         </button>
         <button
           v-else
@@ -186,7 +188,7 @@ async function submit() {
           :disabled="submitting || answeredCount < questions.length"
           class="bg-coral text-white text-sm font-medium px-6 py-2.5 rounded-lg disabled:opacity-50"
         >
-          {{ submitting ? 'Submitting...' : 'Submit quiz' }}
+          {{ submitting ? t('quizView.submitting') : t('quizView.submitQuiz') }}
         </button>
       </div>
     </div>
