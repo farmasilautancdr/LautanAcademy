@@ -19,6 +19,7 @@ export default {
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],
         body: ['"Inter"', 'sans-serif'],
+        script: ['"Alex Brush"', 'cursive'],
       },
       borderRadius: {
         xl2: '1.25rem',

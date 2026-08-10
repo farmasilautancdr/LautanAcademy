@@ -40,12 +40,15 @@ async function handleLogin() {
       <div class="flex justify-end mb-2">
         <LanguageSwitcher />
       </div>
-      <div class="text-center mb-8">
-        <div class="flex items-center justify-center gap-3">
-          <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
-          <h1 class="font-display text-3xl font-bold text-ink tracking-tight leading-none">Lautan Academy</h1>
+      <div class="mb-8 flex items-center justify-center gap-3 w-full">
+        <img :src="logoUrl" alt="Lautan Academy" class="w-24 h-24 shrink-0" />
+        <div class="flex flex-col items-start">
+          <h1 class="flex items-baseline gap-1.5">
+            <span class="font-script text-4xl text-ink leading-none">Lautan</span>
+            <span class="font-display text-xl font-bold text-aqua tracking-tight leading-none">Academy</span>
+          </h1>
+          <p class="text-slate text-sm mt-1.5">{{ t('supervisorLogin.subtitle') }}</p>
         </div>
-        <p class="text-slate mt-2 text-sm text-center">{{ t('supervisorLogin.subtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
