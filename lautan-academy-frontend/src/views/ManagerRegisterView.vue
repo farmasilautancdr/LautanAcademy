@@ -5,9 +5,13 @@
 // password. See docs/superpowers/specs/2026-08-06-manager-auth-design.md.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import PasswordField from '../components/PasswordField.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
 const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
@@ -32,19 +36,19 @@ function switchDivision(d) {
 async function handleRegister() {
   error.value = ''
   if (!outlet.value) {
-    error.value = division.value === 'warehouse' ? 'Select your location.' : 'Select your outlet.'
+    error.value = division.value === 'warehouse' ? t('managerRegister.errorSelectLocation') : t('managerRegister.errorSelectOutlet')
     return
   }
   if (!masterPin.value.trim()) {
-    error.value = "Enter today's master PIN."
+    error.value = t('managerRegister.errorMasterPin')
     return
   }
   if (newPassword.value.length < 6) {
-    error.value = 'New password must be at least 6 characters.'
+    error.value = t('managerRegister.errorPasswordLength')
     return
   }
   if (newPassword.value !== confirmPassword.value) {
-    error.value = 'Passwords do not match.'
+    error.value = t('managerRegister.errorPasswordMismatch')
     return
   }
   loading.value = true
@@ -53,7 +57,7 @@ async function handleRegister() {
     await auth.registerManager(role, outlet.value, masterPin.value.trim(), newPassword.value)
     router.push(role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
   } catch (err) {
-    error.value = err.message || 'Could not register. Check the master PIN.'
+    error.value = err.message || t('managerRegister.errorRegisterFailed')
   } finally {
     loading.value = false
   }
@@ -63,6 +67,9 @@ async function handleRegister() {
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
     <div class="w-full max-w-sm">
+      <div class="flex justify-end mb-2">
+        <LanguageSwitcher />
+      </div>
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
           <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
@@ -71,13 +78,13 @@ async function handleRegister() {
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3 text-center">Register — Outlet / Warehouse Manager</p>
+        <p class="text-slate text-sm mt-3 text-center">{{ t('managerRegister.subtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
-          <label class="block text-sm font-medium text-ink mb-1.5">Division</label>
-          <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Division">
+          <label class="block text-sm font-medium text-ink mb-1.5">{{ t('managerRegister.division') }}</label>
+          <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="t('managerRegister.division')">
             <button
               type="button"
               role="radio"
@@ -85,7 +92,7 @@ async function handleRegister() {
               @click="switchDivision('retail')"
               class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="division === 'retail' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-            >Retail</button>
+            >{{ t('managerRegister.retail') }}</button>
             <button
               type="button"
               role="radio"
@@ -93,45 +100,45 @@ async function handleRegister() {
               @click="switchDivision('warehouse')"
               class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="division === 'warehouse' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-            >Warehouse</button>
+            >{{ t('managerRegister.warehouse') }}</button>
           </div>
         </div>
 
         <div>
-          <label for="outlet" class="block text-sm font-medium text-ink mb-1">{{ division === 'warehouse' ? 'Location' : 'Outlet' }}</label>
+          <label for="outlet" class="block text-sm font-medium text-ink mb-1">{{ division === 'warehouse' ? t('managerRegister.locationLabel') : t('managerRegister.outletLabel') }}</label>
           <select id="outlet" v-model="outlet" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-            <option value="">{{ division === 'warehouse' ? 'Select location...' : 'Select outlet...' }}</option>
+            <option value="">{{ division === 'warehouse' ? t('managerRegister.selectLocation') : t('managerRegister.selectOutlet') }}</option>
             <option v-for="o in outletOptions" :key="o" :value="o">{{ o }}</option>
           </select>
         </div>
 
         <div>
-          <label for="master-pin" class="block text-sm font-medium text-ink mb-1">Master PIN</label>
+          <label for="master-pin" class="block text-sm font-medium text-ink mb-1">{{ t('managerRegister.masterPin') }}</label>
           <PasswordField
             id="master-pin"
             v-model="masterPin"
             placeholder="••••••"
             input-class="w-full text-center text-2xl tracking-[0.3em] font-display border border-slate/30 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
-          <p class="text-xs text-slate mt-1">Get this from Supervisor/HQ — it proves you're the legitimate manager for this {{ division === 'warehouse' ? 'location' : 'outlet' }}.</p>
+          <p class="text-xs text-slate mt-1">{{ division === 'warehouse' ? t('managerRegister.masterPinHintLocation') : t('managerRegister.masterPinHintOutlet') }}</p>
         </div>
 
         <div>
-          <label for="new-password" class="block text-sm font-medium text-ink mb-1">New Password</label>
+          <label for="new-password" class="block text-sm font-medium text-ink mb-1">{{ t('managerRegister.newPassword') }}</label>
           <PasswordField
             id="new-password"
             v-model="newPassword"
-            placeholder="At least 6 characters"
+            :placeholder="t('managerRegister.newPasswordPlaceholder')"
             input-class="w-full border border-slate/30 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
 
         <div>
-          <label for="confirm-password" class="block text-sm font-medium text-ink mb-1">Confirm Password</label>
+          <label for="confirm-password" class="block text-sm font-medium text-ink mb-1">{{ t('managerRegister.confirmPassword') }}</label>
           <PasswordField
             id="confirm-password"
             v-model="confirmPassword"
-            placeholder="Re-enter password"
+            :placeholder="t('managerRegister.confirmPasswordPlaceholder')"
             input-class="w-full border border-slate/30 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua"
           />
         </div>
@@ -143,12 +150,12 @@ async function handleRegister() {
           :disabled="loading"
           class="w-full bg-aqua text-white font-medium py-3 rounded-lg hover:bg-deepsea transition-colors disabled:opacity-60"
         >
-          {{ loading ? 'Registering...' : 'Register' }}
+          {{ loading ? t('managerRegister.registering') : t('managerRegister.register') }}
         </button>
       </form>
 
       <p class="text-center text-slate text-xs mt-6">
-        Already registered? <router-link to="/manager-login" class="underline">Log in here</router-link>
+        {{ t('managerRegister.alreadyRegisteredPrompt') }}<router-link to="/manager-login" class="underline">{{ t('managerRegister.logInHere') }}</router-link>
       </p>
     </div>
   </div>

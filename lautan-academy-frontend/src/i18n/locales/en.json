@@ -73,5 +73,32 @@
     "outletManagerPrompt": "Outlet/Warehouse Manager?",
     "areaManagerPrompt": "Area Manager? ",
     "logInHere": "Log in here"
+  },
+  "managerRegister": {
+    "subtitle": "Register — Outlet / Warehouse Manager",
+    "division": "Division",
+    "retail": "Retail",
+    "warehouse": "Warehouse",
+    "outletLabel": "Outlet",
+    "locationLabel": "Location",
+    "selectOutlet": "Select outlet...",
+    "selectLocation": "Select location...",
+    "masterPin": "Master PIN",
+    "masterPinHintOutlet": "Get this from Supervisor/HQ — it proves you're the legitimate manager for this outlet.",
+    "masterPinHintLocation": "Get this from Supervisor/HQ — it proves you're the legitimate manager for this location.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "At least 6 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter password",
+    "registering": "Registering...",
+    "register": "Register",
+    "alreadyRegisteredPrompt": "Already registered? ",
+    "logInHere": "Log in here",
+    "errorSelectOutlet": "Select your outlet.",
+    "errorSelectLocation": "Select your location.",
+    "errorMasterPin": "Enter today's master PIN.",
+    "errorPasswordLength": "New password must be at least 6 characters.",
+    "errorPasswordMismatch": "Passwords do not match.",
+    "errorRegisterFailed": "Could not register. Check the master PIN."
   }
 }

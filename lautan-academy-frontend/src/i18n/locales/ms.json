@@ -73,5 +73,32 @@
     "outletManagerPrompt": "Pengurus Cawangan/Gudang?",
     "areaManagerPrompt": "Pengurus Kawasan? ",
     "logInHere": "Log masuk di sini"
+  },
+  "managerRegister": {
+    "subtitle": "Pendaftaran — Pengurus Cawangan / Gudang",
+    "division": "Bahagian",
+    "retail": "Runcit",
+    "warehouse": "Gudang",
+    "outletLabel": "Cawangan",
+    "locationLabel": "Lokasi",
+    "selectOutlet": "Pilih cawangan...",
+    "selectLocation": "Pilih lokasi...",
+    "masterPin": "PIN Induk",
+    "masterPinHintOutlet": "Dapatkan ini daripada Penyelia/Ibu Pejabat — ia mengesahkan anda pengurus sah untuk cawangan ini.",
+    "masterPinHintLocation": "Dapatkan ini daripada Penyelia/Ibu Pejabat — ia mengesahkan anda pengurus sah untuk lokasi ini.",
+    "newPassword": "Kata Laluan Baharu",
+    "newPasswordPlaceholder": "Sekurang-kurangnya 6 aksara",
+    "confirmPassword": "Sahkan Kata Laluan",
+    "confirmPasswordPlaceholder": "Masukkan semula kata laluan",
+    "registering": "Mendaftar...",
+    "register": "Daftar",
+    "alreadyRegisteredPrompt": "Sudah berdaftar? ",
+    "logInHere": "Log masuk di sini",
+    "errorSelectOutlet": "Pilih cawangan anda.",
+    "errorSelectLocation": "Pilih lokasi anda.",
+    "errorMasterPin": "Masukkan PIN induk hari ini.",
+    "errorPasswordLength": "Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.",
+    "errorPasswordMismatch": "Kata laluan tidak sepadan.",
+    "errorRegisterFailed": "Pendaftaran gagal. Sila semak PIN induk."
   }
 }
