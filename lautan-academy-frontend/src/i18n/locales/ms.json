@@ -1,2 +1,25 @@
 {
+  "loginView": {
+    "tagline": "Latihan staf Farmasi Lautan",
+    "division": "Bahagian",
+    "retail": "Runcit",
+    "warehouse": "Gudang",
+    "outletLabel": "Cawangan",
+    "locationLabel": "Lokasi",
+    "selectOutlet": "Pilih cawangan...",
+    "selectLocation": "Pilih lokasi...",
+    "yourName": "Nama anda",
+    "selectName": "Pilih nama anda...",
+    "noStaff": "Tiada staf ditambah untuk cawangan ini lagi",
+    "selectOutletFirst": "Pilih cawangan dahulu...",
+    "passcode": "Kod Laluan",
+    "checking": "Menyemak...",
+    "logIn": "Log Masuk",
+    "askManager": "Hubungi pengurus cawangan anda jika anda tiada kod laluan.",
+    "managerPrompt": "Pengurus? ",
+    "logInHere": "Log masuk di sini",
+    "errorMissingFields": "Masukkan cawangan dan nama anda.",
+    "errorBadPasscode": "Masukkan kod laluan 4-digit anda.",
+    "errorNotRecognized": "Kombinasi nama/kod laluan tidak dikenali. Sila semak dengan pengurus cawangan anda."
+  }
 }

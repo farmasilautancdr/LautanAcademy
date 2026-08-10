@@ -1,10 +1,14 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import DigitCode from '../components/DigitCode.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import logoUrl from '../assets/logo-transparent.png'
+
+const { t } = useI18n()
 
 // Static outlet list — same 49 codes hardcoded in the vanilla-JS app
 // (index.html's `outletList`). Not fetched from the backend; there's no
@@ -46,11 +50,11 @@ watch([division, outlet], async ([div, out]) => {
 async function handleLogin() {
   error.value = ''
   if (!outlet.value.trim() || !name.value.trim()) {
-    error.value = 'Enter your outlet and name.'
+    error.value = t('loginView.errorMissingFields')
     return
   }
   if (!/^\d{4}$/.test(pin.value)) {
-    error.value = 'Enter your 4-digit passcode.'
+    error.value = t('loginView.errorBadPasscode')
     return
   }
   loading.value = true
@@ -58,7 +62,7 @@ async function handleLogin() {
     await auth.login(division.value, outlet.value.trim(), name.value.trim(), pin.value)
     router.push('/')
   } catch (err) {
-    error.value = 'That name/passcode combination was not recognized. Check with your outlet manager.'
+    error.value = t('loginView.errorNotRecognized')
     pin.value = ''
     pinBox.value?.focus()
   } finally {
@@ -70,6 +74,9 @@ async function handleLogin() {
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
     <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="flex justify-end mb-2">
+        <LanguageSwitcher />
+      </div>
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
           <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
@@ -78,14 +85,14 @@ async function handleLogin() {
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3 text-center">Farmasi Lautan staff training</p>
+        <p class="text-slate text-sm mt-3 text-center">{{ t('loginView.tagline') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-5">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-ink mb-1.5">Division</label>
-            <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Division">
+            <label class="block text-sm font-medium text-ink mb-1.5">{{ t('loginView.division') }}</label>
+            <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="t('loginView.division')">
               <button
                 type="button"
                 role="radio"
@@ -93,7 +100,7 @@ async function handleLogin() {
                 @click="division = 'retail'"
                 class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
                 :class="division === 'retail' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-              >Retail</button>
+              >{{ t('loginView.retail') }}</button>
               <button
                 type="button"
                 role="radio"
@@ -101,29 +108,29 @@ async function handleLogin() {
                 @click="division = 'warehouse'"
                 class="py-2.5 rounded-lg text-sm font-medium border transition-colors"
                 :class="division === 'warehouse' ? 'bg-aqua text-white border-aqua' : 'border-slate/30 text-slate hover:border-aqua/50'"
-              >Warehouse</button>
+              >{{ t('loginView.warehouse') }}</button>
             </div>
           </div>
 
           <div>
-            <label for="outlet" class="block text-sm font-medium text-ink mb-1.5">{{ division === 'warehouse' ? 'Location' : 'Outlet' }}</label>
+            <label for="outlet" class="block text-sm font-medium text-ink mb-1.5">{{ division === 'warehouse' ? t('loginView.locationLabel') : t('loginView.outletLabel') }}</label>
             <select id="outlet" v-model="outlet" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-              <option value="">{{ division === 'warehouse' ? 'Select location...' : 'Select outlet...' }}</option>
+              <option value="">{{ division === 'warehouse' ? t('loginView.selectLocation') : t('loginView.selectOutlet') }}</option>
               <option v-for="o in outletOptions" :key="o" :value="o">{{ o }}</option>
             </select>
           </div>
 
           <div>
-            <label for="name" class="block text-sm font-medium text-ink mb-1.5">Your name</label>
+            <label for="name" class="block text-sm font-medium text-ink mb-1.5">{{ t('loginView.yourName') }}</label>
             <select id="name" v-model="name" :disabled="!outlet" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-              <option value="">{{ outlet ? (staffNames.length ? 'Select your name...' : 'No staff added for this outlet yet') : 'Select outlet first...' }}</option>
+              <option value="">{{ outlet ? (staffNames.length ? t('loginView.selectName') : t('loginView.noStaff')) : t('loginView.selectOutletFirst') }}</option>
               <option v-for="n in staffNames" :key="n" :value="n">{{ n }}</option>
             </select>
           </div>
         </div>
 
         <div class="border-t border-seafoam pt-5">
-          <label class="block text-sm font-medium text-ink mb-2 text-center">Passcode</label>
+          <label class="block text-sm font-medium text-ink mb-2 text-center">{{ t('loginView.passcode') }}</label>
           <DigitCode ref="pinBox" v-model="pin" :length="4" masked />
         </div>
 
@@ -134,13 +141,13 @@ async function handleLogin() {
           :disabled="loading"
           class="w-full bg-aqua text-white font-medium py-3 rounded-lg hover:bg-deepsea transition-colors disabled:opacity-60"
         >
-          {{ loading ? 'Checking...' : 'Log in' }}
+          {{ loading ? t('loginView.checking') : t('loginView.logIn') }}
         </button>
       </form>
 
-      <p class="text-center text-slate text-xs mt-6">Ask your outlet manager if you don't have a passcode.</p>
+      <p class="text-center text-slate text-xs mt-6">{{ t('loginView.askManager') }}</p>
       <p class="text-center text-slate text-xs mt-2">
-        Manager? <router-link to="/manager-login" class="underline">Log in here</router-link>
+        {{ t('loginView.managerPrompt') }}<router-link to="/manager-login" class="underline">{{ t('loginView.logInHere') }}</router-link>
       </p>
     </div>
   </div>

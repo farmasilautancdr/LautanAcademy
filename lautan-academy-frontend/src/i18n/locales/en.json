@@ -1,2 +1,25 @@
 {
+  "loginView": {
+    "tagline": "Farmasi Lautan staff training",
+    "division": "Division",
+    "retail": "Retail",
+    "warehouse": "Warehouse",
+    "outletLabel": "Outlet",
+    "locationLabel": "Location",
+    "selectOutlet": "Select outlet...",
+    "selectLocation": "Select location...",
+    "yourName": "Your name",
+    "selectName": "Select your name...",
+    "noStaff": "No staff added for this outlet yet",
+    "selectOutletFirst": "Select outlet first...",
+    "passcode": "Passcode",
+    "checking": "Checking...",
+    "logIn": "Log in",
+    "askManager": "Ask your outlet manager if you don't have a passcode.",
+    "managerPrompt": "Manager? ",
+    "logInHere": "Log in here",
+    "errorMissingFields": "Enter your outlet and name.",
+    "errorBadPasscode": "Enter your 4-digit passcode.",
+    "errorNotRecognized": "That name/passcode combination was not recognized. Check with your outlet manager."
+  }
 }
