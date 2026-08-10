@@ -350,5 +350,16 @@
   },
   "warehouseManagerStaffView": {
     "title": "Manage Staff — {location}"
+  },
+  "areaManagerDashboard": {
+    "title": "Staff Results — {area}",
+    "loading": "Loading...",
+    "noResultsYet": "No results yet.",
+    "allOutletsInRegion": "All outlets in region",
+    "allYears": "All years",
+    "allTopics": "All topics",
+    "noResultsFiltered": "No results match this filter.",
+    "questionPrefix": "Q: {text}",
+    "correctLabel": "✓ Correct: {text}"
   }
 }

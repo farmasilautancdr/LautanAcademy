@@ -350,5 +350,16 @@
   },
   "warehouseManagerStaffView": {
     "title": "Urus Staf — {location}"
+  },
+  "areaManagerDashboard": {
+    "title": "Keputusan Staf — {area}",
+    "loading": "Memuatkan...",
+    "noResultsYet": "Belum ada keputusan.",
+    "allOutletsInRegion": "Semua cawangan dalam wilayah",
+    "allYears": "Semua tahun",
+    "allTopics": "Semua topik",
+    "noResultsFiltered": "Tiada keputusan sepadan dengan penapis ini.",
+    "questionPrefix": "S: {text}",
+    "correctLabel": "✓ Betul: {text}"
   }
 }
