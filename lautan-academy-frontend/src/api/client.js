@@ -77,4 +77,6 @@ export const api = {
   checkAiAnswer: (outlet, passcode, index, chosen) =>
     request(`/quiz/${encodeURIComponent(outlet)}/check`, { method: 'POST', body: JSON.stringify({ passcode, index, chosen }) }),
   rotateMasterPin: (payload) => request('/auth/rotate-master-pin', { method: 'POST', body: JSON.stringify(payload) }),
+  masterLogin: (username, password) =>
+    request('/auth/master-login', { method: 'POST', body: JSON.stringify({ username, password }) }),
 }
