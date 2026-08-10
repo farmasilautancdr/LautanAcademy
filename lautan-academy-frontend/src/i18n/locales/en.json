@@ -474,5 +474,19 @@
     "loading": "Loading...",
     "noActivity": "No activity in this window.",
     "attemptsCount": "{count} attempt | {count} attempts"
+  },
+  "supervisorManagerAccessView": {
+    "title": "Manager Access",
+    "intro": "Set a new master PIN per role. This is the recovery/handover PIN managers use to register or re-register their outlet/region — not a login PIN itself once they've set their own password. The current value can't be shown back, only replaced.",
+    "newPinSrLabel": "New master PIN for {role}",
+    "confirmPinSrLabel": "Confirm new master PIN for {role}",
+    "newPinPlaceholder": "New master PIN",
+    "confirmPinPlaceholder": "Confirm master PIN",
+    "saving": "Saving...",
+    "set": "Set",
+    "errorEnterPin": "Enter a new master PIN.",
+    "errorPinsMismatch": "PINs do not match.",
+    "successUpdated": "Master PIN updated.",
+    "errorUpdateFailed": "Could not update."
   }
 }

@@ -474,5 +474,19 @@
     "loading": "Memuatkan...",
     "noActivity": "Tiada aktiviti dalam tempoh ini.",
     "attemptsCount": "{count} percubaan"
+  },
+  "supervisorManagerAccessView": {
+    "title": "Akses Pengurus",
+    "intro": "Tetapkan PIN induk baharu bagi setiap peranan. Ini ialah PIN pemulihan/serah tugas yang digunakan pengurus untuk mendaftar atau mendaftar semula cawangan/wilayah mereka — bukan PIN log masuk itu sendiri sebaik sahaja mereka menetapkan kata laluan sendiri. Nilai semasa tidak dapat dipaparkan semula, hanya digantikan.",
+    "newPinSrLabel": "PIN induk baharu untuk {role}",
+    "confirmPinSrLabel": "Sahkan PIN induk baharu untuk {role}",
+    "newPinPlaceholder": "PIN induk baharu",
+    "confirmPinPlaceholder": "Sahkan PIN induk",
+    "saving": "Menyimpan...",
+    "set": "Tetapkan",
+    "errorEnterPin": "Masukkan PIN induk baharu.",
+    "errorPinsMismatch": "PIN tidak sepadan.",
+    "successUpdated": "PIN induk dikemas kini.",
+    "errorUpdateFailed": "Tidak dapat mengemas kini."
   }
 }
