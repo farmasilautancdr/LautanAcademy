@@ -170,5 +170,16 @@
     "join": "Join",
     "errorBadCode": "Enter the 3-digit practice code your manager shared.",
     "errorInvalidCode": "Invalid or expired code for your outlet."
+  },
+  "moduleQuizView": {
+    "title": "Module Quiz",
+    "loading": "Loading...",
+    "moduleLabel": "Module",
+    "selectModule": "Select a module...",
+    "questionCount": "{count} question in this module. | {count} questions in this module.",
+    "errorPickModule": "Pick a module first.",
+    "errorAlreadyAttempted": "You've already attempted \"{topic}\" today. Try again tomorrow.",
+    "errorNoQuestions": "No questions available for this module yet.",
+    "startQuiz": "Start quiz"
   }
 }

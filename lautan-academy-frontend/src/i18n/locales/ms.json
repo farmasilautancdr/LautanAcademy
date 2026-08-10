@@ -170,5 +170,16 @@
     "join": "Sertai",
     "errorBadCode": "Masukkan kod latihan 3-digit yang dikongsi pengurus anda.",
     "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda."
+  },
+  "moduleQuizView": {
+    "title": "Kuiz Modul",
+    "loading": "Memuatkan...",
+    "moduleLabel": "Modul",
+    "selectModule": "Pilih modul...",
+    "questionCount": "{count} soalan dalam modul ini.",
+    "errorPickModule": "Pilih modul dahulu.",
+    "errorAlreadyAttempted": "Anda telah mencuba \"{topic}\" hari ini. Cuba lagi esok.",
+    "errorNoQuestions": "Tiada soalan tersedia untuk modul ini lagi.",
+    "startQuiz": "Mula kuiz"
   }
 }
