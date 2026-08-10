@@ -508,14 +508,18 @@ built AND verified.
 
 ## Known fragility (see CLAUDE.md hard rule 5)
 
-- **In-app resource file upload is dormant, not built into any UI** —
-  `POST /resources/upload` exists and is correct, but the Drive service
-  account has zero storage quota on the current (regular, non-Shared)
-  Drive folder — a real Google platform limit, not fixable in code (see
-  the vanilla Resources/Content item above for the full story). Needs the
-  folder moved to a Shared Drive (or OAuth delegation set up) before any
-  UI can call this. Until then, Supervisors upload into the Drive folder
-  directly, outside the app.
+- **In-app resource file upload is permanently out of scope, not just
+  dormant** — `POST /resources/upload` exists and is correct, but the
+  Drive service account has zero storage quota on the current (regular,
+  non-Shared) Drive folder — a real Google platform limit, not fixable
+  in code (see the vanilla Resources/Content item above for the full
+  story). The fix would be moving the folder to a Shared Drive (or OAuth
+  delegation), but user explicitly decided 2026-08-11 to skip that route
+  entirely — not pursuing Google Workspace changes for this. Supervisors
+  keep uploading into the Drive folder directly, outside the app,
+  permanently, not as an interim state. `POST /resources/upload` stays
+  in the backend, dormant, correct but unreachable from any UI — leave
+  as-is unless asked to remove it.
 - `BACKEND_URL` is a hardcoded constant in `index.html` (`GAS_URL` no
   longer exists — removed 2026-08-11, vanilla no longer talks to GAS at
   all); already caused one real outage this session (stale deployment
