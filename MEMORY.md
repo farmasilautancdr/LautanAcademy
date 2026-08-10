@@ -11,6 +11,7 @@
 - `standard_questions.id` string/int mismatch caused 0 scoring (Fixed).
 - Grading trusted client arrays instead of DB authoritative row count (Fixed).
 - Area Manager scoping bypassed in vanilla login (Fixed).
+- Vanilla's AI Practice reveal always showed wrong (backend stopped sending `correct` on `/quiz/redeem` mid-session as a security fix, vanilla's `handleChoice()`/`exitQuizWithAutosave()` weren't updated to match — silent regression, no error thrown) (Fixed 2026-08-10, commit `98fd393`).
 [FRAGILITY]: In-app Drive resource upload UI is dormant due to Google Workspace service account storage quotas.
 
 [ACTIVE TASK]: i18n (EN/BM) rollout — Phase 1 + Phase 2 (all 4 batches, 32 views/components) COMPLETE. Batch 3 (Warehouse+Area Manager) and Batch 4 (Supervisor) manual browser click-through + BM native-speaker spot-check done live 2026-08-10 (user confirmed both OK, no issues) — closes the last outstanding item. i18n rollout fully done end to end, nothing left open.
