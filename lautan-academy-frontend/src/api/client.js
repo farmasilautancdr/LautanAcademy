@@ -79,4 +79,10 @@ export const api = {
   rotateMasterPin: (payload) => request('/auth/rotate-master-pin', { method: 'POST', body: JSON.stringify(payload) }),
   masterLogin: (username, password) =>
     request('/auth/master-login', { method: 'POST', body: JSON.stringify({ username, password }) }),
+  masterResetSupervisorPin: (newPin, masterToken) =>
+    request('/auth/master-reset-supervisor-pin', {
+      method: 'POST',
+      body: JSON.stringify({ newPin }),
+      headers: { Authorization: `Bearer ${masterToken}` },
+    }),
 }
