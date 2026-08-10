@@ -554,6 +554,31 @@
         "breakdownReports": "Assessment reports",
         "successDeleted": "Deleted {count} row(s).",
         "errorDeleteFailed": "Delete failed."
+      },
+      "quizAttempts": {
+        "typeStandard": "Module Quiz",
+        "typeAi": "AI Practice",
+        "outletPlaceholder": "Outlet",
+        "namePlaceholder": "Staff name",
+        "topicPlaceholder": "Topic",
+        "dateFromLabel": "From",
+        "dateToLabel": "To",
+        "search": "Search",
+        "searching": "Searching...",
+        "errorSearchFailed": "Search failed.",
+        "noResults": "No quiz attempts found.",
+        "colOutlet": "Outlet",
+        "colName": "Name",
+        "colTopic": "Topic",
+        "colScore": "Score",
+        "colDate": "Date",
+        "legacyBadge": "No attempt link",
+        "deleteSelected": "Delete Selected ({count})",
+        "confirmTitle": "Delete quiz attempt(s)?",
+        "breakdownAttempts": "Quiz attempts",
+        "legacyWarning": "{count} selected attempt(s) have no attempt link — their wrong answers will not be removed.",
+        "successDeleted": "Deleted {count} row(s).",
+        "errorDeleteFailed": "Delete failed."
       }
     }
   }

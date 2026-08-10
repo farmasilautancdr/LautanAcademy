@@ -554,6 +554,31 @@
         "breakdownReports": "Laporan penilaian",
         "successDeleted": "{count} baris dipadam.",
         "errorDeleteFailed": "Padam gagal."
+      },
+      "quizAttempts": {
+        "typeStandard": "Module Quiz",
+        "typeAi": "AI Practice",
+        "outletPlaceholder": "Outlet",
+        "namePlaceholder": "Nama staf",
+        "topicPlaceholder": "Topik",
+        "dateFromLabel": "Dari",
+        "dateToLabel": "Hingga",
+        "search": "Cari",
+        "searching": "Mencari...",
+        "errorSearchFailed": "Carian gagal.",
+        "noResults": "Tiada percubaan kuiz dijumpai.",
+        "colOutlet": "Outlet",
+        "colName": "Nama",
+        "colTopic": "Topik",
+        "colScore": "Skor",
+        "colDate": "Tarikh",
+        "legacyBadge": "Tiada pautan percubaan",
+        "deleteSelected": "Padam Terpilih ({count})",
+        "confirmTitle": "Padam percubaan kuiz?",
+        "breakdownAttempts": "Percubaan kuiz",
+        "legacyWarning": "{count} percubaan terpilih tiada pautan percubaan — jawapan salah tidak akan dipadam.",
+        "successDeleted": "{count} baris dipadam.",
+        "errorDeleteFailed": "Padam gagal."
       }
     }
   }
