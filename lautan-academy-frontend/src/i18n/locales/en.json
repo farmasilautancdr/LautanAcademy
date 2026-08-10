@@ -488,5 +488,29 @@
     "errorPinsMismatch": "PINs do not match.",
     "successUpdated": "Master PIN updated.",
     "errorUpdateFailed": "Could not update."
+  },
+  "masterPanel": {
+    "loginTitle": "Master Login",
+    "username": "Username",
+    "password": "Password",
+    "cancel": "Cancel",
+    "logIn": "Log In",
+    "checking": "Checking...",
+    "errorMissingFields": "Enter a username and password.",
+    "errorInvalidLogin": "Incorrect username or password.",
+    "panelTitle": "Master Panel",
+    "close": "Close",
+    "comingSoon": "Coming Soon",
+    "logOut": "Log Out",
+    "tab": {
+      "pinReset": "PIN Reset",
+      "overrides": "Permission Overrides",
+      "dataPurge": "Data Purge",
+      "maintenanceMode": "Maintenance Mode",
+      "auditLogs": "Audit Logs",
+      "backupExport": "Backup & Export",
+      "sessions": "Active Sessions",
+      "impersonation": "View As"
+    }
   }
 }

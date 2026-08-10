@@ -488,5 +488,29 @@
     "errorPinsMismatch": "PIN tidak sepadan.",
     "successUpdated": "PIN induk dikemas kini.",
     "errorUpdateFailed": "Tidak dapat mengemas kini."
+  },
+  "masterPanel": {
+    "loginTitle": "Log Masuk Master",
+    "username": "Nama Pengguna",
+    "password": "Kata Laluan",
+    "cancel": "Batal",
+    "logIn": "Log Masuk",
+    "checking": "Menyemak...",
+    "errorMissingFields": "Sila isi nama pengguna dan kata laluan.",
+    "errorInvalidLogin": "Nama pengguna atau kata laluan salah.",
+    "panelTitle": "Panel Master",
+    "close": "Tutup",
+    "comingSoon": "Akan Datang",
+    "logOut": "Log Keluar",
+    "tab": {
+      "pinReset": "Reset PIN",
+      "overrides": "Override Kebenaran",
+      "dataPurge": "Padam Data Ujian",
+      "maintenanceMode": "Mod Penyelenggaraan",
+      "auditLogs": "Log Audit",
+      "backupExport": "Sandaran & Eksport",
+      "sessions": "Sesi Aktif",
+      "impersonation": "Lihat Sebagai"
+    }
   }
 }
