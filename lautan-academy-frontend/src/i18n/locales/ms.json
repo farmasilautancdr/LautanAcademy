@@ -511,6 +511,19 @@
       "backupExport": "Sandaran & Eksport",
       "sessions": "Sesi Aktif",
       "impersonation": "Lihat Sebagai"
+    },
+    "pinReset": {
+      "title": "Reset PIN Supervisor",
+      "intro": "Tetapkan PIN baharu untuk peranan Supervisor. Supervisor tiada cara pemulihan sendiri, jadi ini satu-satunya cara membetulkan PIN Supervisor yang hilang. Nilai semasa tidak boleh dipaparkan semula, hanya boleh diganti.",
+      "newPinLabel": "PIN Supervisor Baharu",
+      "newPinPlaceholder": "PIN Supervisor Baharu",
+      "back": "Kembali",
+      "saving": "Menyimpan...",
+      "set": "Tetapkan",
+      "errorEnterPin": "Sila masukkan PIN baharu.",
+      "errorTooShort": "PIN mesti sekurang-kurangnya 6 aksara.",
+      "successUpdated": "PIN Supervisor telah dikemas kini.",
+      "errorUpdateFailed": "Gagal mengemas kini."
     }
   }
 }

@@ -511,6 +511,19 @@
       "backupExport": "Backup & Export",
       "sessions": "Active Sessions",
       "impersonation": "View As"
+    },
+    "pinReset": {
+      "title": "Reset Supervisor PIN",
+      "intro": "Set a new shared PIN for the Supervisor role. Supervisor has no self-service recovery path, so this is the only way to fix a lost Supervisor PIN. The current value can't be shown back, only replaced.",
+      "newPinLabel": "New Supervisor PIN",
+      "newPinPlaceholder": "New Supervisor PIN",
+      "back": "Back",
+      "saving": "Saving...",
+      "set": "Set",
+      "errorEnterPin": "Enter a new PIN.",
+      "errorTooShort": "PIN must be at least 6 characters.",
+      "successUpdated": "Supervisor PIN updated.",
+      "errorUpdateFailed": "Could not update."
     }
   }
 }
