@@ -533,18 +533,29 @@ built AND verified.
   Pages serves nothing. Don't delete `.nojekyll`, and don't assume this
   repo's GitHub Pages setting is dead weight just because a workflow run
   shows red — check what actually depends on it first.
-- **Railway's GitHub auto-deploy is not fully reliable** — pushing
-  `e6eabff` (idNote change) to `main` did not trigger a build within
-  several minutes of polling; production kept serving stale code until a
-  manual `railway up` was run from `lautan-academy-backend`, which
-  deployed correctly in ~2 min. This is the same failure class as the
-  "Deploy pipeline was silently broken" fragility documented earlier
-  (Railway's service-source connection) — it may have regressed, or may
-  just be occasionally slow/unreliable; not root-caused this session.
-  If a backend push doesn't show up live within a few minutes, don't
-  assume it will eventually — verify with `curl` against the real
-  endpoint, and fall back to `railway up` (run from
-  `lautan-academy-backend`) rather than waiting indefinitely.
+- **Railway's GitHub auto-deploy is confirmed broken, not just slow** —
+  investigated properly 2026-08-11. `railway status --json`'s deployment
+  history showed the `e6eabff` push had exactly one deployment record,
+  timestamped to match the manual `railway up`, not the git push — proof
+  the push itself never triggered anything (no separate stuck/failed
+  attempt exists). `service.source.repo` correctly reports the linked
+  repo, so the connection isn't fully missing at the metadata level.
+  Re-ran `railway service source connect --repo
+  farmasilautancdr/farmasilautancdr-lautan-academy-backend- --branch main
+  --service lautan-academy-backend` (the same command that fixed the
+  original "no GitHub connection at all" incident) — **did not fix it**:
+  confirmed with a real trivial test push (`a389ad8`), polled Railway's
+  deployment list for 4 minutes, zero auto-deploy triggered. Both that
+  test commit and its cleanup revert needed manual `railway up`.
+  **Root cause not found** — likely the GitHub webhook itself (delivery
+  failing, or Railway's GitHub App losing repo access) rather than
+  Railway-side config, but confirming that needs GitHub's own webhook
+  delivery log (repo Settings → Webhooks → the Railway webhook → Recent
+  Deliveries) or Railway's dashboard GitHub App connection page — neither
+  inspectable from the CLI/API access available this session.
+  **Until fixed: every backend push needs a manual `railway up` from
+  `lautan-academy-backend`** — do not assume `git push` alone deploys the
+  backend, unlike the frontend (Vercel) which auto-deploys correctly.
 - `BACKEND_URL` in `index.html` now points at the Railway URL (was
   `localhost:3000`, dev-only). Same fragility as `GAS_URL` above: it's a
   hardcoded constant, so a future Railway URL change needs a manual edit
