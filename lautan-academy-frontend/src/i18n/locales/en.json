@@ -532,6 +532,28 @@
         "cancel": "Cancel",
         "deleteButton": "Delete",
         "deleting": "Deleting..."
+      },
+      "staff": {
+        "outletPlaceholder": "Outlet (e.g. R3-ABC)",
+        "namePlaceholder": "Staff name",
+        "search": "Search",
+        "searching": "Searching...",
+        "errorSearchFailed": "Search failed.",
+        "noResults": "No staff accounts found.",
+        "colOutlet": "Outlet",
+        "colName": "Name",
+        "colRelated": "Related data",
+        "relatedSummary": "{results} quiz results, {ai} AI results, {reports} reports",
+        "deleteSelected": "Delete Selected ({count})",
+        "confirmTitle": "Delete staff account(s)?",
+        "breakdownStaff": "Staff accounts",
+        "breakdownResults": "Module Quiz results",
+        "breakdownWrongAnswers": "Module Quiz wrong answers",
+        "breakdownAiResults": "AI Practice results",
+        "breakdownAiWrongAnswers": "AI Practice wrong answers",
+        "breakdownReports": "Assessment reports",
+        "successDeleted": "Deleted {count} row(s).",
+        "errorDeleteFailed": "Delete failed."
       }
     }
   }

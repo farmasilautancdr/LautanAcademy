@@ -532,6 +532,28 @@
         "cancel": "Batal",
         "deleteButton": "Padam",
         "deleting": "Memadam..."
+      },
+      "staff": {
+        "outletPlaceholder": "Outlet (cth. R3-ABC)",
+        "namePlaceholder": "Nama staf",
+        "search": "Cari",
+        "searching": "Mencari...",
+        "errorSearchFailed": "Carian gagal.",
+        "noResults": "Tiada akaun staf dijumpai.",
+        "colOutlet": "Outlet",
+        "colName": "Nama",
+        "colRelated": "Data berkaitan",
+        "relatedSummary": "{results} keputusan kuiz, {ai} keputusan AI, {reports} laporan",
+        "deleteSelected": "Padam Terpilih ({count})",
+        "confirmTitle": "Padam akaun staf?",
+        "breakdownStaff": "Akaun staf",
+        "breakdownResults": "Keputusan Module Quiz",
+        "breakdownWrongAnswers": "Jawapan salah Module Quiz",
+        "breakdownAiResults": "Keputusan AI Practice",
+        "breakdownAiWrongAnswers": "Jawapan salah AI Practice",
+        "breakdownReports": "Laporan penilaian",
+        "successDeleted": "{count} baris dipadam.",
+        "errorDeleteFailed": "Padam gagal."
       }
     }
   }
