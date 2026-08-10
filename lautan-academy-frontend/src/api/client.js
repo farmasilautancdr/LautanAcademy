@@ -85,4 +85,24 @@ export const api = {
       body: JSON.stringify({ newPin }),
       headers: { Authorization: `Bearer ${masterToken}` },
     }),
+  masterSearchStaffForPurge: (params, masterToken) =>
+    request(`/master/purge/staff/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterDeleteStaff: (ids, masterToken) =>
+    request('/master/purge/staff/delete', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterSearchQuizAttempts: (params, masterToken) =>
+    request(`/master/purge/quiz-attempts/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterDeleteQuizAttempts: (type, ids, masterToken) =>
+    request('/master/purge/quiz-attempts/delete', { method: 'POST', body: JSON.stringify({ type, ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterSearchManagerAccounts: (params, masterToken) =>
+    request(`/master/purge/manager-accounts/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterDeleteManagerAccounts: (ids, masterToken) =>
+    request('/master/purge/manager-accounts/delete', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterSearchReports: (params, masterToken) =>
+    request(`/master/purge/reports/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterDeleteReports: (ids, masterToken) =>
+    request('/master/purge/reports/delete', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterSearchContent: (params, masterToken) =>
+    request(`/master/purge/content/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterDeleteContent: (ids, masterToken) =>
+    request('/master/purge/content/delete', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
 }
