@@ -347,5 +347,8 @@
     "noAttemptsFiltered": "No attempts match this filter.",
     "questionPrefix": "Q: {text}",
     "correctLabel": "✓ Correct: {text}"
+  },
+  "warehouseManagerStaffView": {
+    "title": "Manage Staff — {location}"
   }
 }

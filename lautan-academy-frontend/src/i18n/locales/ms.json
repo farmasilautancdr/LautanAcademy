@@ -347,5 +347,8 @@
     "noAttemptsFiltered": "Tiada percubaan sepadan dengan penapis ini.",
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}"
+  },
+  "warehouseManagerStaffView": {
+    "title": "Urus Staf — {location}"
   }
 }
