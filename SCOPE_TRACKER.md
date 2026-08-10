@@ -516,10 +516,35 @@ built AND verified.
   folder moved to a Shared Drive (or OAuth delegation set up) before any
   UI can call this. Until then, Supervisors upload into the Drive folder
   directly, outside the app.
-- `GAS_URL` and `BACKEND_URL` are hardcoded constants in `index.html`;
-  already caused one real outage this session (stale deployment ID). Now
-  also true of `VITE_API_URL` baked into the Vercel build — if the Railway
-  URL ever changes, the frontend needs a rebuild, not just a var change.
+- `BACKEND_URL` is a hardcoded constant in `index.html` (`GAS_URL` no
+  longer exists — removed 2026-08-11, vanilla no longer talks to GAS at
+  all); already caused one real outage this session (stale deployment
+  ID). Now also true of `VITE_API_URL` baked into the Vercel build — if
+  the Railway URL ever changes, the frontend needs a rebuild, not just a
+  var change.
+- **Vanilla `index.html`'s real production hosting is GitHub Pages**
+  (`https://farmasilautancdr.github.io/LautanAcademy/`, built from
+  `master`) — undocumented anywhere until 2026-08-11, discovered only
+  after Pages was mistakenly disabled mid-session (see MEMORY.md's
+  "Two real production incidents" entry) and staff reported they
+  couldn't log in. Depends on a `.nojekyll` file at repo root staying in
+  place — without it, GitHub's default Jekyll build fails on every push
+  (confirmed: it was failing before this session touched anything) and
+  Pages serves nothing. Don't delete `.nojekyll`, and don't assume this
+  repo's GitHub Pages setting is dead weight just because a workflow run
+  shows red — check what actually depends on it first.
+- **Railway's GitHub auto-deploy is not fully reliable** — pushing
+  `e6eabff` (idNote change) to `main` did not trigger a build within
+  several minutes of polling; production kept serving stale code until a
+  manual `railway up` was run from `lautan-academy-backend`, which
+  deployed correctly in ~2 min. This is the same failure class as the
+  "Deploy pipeline was silently broken" fragility documented earlier
+  (Railway's service-source connection) — it may have regressed, or may
+  just be occasionally slow/unreliable; not root-caused this session.
+  If a backend push doesn't show up live within a few minutes, don't
+  assume it will eventually — verify with `curl` against the real
+  endpoint, and fall back to `railway up` (run from
+  `lautan-academy-backend`) rather than waiting indefinitely.
 - `BACKEND_URL` in `index.html` now points at the Railway URL (was
   `localhost:3000`, dev-only). Same fragility as `GAS_URL` above: it's a
   hardcoded constant, so a future Railway URL change needs a manual edit
