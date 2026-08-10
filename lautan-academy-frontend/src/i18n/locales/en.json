@@ -598,6 +598,31 @@
         "breakdownAccounts": "Manager accounts",
         "successDeleted": "Deleted {count} account(s).",
         "errorDeleteFailed": "Delete failed."
+      },
+      "reportsContent": {
+        "toggleReports": "Reports",
+        "toggleContent": "Content",
+        "outletPlaceholder": "Outlet",
+        "staffNamePlaceholder": "Staff name",
+        "topicPlaceholder": "Topic",
+        "categoryPlaceholder": "Category",
+        "search": "Search",
+        "searching": "Searching...",
+        "errorSearchFailed": "Search failed.",
+        "noResults": "No records found.",
+        "colOutlet": "Outlet",
+        "colStaffName": "Staff",
+        "colTopic": "Topic",
+        "colManager": "Manager",
+        "colCategory": "Category",
+        "colTitle": "Title",
+        "deleteSelected": "Delete Selected ({count})",
+        "confirmTitleReports": "Delete report(s)?",
+        "confirmTitleContent": "Delete content entry(ies)?",
+        "breakdownReports": "Reports",
+        "breakdownContent": "Content entries",
+        "successDeleted": "Deleted {count} row(s).",
+        "errorDeleteFailed": "Delete failed."
       }
     }
   }

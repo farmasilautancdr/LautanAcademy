@@ -598,6 +598,31 @@
         "breakdownAccounts": "Akaun pengurus",
         "successDeleted": "{count} akaun dipadam.",
         "errorDeleteFailed": "Padam gagal."
+      },
+      "reportsContent": {
+        "toggleReports": "Laporan",
+        "toggleContent": "Kandungan",
+        "outletPlaceholder": "Outlet",
+        "staffNamePlaceholder": "Nama staf",
+        "topicPlaceholder": "Topik",
+        "categoryPlaceholder": "Kategori",
+        "search": "Cari",
+        "searching": "Mencari...",
+        "errorSearchFailed": "Carian gagal.",
+        "noResults": "Tiada rekod dijumpai.",
+        "colOutlet": "Outlet",
+        "colStaffName": "Staf",
+        "colTopic": "Topik",
+        "colManager": "Pengurus",
+        "colCategory": "Kategori",
+        "colTitle": "Tajuk",
+        "deleteSelected": "Padam Terpilih ({count})",
+        "confirmTitleReports": "Padam laporan?",
+        "confirmTitleContent": "Padam entri kandungan?",
+        "breakdownReports": "Laporan",
+        "breakdownContent": "Entri kandungan",
+        "successDeleted": "{count} baris dipadam.",
+        "errorDeleteFailed": "Padam gagal."
       }
     }
   }
