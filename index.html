@@ -709,15 +709,11 @@
     </div>
 
     <script>
-        // Only fetchData()'s pre-login bulk questions+staffRoster fetch still
-        // goes through GAS — the new backend's equivalents (GET /questions,
-        // GET /auth/staff-roster) are shaped differently (staff-roster needs
-        // division+outlet per call, not one bulk list) and repointing that
-        // is a separate piece of work, not part of the Resources/Content
-        // bridge this was scoped to. Everything else — login, quiz, results,
-        // reports, resources, content, manage staff — now goes through
-        // BACKEND_URL exclusively.
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyvioLEJ8tFK3766M8fj7wKxS5_qFDkKEKtniei3MHaP-aNkEq7LcwNqaVhcXgr26wKkg/exec";
+        // v1.38: vanilla no longer talks to GAS for anything — the last
+        // bridge (this pre-login bulk questions+staffRoster fetch) is gone.
+        // Questions come from GET /questions, staff roster is fetched
+        // per-outlet on demand (see populateStaffNameOptions and
+        // populateOutletMgrDropdowns) instead of one bulk list.
         const BACKEND_URL = "https://lautan-academy-backend-production.up.railway.app";
         let allQuestions = [], allResults = [], allReports = [], allWrongAnswers = [], allContent = [];
         let allAIResults = [], allAIWrongAnswers = [], allReferenceDocs = [];
@@ -729,7 +725,6 @@
         // used to read a free-text name field now reads these instead.
         let loggedInStaffName = '', loggedInStaffOutlet = '', loggedInDivision = '';
         let currentWarehouseMgrLocation = '';
-        let allStaffRoster = [];
 
         const outletList = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
         const managerData = [
@@ -753,10 +748,9 @@
             document.getElementById('sync-error').classList.add('hidden');
             setLoader(true, "Loading...");
             try {
-                const res = await fetch(GAS_URL + '?_=' + Date.now(), { cache: 'no-store' });
-                const dataRaw = await res.json();
-                allQuestions = dataRaw.questions || [];
-                allStaffRoster = dataRaw.staffRoster || [];
+                const res = await fetch(BACKEND_URL + '/questions', { cache: 'no-store' });
+                const data = await res.json();
+                allQuestions = data.questions || [];
                 initDropdowns();
                 populateGlobalData();
             } catch (e) {
