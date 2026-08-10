@@ -126,7 +126,7 @@ async function handleLogin() {
             <label for="name" class="block text-sm font-medium text-ink mb-1.5">{{ t('loginView.yourName') }}</label>
             <select id="name" v-model="name" :disabled="!outlet" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
               <option value="">{{ outlet ? (staffNames.length ? t('loginView.selectName') : t('loginView.noStaff')) : t('loginView.selectOutletFirst') }}</option>
-              <option v-for="n in staffNames" :key="n" :value="n">{{ n }}</option>
+              <option v-for="n in staffNames" :key="n.name" :value="n.name">{{ n.name }}{{ n.idNote ? ' (' + n.idNote + ')' : '' }}</option>
             </select>
           </div>
         </div>
