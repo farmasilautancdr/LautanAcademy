@@ -524,16 +524,20 @@ built AND verified.
   `localhost:3000`, dev-only). Same fragility as `GAS_URL` above: it's a
   hardcoded constant, so a future Railway URL change needs a manual edit
   here too, not just an env var.
-- Supabase's Direct connection (`db.<ref>.supabase.co`) does not work from
-  Railway — it resolves to an IPv6 address Railway can't route, and even
-  after forcing IPv4-first DNS + disabling Node's Happy Eyeballs
-  (`net.setDefaultAutoSelectFamily(false)`), the IPv4 path still hung
-  (likely a firewalled egress, not just an address-family issue). Fixed by
-  switching to Supabase's **Session Pooler** connection string instead
+- **RESOLVED, not a live bug** — Supabase's Direct connection
+  (`db.<ref>.supabase.co`) does not work from Railway — it resolves to an
+  IPv6 address Railway can't route, and even after forcing IPv4-first DNS +
+  disabling Node's Happy Eyeballs (`net.setDefaultAutoSelectFamily(false)`),
+  the IPv4 path still hung (likely a firewalled egress, not just an
+  address-family issue). Root cause is a Railway network limitation, not
+  our code — not fixable from our side. Fixed by switching to Supabase's
+  **Session Pooler** connection string instead
   (`aws-0-<region>.pooler.supabase.com`) — that's what's actually set in
-  Railway's `DATABASE_URL` now, not what's in this repo's `.env.example`.
-  Local dev keeps using Direct connection since it works fine here; the
-  pooler is only required for Railway specifically.
+  Railway's `DATABASE_URL` now (confirmed working in production), not what's
+  in this repo's `.env.example`. Local dev deliberately keeps using Direct
+  connection since it works fine here; the pooler is only required for
+  Railway specifically — an intentional environment difference, not drift
+  to fix.
 
 - Both deploy pipelines were silently disconnected/misconfigured until
   this session (see the Load test section above) — `git push` alone now
