@@ -1636,18 +1636,21 @@
         // typed) + a permanent passcode the manager set in "Manage Staff".
         // Names are already loaded (fetchData), passcode check happens
         // server-side so it's never exposed to the browser either direction.
-        function populateStaffNameOptions(division) {
+        async function populateStaffNameOptions(division) {
             const outletFieldId = division === 'warehouse' ? 'wh-staff-location' : 'staff-outlet';
             const nameFieldId = division === 'warehouse' ? 'wh-staff-name-select' : 'staff-name-select';
             const outlet = document.getElementById(outletFieldId).value;
             const nameSelect = document.getElementById(nameFieldId);
             if(!outlet) { nameSelect.innerHTML = '<option value="">Select outlet first...</option>'; return; }
-            const names = allStaffRoster.filter(r => 
-                (r.Division||'').toString().trim().toLowerCase() === division && 
-                (r.Outlet||'').toString().trim().toUpperCase() === outlet.toUpperCase()
-            );
-            nameSelect.innerHTML = names.length 
-                ? '<option value="">Select your name...</option>' + names.map(r => `<option value="${r.Name}">${r.Name}${r.IDNote ? ' (' + r.IDNote + ')' : ''}</option>`).join('')
+            nameSelect.innerHTML = '<option value="">Loading...</option>';
+            let names = [];
+            try {
+                const res = await fetch(BACKEND_URL + '/auth/staff-roster?division=' + encodeURIComponent(division) + '&outlet=' + encodeURIComponent(outlet.toUpperCase()));
+                const data = await res.json();
+                names = data.staff || [];
+            } catch (e) { /* leave names empty — falls through to the "no staff" message below */ }
+            nameSelect.innerHTML = names.length
+                ? '<option value="">Select your name...</option>' + names.map(r => `<option value="${r.name}">${r.name}${r.idNote ? ' (' + r.idNote + ')' : ''}</option>`).join('')
                 : '<option value="">No staff added for this outlet yet — ask your manager</option>';
         }
 
