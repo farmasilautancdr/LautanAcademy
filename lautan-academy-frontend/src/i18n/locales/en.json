@@ -202,5 +202,29 @@
     "missedQuestions": "Missed questions",
     "questionPrefix": "Q: {text}",
     "correctLabel": "✓ Correct: {text}"
+  },
+  "quizHistoryView": {
+    "title": "Quiz History",
+    "loading": "Loading...",
+    "moduleQuizHeading": "Module Quiz",
+    "noModuleHistory": "Nothing here yet — take a module quiz from the sidebar.",
+    "questionPrefix": "Q: {text}",
+    "correctLabel": "✓ Correct: {text}",
+    "aiPracticeHeading": "AI Practice",
+    "noAiHistory": "Nothing here yet — your first practice attempt will show up after you join a code.",
+    "assessmentHeading": "Assessment Review",
+    "noAssessments": "No assessments filed for you yet.",
+    "allYears": "All years",
+    "allTopics": "All topics",
+    "noAssessmentsFiltered": "No assessments match this filter.",
+    "filedBy": "Filed by {manager}",
+    "quizScoreLabel": "Quiz score:",
+    "competencyLabel": "Competency:",
+    "productKnowledge": "Product knowledge",
+    "performanceGaps": "Performance gaps",
+    "recommendations": "Recommendations",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{days} days ago"
   }
 }

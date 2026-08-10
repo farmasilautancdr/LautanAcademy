@@ -202,5 +202,29 @@
     "missedQuestions": "Soalan tersilap",
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}"
+  },
+  "quizHistoryView": {
+    "title": "Sejarah Kuiz",
+    "loading": "Memuatkan...",
+    "moduleQuizHeading": "Kuiz Modul",
+    "noModuleHistory": "Belum ada apa-apa di sini — cuba kuiz modul dari bar sisi.",
+    "questionPrefix": "S: {text}",
+    "correctLabel": "✓ Betul: {text}",
+    "aiPracticeHeading": "Latihan AI",
+    "noAiHistory": "Belum ada apa-apa di sini — percubaan latihan pertama anda akan dipaparkan selepas anda menyertai kod.",
+    "assessmentHeading": "Semakan Penilaian",
+    "noAssessments": "Belum ada penilaian difailkan untuk anda.",
+    "allYears": "Semua tahun",
+    "allTopics": "Semua topik",
+    "noAssessmentsFiltered": "Tiada penilaian sepadan dengan penapis ini.",
+    "filedBy": "Difailkan oleh {manager}",
+    "quizScoreLabel": "Skor kuiz:",
+    "competencyLabel": "Kecekapan:",
+    "productKnowledge": "Pengetahuan produk",
+    "performanceGaps": "Jurang prestasi",
+    "recommendations": "Cadangan",
+    "today": "Hari ini",
+    "yesterday": "Semalam",
+    "daysAgo": "{days} hari lalu"
   }
 }
