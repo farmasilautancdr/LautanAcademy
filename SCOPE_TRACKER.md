@@ -347,6 +347,19 @@ built AND verified.
       render). Remaining ~22 views (dashboards, quiz flow, results, staff
       panels, resources, reports) and `QuizView.vue`'s pre-existing local
       `lang` toggle are Phase 2, not started — see MEMORY.md.
+- [x] i18n Phase 2 Batch 1 (staff quiz flow) — DashboardView, ModuleQuizView,
+      QuizView, ResultView, QuizHistoryView, ResourcesView migrated to
+      `vue-i18n` (212 keys/side, EN+BM). Also closed Phase 1's flagged open
+      risk: `QuizView.vue`'s separate local `lang` toggle (drove question
+      `_en`/`_ms` text) removed, replaced by the shared `useI18n().locale` +
+      `<LanguageSwitcher />` — question-content language and UI-chrome
+      language are now one switch, not two. Plan:
+      `docs/superpowers/plans/2026-08-10-i18n-phase2-batch1.md`. Verified:
+      `npm run build` clean after each of 6 tasks, EN/BM key-parity check
+      clean, user confirmed live in browser across all 6 views (both
+      languages, including the reconciled quiz-taking switch) — all
+      switching correctly. 3 more Phase 2 batches (Outlet Manager group,
+      Warehouse+Area Manager group, Supervisor group) not started.
 
 ## ✅ Frontend — vanilla (`index.html`) — repointed to new backend, tested
 
