@@ -715,6 +715,15 @@
         // per-outlet on demand (see populateStaffNameOptions and
         // populateOutletMgrDropdowns) instead of one bulk list.
         const BACKEND_URL = "https://lautan-academy-backend-production.up.railway.app";
+        // Manager-entered free text (staff name, IDNote) interpolated into
+        // innerHTML must be escaped — an unescaped name like `"><img
+        // onerror=...>` would execute as a stored XSS. Only applied where
+        // this session touched the render code (populateStaffNameOptions);
+        // the same raw-interpolation pattern exists elsewhere in this file
+        // pre-existing and unrelated to this change, out of scope here.
+        function escapeHtml(s) {
+            return (s ?? '').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
         let allQuestions = [], allResults = [], allReports = [], allWrongAnswers = [], allContent = [];
         let allAIResults = [], allAIWrongAnswers = [], allReferenceDocs = [];
         let currentLang = 'en', quizIdx = 0, score = 0, currentQuizData = [], staffWrongs = [];
@@ -1656,7 +1665,7 @@
                 names = data.staff || [];
             } catch (e) { /* leave names empty — falls through to the "no staff" message below */ }
             nameSelect.innerHTML = names.length
-                ? '<option value="">Select your name...</option>' + names.map(r => `<option value="${r.name}">${r.name}${r.idNote ? ' (' + r.idNote + ')' : ''}</option>`).join('')
+                ? '<option value="">Select your name...</option>' + names.map(r => `<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}${r.idNote ? ' (' + escapeHtml(r.idNote) + ')' : ''}</option>`).join('')
                 : '<option value="">No staff added for this outlet yet — ask your manager</option>';
         }
 
