@@ -526,6 +526,12 @@
       "errorUpdateFailed": "Could not update."
     },
     "dataPurge": {
+      "title": "Test Data Purge",
+      "back": "Back",
+      "subTabStaff": "Staff",
+      "subTabQuizAttempts": "Quiz Attempts",
+      "subTabManagerAccounts": "Manager Accounts",
+      "subTabReportsContent": "Reports & Content",
       "confirmModal": {
         "typeToConfirm": "Type DELETE to confirm",
         "placeholder": "DELETE",

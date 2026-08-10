@@ -526,6 +526,12 @@
       "errorUpdateFailed": "Gagal mengemas kini."
     },
     "dataPurge": {
+      "title": "Padam Data Ujian",
+      "back": "Kembali",
+      "subTabStaff": "Staf",
+      "subTabQuizAttempts": "Percubaan Kuiz",
+      "subTabManagerAccounts": "Akaun Pengurus",
+      "subTabReportsContent": "Laporan & Kandungan",
       "confirmModal": {
         "typeToConfirm": "Taip DELETE untuk sahkan",
         "placeholder": "DELETE",
