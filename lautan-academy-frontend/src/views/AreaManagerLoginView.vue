@@ -7,10 +7,14 @@
 // scoping.
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import { AREAS, outletsForArea } from '../config/areas'
 import PasswordField from '../components/PasswordField.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const areaId = ref('')
 const pin = ref('')
@@ -22,11 +26,11 @@ const auth = useAuthStore()
 async function handleLogin() {
   error.value = ''
   if (!areaId.value) {
-    error.value = 'Select your area.'
+    error.value = t('areaManagerLogin.errorSelectArea')
     return
   }
   if (!pin.value.trim()) {
-    error.value = 'Enter the manager PIN.'
+    error.value = t('areaManagerLogin.errorEnterPin')
     return
   }
   loading.value = true
@@ -34,7 +38,7 @@ async function handleLogin() {
     await auth.loginManager('area_manager', areaId.value, pin.value.trim(), areaId.value, outletsForArea(areaId.value))
     router.push('/area-manager')
   } catch (err) {
-    error.value = err.message || 'That PIN doesn\'t look right.'
+    error.value = err.message || t('areaManagerLogin.errorBadPin')
   } finally {
     loading.value = false
   }
@@ -44,6 +48,9 @@ async function handleLogin() {
 <template>
   <div class="min-h-screen bg-seafoam flex flex-col items-center justify-center px-6 py-10">
     <div class="w-full max-w-sm motion-safe:animate-[rise_0.5s_ease-out]">
+      <div class="flex justify-end mb-2">
+        <LanguageSwitcher />
+      </div>
       <div class="text-center mb-8">
         <div class="flex items-center justify-center gap-3">
           <img :src="logoUrl" alt="Lautan Academy" class="w-20 h-20 shrink-0" />
@@ -52,20 +59,20 @@ async function handleLogin() {
             <p class="font-display text-xs font-medium text-aqua tracking-[0.35em] leading-none mt-1.5">ACADEMY</p>
           </div>
         </div>
-        <p class="text-slate text-sm mt-3 text-center">Area Manager</p>
+        <p class="text-slate text-sm mt-3 text-center">{{ t('areaManagerLogin.subtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="bg-white rounded-xl2 p-6 shadow-sm border border-seafoam space-y-4">
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">Area</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerLogin.area') }}</label>
           <select v-model="areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
-            <option value="">Select your area...</option>
+            <option value="">{{ t('areaManagerLogin.selectArea') }}</option>
             <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">Manager PIN</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerLogin.managerPin') }}</label>
           <PasswordField
             v-model="pin"
             placeholder="••••••"
@@ -80,22 +87,22 @@ async function handleLogin() {
           :disabled="loading"
           class="w-full bg-aqua text-white font-medium py-3 rounded-lg hover:bg-deepsea transition-colors disabled:opacity-60"
         >
-          {{ loading ? 'Checking...' : 'Log in' }}
+          {{ loading ? t('areaManagerLogin.checking') : t('areaManagerLogin.logIn') }}
         </button>
       </form>
 
       <p class="text-center text-slate text-xs mt-6">
-        Staff? <router-link to="/login" class="underline">Log in here</router-link>
+        {{ t('areaManagerLogin.staffPrompt') }}<router-link to="/login" class="underline">{{ t('areaManagerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        Outlet/Warehouse Manager?
-        <router-link to="/manager-login" class="underline">Log in here</router-link>
+        {{ t('areaManagerLogin.outletManagerPrompt') }}
+        <router-link to="/manager-login" class="underline">{{ t('areaManagerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        Supervisor? <router-link to="/supervisor-login" class="underline">Log in here</router-link>
+        {{ t('areaManagerLogin.supervisorPrompt') }}<router-link to="/supervisor-login" class="underline">{{ t('areaManagerLogin.logInHere') }}</router-link>
       </p>
       <p class="text-center text-slate text-xs mt-2">
-        First time? <router-link to="/area-manager-register" class="underline">Register your region</router-link>
+        {{ t('areaManagerLogin.firstTimePrompt') }}<router-link to="/area-manager-register" class="underline">{{ t('areaManagerLogin.registerRegion') }}</router-link>
       </p>
     </div>
   </div>

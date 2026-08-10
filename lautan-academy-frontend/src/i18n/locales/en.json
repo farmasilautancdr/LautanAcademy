@@ -44,5 +44,22 @@
     "firstTimePrompt": "First time? ",
     "logInHere": "Log in here",
     "registerOutlet": "Register your outlet"
+  },
+  "areaManagerLogin": {
+    "subtitle": "Area Manager",
+    "area": "Area",
+    "selectArea": "Select your area...",
+    "managerPin": "Manager PIN",
+    "checking": "Checking...",
+    "logIn": "Log in",
+    "errorSelectArea": "Select your area.",
+    "errorEnterPin": "Enter the manager PIN.",
+    "errorBadPin": "That PIN doesn't look right.",
+    "staffPrompt": "Staff? ",
+    "outletManagerPrompt": "Outlet/Warehouse Manager?",
+    "supervisorPrompt": "Supervisor? ",
+    "firstTimePrompt": "First time? ",
+    "logInHere": "Log in here",
+    "registerRegion": "Register your region"
   }
 }

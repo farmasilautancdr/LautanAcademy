@@ -44,5 +44,22 @@
     "firstTimePrompt": "Kali pertama? ",
     "logInHere": "Log masuk di sini",
     "registerOutlet": "Daftar cawangan anda"
+  },
+  "areaManagerLogin": {
+    "subtitle": "Pengurus Kawasan",
+    "area": "Kawasan",
+    "selectArea": "Pilih kawasan anda...",
+    "managerPin": "PIN Pengurus",
+    "checking": "Menyemak...",
+    "logIn": "Log Masuk",
+    "errorSelectArea": "Pilih kawasan anda.",
+    "errorEnterPin": "Masukkan PIN pengurus.",
+    "errorBadPin": "PIN tidak sah.",
+    "staffPrompt": "Staf? ",
+    "outletManagerPrompt": "Pengurus Cawangan/Gudang?",
+    "supervisorPrompt": "Penyelia? ",
+    "firstTimePrompt": "Kali pertama? ",
+    "logInHere": "Log masuk di sini",
+    "registerRegion": "Daftar kawasan anda"
   }
 }
