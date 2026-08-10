@@ -13,8 +13,10 @@
 // don't have real pages built yet. Commented at their definition below.
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const props = defineProps({
   // No real "pending reviews" concept exists yet (Reports are just
@@ -25,6 +27,7 @@ const props = defineProps({
 
 const router = useRouter()
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const managerRole = computed(() => auth.manager?.role || null)
 const isOutletOrWarehouseManager = computed(() => managerRole.value === 'outlet_manager' || managerRole.value === 'warehouse_manager')
@@ -41,11 +44,11 @@ const managerResourcesPath = computed(() => {
   return `${managerHomePath.value}/resources`
 })
 
-const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
-const roleLabel = computed(() => auth.isStaff ? 'Staff' : (ROLE_LABELS[managerRole.value] || ''))
+const ROLE_LABEL_KEYS = { outlet_manager: 'roleOutletManager', warehouse_manager: 'roleWarehouseManager', area_manager: 'roleAreaManager', supervisor: 'roleSupervisor' }
+const roleLabel = computed(() => auth.isStaff ? t('sidebar.roleStaff') : (ROLE_LABEL_KEYS[managerRole.value] ? t(`sidebar.${ROLE_LABEL_KEYS[managerRole.value]}`) : ''))
 const displayName = computed(() => (auth.isStaff ? auth.staff.name : auth.manager?.label) || roleLabel.value)
 const avatarInitial = computed(() => (displayName.value || '?').trim().charAt(0).toUpperCase())
-const subtitle = computed(() => auth.isStaff ? 'Staff Training' : roleLabel.value)
+const subtitle = computed(() => auth.isStaff ? t('sidebar.staffTraining') : roleLabel.value)
 
 const sections = computed(() => {
   const groups = []
@@ -54,56 +57,56 @@ const sections = computed(() => {
     // Restructured to mirror the manager sidebars' multiple-named-groups
     // pattern instead of one flat list — same collapsible mechanism below,
     // just more than one group to collapse.
-    groups.push({ label: 'My Learning', items: [{ label: 'Dashboard', to: '/', icon: 'home' }] })
+    groups.push({ label: t('sidebar.groupMyLearning'), items: [{ label: t('sidebar.dashboard'), to: '/', icon: 'home' }] })
 
     // Module Quiz (Standard Quiz question bank) is retail-only — matches
     // GAS, which never gave warehouse staff anything but AI Practice.
     const quizItems = []
-    if (auth.staff?.division === 'retail') quizItems.push({ label: 'Module Quiz', to: '/module-quiz', icon: 'clipboard' })
-    quizItems.push({ label: 'Quiz History', to: '/history', icon: 'history' })
-    groups.push({ label: 'Quizzes', items: quizItems })
+    if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' })
+    quizItems.push({ label: t('sidebar.quizHistory'), to: '/history', icon: 'history' })
+    groups.push({ label: t('sidebar.groupQuizzes'), items: quizItems })
 
-    groups.push({ label: 'Browse Courses', items: [{ label: 'Browse Courses', to: '/resources', icon: 'book' }] })
+    groups.push({ label: t('sidebar.groupBrowseCourses'), items: [{ label: t('sidebar.browseCourses'), to: '/resources', icon: 'book' }] })
   }
 
   if (isOutletOrWarehouseManager.value) {
     groups.push({
-      label: 'Quiz Management',
+      label: t('sidebar.groupQuizManagement'),
       items: [
-        { label: 'Create Quiz', to: managerHomePath.value, icon: 'plus' },
+        { label: t('sidebar.createQuiz'), to: managerHomePath.value, icon: 'plus' },
       ],
     })
     groups.push({
-      label: 'Assign Staff',
+      label: t('sidebar.groupAssignStaff'),
       // Repurposed from a placeholder — "assigning" isn't a real concept
       // (quizzes are joined by passcode), but Manage Staff is a real,
       // working feature that fits this section better than dead-ending.
-      items: [{ label: 'Staff Roster', to: managerStaffPath.value, icon: 'send' }],
+      items: [{ label: t('sidebar.staffRoster'), to: managerStaffPath.value, icon: 'send' }],
     })
-    const performanceItems = [{ label: 'Staff Results', to: managerResultsPath.value, icon: 'chart' }]
+    const performanceItems = [{ label: t('sidebar.staffResults'), to: managerResultsPath.value, icon: 'chart' }]
     if (managerRole.value === 'outlet_manager') {
-      performanceItems.push({ label: 'Staff Review', to: '/manager/staff-review', icon: 'clipboard' })
+      performanceItems.push({ label: t('sidebar.staffReview'), to: '/manager/staff-review', icon: 'clipboard' })
     }
-    groups.push({ label: 'Outlet Performance', items: performanceItems })
+    groups.push({ label: t('sidebar.groupOutletPerformance'), items: performanceItems })
     groups.push({
-      label: 'Browse Courses',
-      items: [{ label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' }],
+      label: t('sidebar.groupBrowseCourses'),
+      items: [{ label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
   if (isAreaManager.value) {
     groups.push({
-      label: 'Outlet Performance',
+      label: t('sidebar.groupOutletPerformance'),
       items: [
-        { label: 'Staff Results', to: '/area-manager', icon: 'chart' },
+        { label: t('sidebar.staffResults'), to: '/area-manager', icon: 'chart' },
         // Real — File a Report + Filed Reports, its own page now. No
         // "pending" state exists in the data model yet.
-        { label: 'Assessment', to: '/area-manager/reviews', icon: 'clipboard', badge: props.pendingReviewCount },
+        { label: t('sidebar.assessment'), to: '/area-manager/reviews', icon: 'clipboard', badge: props.pendingReviewCount },
       ],
     })
     groups.push({
-      label: 'Browse Courses',
-      items: [{ label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' }],
+      label: t('sidebar.groupBrowseCourses'),
+      items: [{ label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }],
     })
   }
 
@@ -114,19 +117,19 @@ const sections = computed(() => {
   // just duplicate the same link. All 3 items are real pages.
   if (isSupervisor.value) {
     groups.push({
-      label: 'Cross-Outlet',
+      label: t('sidebar.groupCrossOutlet'),
       items: [
-        { label: 'All Outlets', to: '/supervisor', icon: 'grid' },
-        { label: 'Staff Comparison', to: '/supervisor/staff-comparison', icon: 'users' },
-        { label: 'Cluster Reports', to: '/supervisor/reports', icon: 'file' },
-        { label: 'Manager Access', to: '/supervisor/manager-access', icon: 'key' },
+        { label: t('sidebar.allOutlets'), to: '/supervisor', icon: 'grid' },
+        { label: t('sidebar.staffComparison'), to: '/supervisor/staff-comparison', icon: 'users' },
+        { label: t('sidebar.clusterReports'), to: '/supervisor/reports', icon: 'file' },
+        { label: t('sidebar.managerAccess'), to: '/supervisor/manager-access', icon: 'key' },
       ],
     })
     groups.push({
-      label: 'Browse Courses',
+      label: t('sidebar.groupBrowseCourses'),
       items: [
-        { label: 'Browse Courses', to: managerResourcesPath.value, icon: 'book' },
-        { label: 'Add Resources', to: '/supervisor/add-resources', icon: 'plus' },
+        { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' },
+        { label: t('sidebar.addResources'), to: '/supervisor/add-resources', icon: 'plus' },
       ],
     })
   }
@@ -175,10 +178,11 @@ const ICONS = {
       <div class="w-10 h-10 shrink-0">
         <img :src="logoUrl" alt="Lautan Academy" class="w-full h-full object-contain" />
       </div>
-      <div class="min-w-0">
+      <div class="min-w-0 flex-1">
         <p class="font-display font-semibold text-ink text-sm leading-tight truncate">Lautan Academy</p>
         <p class="text-xs text-slate truncate">{{ subtitle }}</p>
       </div>
+      <LanguageSwitcher />
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
@@ -229,7 +233,7 @@ const ICONS = {
         <p class="text-sm font-medium text-ink truncate">{{ displayName }}</p>
         <p class="text-xs text-slate truncate">{{ roleLabel }}</p>
       </div>
-      <button type="button" @click="handleLogout" class="text-slate hover:text-coral transition-colors shrink-0" aria-label="Log out">
+      <button type="button" @click="handleLogout" class="text-slate hover:text-coral transition-colors shrink-0" :aria-label="t('sidebar.logOut')">
         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path :d="ICONS.logout" />
         </svg>
@@ -257,11 +261,11 @@ const ICONS = {
         <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.label }}</span>
       </button>
     </RouterLink>
-    <button type="button" @click="handleLogout" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" aria-label="Log out">
+    <button type="button" @click="handleLogout" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" :aria-label="t('sidebar.logOut')">
       <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path :d="ICONS.logout" />
       </svg>
-      <span class="text-[10px] font-medium">Log out</span>
+      <span class="text-[10px] font-medium">{{ t('sidebar.logOut') }}</span>
     </button>
   </nav>
 </template>
