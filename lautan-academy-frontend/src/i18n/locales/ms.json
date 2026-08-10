@@ -150,5 +150,25 @@
     "managerAccess": "Akses Pengurus",
     "addResources": "Tambah Sumber",
     "logOut": "Log Keluar"
+  },
+  "dashboardView": {
+    "greeting": "Hai {name}",
+    "progressLabel": "Kemajuan Anda",
+    "noPracticeYet": "Belum ada latihan",
+    "averagingPercent": "Purata {percent}%",
+    "joinCodeBelow": "Sertai kod di bawah untuk mula",
+    "practiceAttempts": "{count} percubaan latihan setakat ini",
+    "joinQuizBtn": "Sertai Kuiz",
+    "browseCourses": "Semak Kursus",
+    "viewAll": "Lihat semua",
+    "noCourseMaterial": "Belum ada bahan kursus dimuat naik.",
+    "materialsCount": "{count} bahan",
+    "recentPractice": "Latihan Terkini",
+    "noPracticeAttempts": "Belum ada percubaan latihan.",
+    "joinPracticeQuiz": "Sertai Kuiz Latihan",
+    "joining": "Menyertai...",
+    "join": "Sertai",
+    "errorBadCode": "Masukkan kod latihan 3-digit yang dikongsi pengurus anda.",
+    "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda."
   }
 }

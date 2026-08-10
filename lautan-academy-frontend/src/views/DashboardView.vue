@@ -16,11 +16,13 @@
 //   history, since nothing in this app is date-scheduled.
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import ProgressRing from '../components/ProgressRing.vue'
 import DigitCode from '../components/DigitCode.vue'
 
+const { t } = useI18n()
 const passcode = ref('')
 const joining = ref(false)
 const joinError = ref('')
@@ -91,7 +93,7 @@ function scrollToJoin() {
 async function joinQuiz() {
   joinError.value = ''
   if (!/^\d{3}$/.test(passcode.value)) {
-    joinError.value = 'Enter the 3-digit practice code your manager shared.'
+    joinError.value = t('dashboardView.errorBadCode')
     return
   }
   joining.value = true
@@ -101,7 +103,7 @@ async function joinQuiz() {
     sessionStorage.setItem('lautan_active_quiz', JSON.stringify({ topic: data.topic, questions: data.questions, passcode: data.passcode }))
     router.push('/quiz')
   } catch (err) {
-    joinError.value = 'Invalid or expired code for your outlet.'
+    joinError.value = t('dashboardView.errorInvalidCode')
   } finally {
     joining.value = false
   }
@@ -113,7 +115,7 @@ async function joinQuiz() {
     <header class="max-w-5xl mx-auto px-6 pt-6 pb-2 flex items-center justify-between gap-4">
       <div class="min-w-0">
         <p class="text-slate text-xs tracking-wide truncate">{{ auth.staff?.outlet }}</p>
-        <h1 class="font-display text-2xl font-semibold text-ink mt-0.5 truncate">Hi {{ firstName }}</h1>
+        <h1 class="font-display text-2xl font-semibold text-ink mt-0.5 truncate">{{ t('dashboardView.greeting', { name: firstName }) }}</h1>
       </div>
       <div class="w-10 h-10 rounded-full bg-aqualight flex items-center justify-center shrink-0">
         <span class="font-display font-semibold text-deepsea text-sm">{{ avatarInitial }}</span>
@@ -127,15 +129,15 @@ async function joinQuiz() {
         <ProgressRing v-if="!loadingHistory" :percent="avgPercent" :size="88" accent="#1E88C7" label-color="text-white" :animate-count="history.length > 0" />
         <div v-else class="w-[88px] h-[88px] rounded-full bg-white/10 animate-pulse shrink-0" />
         <div class="min-w-0">
-          <p class="text-aqualight text-[11px] font-semibold uppercase tracking-wide">Your Progress</p>
+          <p class="text-aqualight text-[11px] font-semibold uppercase tracking-wide">{{ t('dashboardView.progressLabel') }}</p>
           <p class="font-display text-lg md:text-xl font-semibold text-white mt-1">
-            {{ history.length === 0 ? 'No practice yet' : `Averaging ${avgPercent}%` }}
+            {{ history.length === 0 ? t('dashboardView.noPracticeYet') : t('dashboardView.averagingPercent', { percent: avgPercent }) }}
           </p>
           <p class="text-white/60 text-sm mt-0.5">
-            {{ history.length === 0 ? 'Join a code below to get started' : `${history.length} practice attempt${history.length === 1 ? '' : 's'} so far` }}
+            {{ history.length === 0 ? t('dashboardView.joinCodeBelow') : t('dashboardView.practiceAttempts', history.length) }}
           </p>
           <button type="button" @click="scrollToJoin" class="mt-4 bg-aqua text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
-            Join a Quiz
+            {{ t('dashboardView.joinQuizBtn') }}
           </button>
         </div>
       </div>
@@ -143,14 +145,14 @@ async function joinQuiz() {
       <!-- Browse Courses: one card per Resources category. -->
       <section class="area-grid">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="font-display text-base font-semibold text-ink">Browse Courses</h2>
-          <RouterLink to="/resources" class="text-aqua text-sm font-medium shrink-0">View all</RouterLink>
+          <h2 class="font-display text-base font-semibold text-ink">{{ t('dashboardView.browseCourses') }}</h2>
+          <RouterLink to="/resources" class="text-aqua text-sm font-medium shrink-0">{{ t('dashboardView.viewAll') }}</RouterLink>
         </div>
         <div v-if="loadingResources" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div v-for="n in 4" :key="n" class="bg-white rounded-xl2 h-28 animate-pulse" />
         </div>
         <div v-else-if="categoryCards.length === 0" class="bg-white rounded-xl2 p-6 text-center text-slate text-sm">
-          No course material uploaded yet.
+          {{ t('dashboardView.noCourseMaterial') }}
         </div>
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <RouterLink
@@ -165,7 +167,7 @@ async function joinQuiz() {
               </svg>
             </div>
             <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
-            <p class="text-xs text-slate mt-0.5">{{ c.count }} material{{ c.count === 1 ? '' : 's' }}</p>
+            <p class="text-xs text-slate mt-0.5">{{ t('dashboardView.materialsCount', c.count) }}</p>
             <div v-if="c.subcategories.length" class="flex flex-wrap gap-1 mt-2">
               <span v-for="s in c.subcategories" :key="s" class="text-[10px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 truncate max-w-full">{{ s }}</span>
             </div>
@@ -176,11 +178,11 @@ async function joinQuiz() {
       <!-- Right-rail widget: real AI Practice history, not a fake schedule. -->
       <aside class="area-widget">
         <div class="bg-white rounded-xl2 shadow-sm p-5">
-          <h2 class="font-display text-sm font-semibold text-ink mb-3">Recent Practice</h2>
+          <h2 class="font-display text-sm font-semibold text-ink mb-3">{{ t('dashboardView.recentPractice') }}</h2>
           <div v-if="loadingHistory" class="space-y-2">
             <div v-for="n in 3" :key="n" class="h-12 bg-seafoam rounded-lg animate-pulse" />
           </div>
-          <div v-else-if="recentPractice.length === 0" class="text-slate text-xs">No practice attempts yet.</div>
+          <div v-else-if="recentPractice.length === 0" class="text-slate text-xs">{{ t('dashboardView.noPracticeAttempts') }}</div>
           <div v-else class="space-y-3">
             <div v-for="h in recentPractice" :key="h.AttemptID" class="flex items-center gap-3">
               <div class="w-11 h-11 rounded-lg bg-seafoam flex flex-col items-center justify-center shrink-0">
@@ -198,12 +200,12 @@ async function joinQuiz() {
 
       <!-- Join a Practice Quiz: unchanged existing feature, just relocated. -->
       <section ref="joinSection" class="area-join">
-        <h2 class="font-display text-base font-semibold text-ink mb-3">Join a Practice Quiz</h2>
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('dashboardView.joinPracticeQuiz') }}</h2>
         <form @submit.prevent="joinQuiz" class="bg-white rounded-xl2 p-5 shadow-sm">
           <div class="flex items-center justify-center gap-4 flex-wrap">
             <DigitCode ref="digitCode" v-model="passcode" :length="3" />
             <button type="submit" :disabled="joining" class="bg-coral text-white font-medium px-6 py-3 rounded-lg disabled:opacity-60 hover:opacity-90 transition-opacity">
-              {{ joining ? 'Joining...' : 'Join' }}
+              {{ joining ? t('dashboardView.joining') : t('dashboardView.join') }}
             </button>
           </div>
           <p v-if="joinError" class="text-coral text-sm mt-3 text-center flex items-center justify-center gap-1.5">

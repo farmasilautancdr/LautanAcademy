@@ -150,5 +150,25 @@
     "managerAccess": "Manager Access",
     "addResources": "Add Resources",
     "logOut": "Log out"
+  },
+  "dashboardView": {
+    "greeting": "Hi {name}",
+    "progressLabel": "Your Progress",
+    "noPracticeYet": "No practice yet",
+    "averagingPercent": "Averaging {percent}%",
+    "joinCodeBelow": "Join a code below to get started",
+    "practiceAttempts": "{count} practice attempt so far | {count} practice attempts so far",
+    "joinQuizBtn": "Join a Quiz",
+    "browseCourses": "Browse Courses",
+    "viewAll": "View all",
+    "noCourseMaterial": "No course material uploaded yet.",
+    "materialsCount": "{count} material | {count} materials",
+    "recentPractice": "Recent Practice",
+    "noPracticeAttempts": "No practice attempts yet.",
+    "joinPracticeQuiz": "Join a Practice Quiz",
+    "joining": "Joining...",
+    "join": "Join",
+    "errorBadCode": "Enter the 3-digit practice code your manager shared.",
+    "errorInvalidCode": "Invalid or expired code for your outlet."
   }
 }
