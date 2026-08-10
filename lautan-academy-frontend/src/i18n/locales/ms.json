@@ -443,5 +443,21 @@
     "errorSaveFailed": "Tidak dapat menyimpan.",
     "saving": "Menyimpan...",
     "addEntry": "Tambah entri"
+  },
+  "supervisorReportsView": {
+    "title": "Laporan Kluster",
+    "last3Months": "3 bulan lepas",
+    "last6Months": "6 bulan lepas",
+    "last12Months": "12 bulan lepas",
+    "allTime": "Sepanjang masa",
+    "allRegions": "Semua wilayah",
+    "allOutlets": "Semua cawangan",
+    "downloadCsv": "Muat Turun CSV",
+    "loading": "Memuatkan...",
+    "noReports": "Tiada laporan difailkan dalam tempoh ini.",
+    "filedByCompetency": "Difailkan oleh {manager} · Kecekapan {competency}/10",
+    "productKnowledge": "Pengetahuan Produk:",
+    "gaps": "Jurang:",
+    "recommendations": "Cadangan:"
   }
 }

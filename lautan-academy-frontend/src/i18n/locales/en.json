@@ -443,5 +443,21 @@
     "errorSaveFailed": "Could not save.",
     "saving": "Saving...",
     "addEntry": "Add entry"
+  },
+  "supervisorReportsView": {
+    "title": "Cluster Reports",
+    "last3Months": "Last 3 months",
+    "last6Months": "Last 6 months",
+    "last12Months": "Last 12 months",
+    "allTime": "All time",
+    "allRegions": "All regions",
+    "allOutlets": "All outlets",
+    "downloadCsv": "Download CSV",
+    "loading": "Loading...",
+    "noReports": "No reports filed in this window.",
+    "filedByCompetency": "Filed by {manager} · Competency {competency}/10",
+    "productKnowledge": "Product Knowledge:",
+    "gaps": "Gaps:",
+    "recommendations": "Recommendations:"
   }
 }
