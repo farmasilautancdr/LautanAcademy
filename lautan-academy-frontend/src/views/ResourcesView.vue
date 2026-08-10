@@ -17,6 +17,7 @@
 // instead of two disconnected taxonomies.
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 
@@ -25,6 +26,7 @@ const knowledgeEntries = ref([])
 const loading = ref(true)
 const route = useRoute()
 const auth = useAuthStore()
+const { t } = useI18n()
 // Dashboard's Browse Courses cards link here with ?category=... so the
 // filter is already applied on arrival, not a plain unfiltered landing.
 const categoryFilter = ref(route.query.category || 'ALL')
@@ -44,8 +46,11 @@ const subcategoryFilter = ref('ALL')
 const createQuizPath = computed(() => auth.manager?.role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
 const canCreateQuiz = computed(() => ['outlet_manager', 'warehouse_manager'].includes(auth.manager?.role))
 
-const ROLE_LABELS = { outlet_manager: 'Outlet Manager', warehouse_manager: 'Warehouse Manager', area_manager: 'Area Manager', supervisor: 'Supervisor' }
-const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_LABELS[auth.manager?.role] || ''))
+// Reuses Phase 1's sidebar role labels (src/i18n/locales/{en,ms}.json ->
+// sidebar.roleOutletManager etc.) instead of a second copy of the same 4
+// strings under a new resourcesView key.
+const ROLE_KEYS = { outlet_manager: 'sidebar.roleOutletManager', warehouse_manager: 'sidebar.roleWarehouseManager', area_manager: 'sidebar.roleAreaManager', supervisor: 'sidebar.roleSupervisor' }
+const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_KEYS[auth.manager?.role] ? t(ROLE_KEYS[auth.manager?.role]) : ''))
 
 onMounted(async () => {
   const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
@@ -91,22 +96,22 @@ const filteredEntries = computed(() => {
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
       <p class="text-aqualight text-xs">{{ headerLabel }}</p>
-      <h1 class="font-display text-xl font-semibold text-white">Browse Courses</h1>
+      <h1 class="font-display text-xl font-semibold text-white">{{ t('resourcesView.title') }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
-      <div v-if="loading" class="text-slate text-sm">Loading...</div>
+      <div v-if="loading" class="text-slate text-sm">{{ t('resourcesView.loading') }}</div>
       <div v-else-if="allEntries.length === 0" class="bg-white rounded-xl2 p-6 text-center">
-        <p class="text-slate text-sm">No course material added yet.</p>
+        <p class="text-slate text-sm">{{ t('resourcesView.noMaterial') }}</p>
       </div>
       <template v-else>
         <div class="flex flex-wrap gap-2 mb-3">
           <select v-model="categoryFilter" @change="onCategoryChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-            <option value="ALL">All categories</option>
+            <option value="ALL">{{ t('resourcesView.allCategories') }}</option>
             <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
           </select>
           <select v-if="subcategories.length" v-model="subcategoryFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-            <option value="ALL">All topics</option>
+            <option value="ALL">{{ t('resourcesView.allTopics') }}</option>
             <option v-for="s in subcategories" :key="s" :value="s">{{ s }}</option>
           </select>
         </div>
@@ -121,7 +126,7 @@ const filteredEntries = computed(() => {
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
               <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { sourceType: 'resource', sourceValue: e.driveId, topicLabel: e.name } }"
                 class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1 shrink-0">
-                Create Quiz
+                {{ t('resourcesView.createQuiz') }}
               </RouterLink>
             </div>
             <!-- Knowledge entry: no file to link to (unless a link was added) — expands to read the body in place. -->
@@ -135,9 +140,9 @@ const filteredEntries = computed(() => {
               </summary>
               <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
               <div class="flex items-center gap-4 mt-2">
-                <a v-if="e.link" :href="e.link" target="_blank" rel="noopener" class="text-xs text-aqua font-medium underline">Open attached link</a>
+                <a v-if="e.link" :href="e.link" target="_blank" rel="noopener" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</a>
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
-                  Create Quiz from this
+                  {{ t('resourcesView.createQuizFromThis') }}
                 </RouterLink>
               </div>
             </details>

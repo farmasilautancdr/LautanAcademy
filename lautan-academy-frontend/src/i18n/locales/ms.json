@@ -226,5 +226,15 @@
     "today": "Hari ini",
     "yesterday": "Semalam",
     "daysAgo": "{days} hari lalu"
+  },
+  "resourcesView": {
+    "title": "Semak Kursus",
+    "loading": "Memuatkan...",
+    "noMaterial": "Belum ada bahan kursus ditambah.",
+    "allCategories": "Semua kategori",
+    "allTopics": "Semua topik",
+    "createQuiz": "Cipta Kuiz",
+    "createQuizFromThis": "Cipta Kuiz daripada ini",
+    "openAttachedLink": "Buka pautan lampiran"
   }
 }

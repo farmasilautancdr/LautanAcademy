@@ -226,5 +226,15 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "daysAgo": "{days} days ago"
+  },
+  "resourcesView": {
+    "title": "Browse Courses",
+    "loading": "Loading...",
+    "noMaterial": "No course material added yet.",
+    "allCategories": "All categories",
+    "allTopics": "All topics",
+    "createQuiz": "Create Quiz",
+    "createQuizFromThis": "Create Quiz from this",
+    "openAttachedLink": "Open attached link"
   }
 }
