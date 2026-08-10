@@ -13,6 +13,7 @@
 // same two-step pattern used elsewhere in the app, not a single dropdown
 // with duplicate names in it.
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 
@@ -20,6 +21,7 @@ const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
 const regionOutlets = auth.manager?.outlets || []
 const managerLabel = auth.manager?.label || 'Area Manager'
+const { t } = useI18n()
 
 const results = ref([])
 const reports = ref([])
@@ -114,11 +116,11 @@ async function submitReport() {
   formError.value = ''
   formNotice.value = ''
   if (!formOutlet.value || !formStaff.value || !formTopic.value || !selectedResult.value) {
-    formError.value = 'Pick an outlet, staff member, and a topic they have a quiz result for.'
+    formError.value = t('areaManagerReviewsView.errorPickFields')
     return
   }
   if (competency.value !== '' && (isNaN(competency.value) || competency.value < 0 || competency.value > 10)) {
-    formError.value = 'Competency must be a mark between 0 and 10.'
+    formError.value = t('areaManagerReviewsView.errorCompetencyRange')
     return
   }
   submitting.value = true
@@ -137,19 +139,21 @@ async function submitReport() {
       isEdit: isEdit.value,
     })
     if (data.status === 'duplicate') {
-      const who = data.existing?.manager || 'another manager'
+      const who = data.existing?.manager || t('areaManagerReviewsView.anotherManager')
       const when = data.existing?.timestamp ? new Date(data.existing.timestamp).toLocaleDateString() : ''
-      formNotice.value = `A report already exists for this person and topic — filed by ${who}${when ? ' on ' + when : ''}.`
+      formNotice.value = when
+        ? t('areaManagerReviewsView.duplicateNoticeWithDate', { who, when })
+        : t('areaManagerReviewsView.duplicateNotice', { who })
       return
     }
     if (data.status === 'auth_error') {
-      formError.value = "That report was filed by a different manager — you can't edit it here."
+      formError.value = t('areaManagerReviewsView.authError')
       return
     }
     resetForm()
     await loadAll()
   } catch (err) {
-    formError.value = err.message || 'Could not save the report.'
+    formError.value = err.message || t('areaManagerReviewsView.errorSaveFailed')
   } finally {
     submitting.value = false
   }
@@ -160,45 +164,45 @@ async function submitReport() {
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
       <p class="text-aqualight text-xs">{{ managerLabel }}</p>
-      <h1 class="font-display text-xl font-semibold text-white">Assessment — {{ areaLabel }}</h1>
+      <h1 class="font-display text-xl font-semibold text-white">{{ t('areaManagerReviewsView.title', { area: areaLabel }) }}</h1>
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
       <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">Assessment</h2>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('areaManagerReviewsView.assessmentHeading') }}</h2>
         <form @submit.prevent="submitReport" class="bg-white rounded-xl2 p-5 shadow-sm space-y-4">
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Outlet</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.outletLabel') }}</label>
             <select v-model="formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3">
-              <option value="">Select outlet...</option>
+              <option value="">{{ t('areaManagerReviewsView.selectOutlet') }}</option>
               <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
             </select>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-ink mb-1">Staff</label>
+              <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.staffLabel') }}</label>
               <select v-model="formStaff" :disabled="!formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3 disabled:opacity-50">
-                <option value="">{{ !formOutlet ? 'Select outlet first...' : loadingStaff ? 'Loading...' : 'Select staff...' }}</option>
+                <option value="">{{ !formOutlet ? t('areaManagerReviewsView.selectOutletFirst') : loadingStaff ? t('areaManagerReviewsView.loading') : t('areaManagerReviewsView.selectStaff') }}</option>
                 <option v-for="n in staffNames" :key="n" :value="n">{{ n }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-ink mb-1">Topic</label>
+              <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.topicLabel') }}</label>
               <select v-model="formTopic" :disabled="!formStaff" @change="formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3 disabled:opacity-50">
-                <option value="">{{ formStaff ? (topicsForStaff.length ? 'Select topic...' : 'No quiz results yet') : 'Select staff first...' }}</option>
-                <option v-for="t in topicsForStaff" :key="t" :value="t">{{ t }}</option>
+                <option value="">{{ formStaff ? (topicsForStaff.length ? t('areaManagerReviewsView.selectTopic') : t('areaManagerReviewsView.noQuizResultsYet')) : t('areaManagerReviewsView.selectStaffFirst') }}</option>
+                <option v-for="t2 in topicsForStaff" :key="t2" :value="t2">{{ t2 }}</option>
               </select>
             </div>
           </div>
 
           <div v-if="selectedResult" class="grid grid-cols-3 gap-3 text-center">
             <div class="p-3 border border-seafoam rounded-lg">
-              <p class="text-[10px] uppercase text-slate">Score</p>
+              <p class="text-[10px] uppercase text-slate">{{ t('areaManagerReviewsView.scoreLabel') }}</p>
               <p class="font-display font-bold text-ink">{{ selectedResult.Score }}</p>
             </div>
             <div class="p-3 border border-seafoam rounded-lg">
-              <p class="text-[10px] uppercase text-slate">Accuracy</p>
+              <p class="text-[10px] uppercase text-slate">{{ t('areaManagerReviewsView.accuracyLabel') }}</p>
               <p class="font-display font-bold text-ink">{{ selectedResult.Percentage }}</p>
             </div>
             <div class="p-3 rounded-lg text-white font-bold uppercase text-sm flex items-center justify-center"
@@ -208,24 +212,24 @@ async function submitReport() {
           </div>
 
           <div v-if="existingReport && !isEdit" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
-            <span>A report already exists for this person and topic (filed by {{ existingReport.Manager }}).</span>
-            <button type="button" @click="loadExistingForEdit" class="text-aqua font-medium underline shrink-0">Edit it</button>
+            <span>{{ t('areaManagerReviewsView.reportExists', { manager: existingReport.Manager }) }}</span>
+            <button type="button" @click="loadExistingForEdit" class="text-aqua font-medium underline shrink-0">{{ t('areaManagerReviewsView.editIt') }}</button>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Competency (0–10)</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.competencyLabel') }}</label>
             <input v-model="competency" type="number" min="0" max="10" placeholder="0-10" class="w-24 border border-slate/30 rounded-lg py-2 px-3 text-center" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Product Knowledge</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.productKnowledgeLabel') }}</label>
             <textarea v-model="productKnowledgeComments" rows="2" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Performance Gaps</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.performanceGapsLabel') }}</label>
             <textarea v-model="gaps" rows="2" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">Recommendations</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.recommendationsLabel') }}</label>
             <textarea v-model="rec" rows="2" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
           </div>
 
@@ -233,36 +237,36 @@ async function submitReport() {
           <p v-if="formNotice" class="text-slate text-sm">{{ formNotice }}</p>
 
           <button type="submit" :disabled="submitting" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
-            {{ submitting ? 'Saving...' : (isEdit ? 'Update Assessment' : 'Submit Assessment') }}
+            {{ submitting ? t('areaManagerReviewsView.saving') : (isEdit ? t('areaManagerReviewsView.updateAssessment') : t('areaManagerReviewsView.submitAssessment')) }}
           </button>
         </form>
       </section>
 
       <section>
-        <h2 class="font-display text-lg font-semibold text-ink mb-4">Submissions</h2>
-        <div v-if="loading" class="text-slate text-sm">Loading...</div>
-        <div v-else-if="reports.length === 0" class="text-slate text-sm">No submissions filed yet.</div>
+        <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('areaManagerReviewsView.submissionsHeading') }}</h2>
+        <div v-if="loading" class="text-slate text-sm">{{ t('areaManagerReviewsView.loading') }}</div>
+        <div v-else-if="reports.length === 0" class="text-slate text-sm">{{ t('areaManagerReviewsView.noSubmissionsYet') }}</div>
         <template v-else>
           <div class="flex flex-wrap gap-2 mb-3">
             <select v-model="submissionsOutlet" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-              <option value="ALL">All outlets</option>
+              <option value="ALL">{{ t('areaManagerReviewsView.allOutlets') }}</option>
               <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
             </select>
             <select v-model="submissionsWindow" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-              <option value="ALL">All time</option>
-              <option :value="3">Last 3 months</option>
-              <option :value="6">Last 6 months</option>
-              <option :value="12">Last 12 months</option>
+              <option value="ALL">{{ t('areaManagerReviewsView.allTime') }}</option>
+              <option :value="3">{{ t('areaManagerReviewsView.last3Months') }}</option>
+              <option :value="6">{{ t('areaManagerReviewsView.last6Months') }}</option>
+              <option :value="12">{{ t('areaManagerReviewsView.last12Months') }}</option>
             </select>
           </div>
-          <div v-if="filteredReports.length === 0" class="text-slate text-sm">No submissions match this filter.</div>
+          <div v-if="filteredReports.length === 0" class="text-slate text-sm">{{ t('areaManagerReviewsView.noSubmissionsFiltered') }}</div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
           <div v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3">
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r.Outlet }} · {{ r['Training Title'] }}</p>
               <span class="text-xs text-slate">{{ new Date(r.Timestamp).toLocaleDateString() }}</span>
             </div>
-            <p class="text-xs text-slate mt-0.5">Filed by {{ r.Manager }} · Competency {{ r.Fluency ?? '—' }}/10</p>
+            <p class="text-xs text-slate mt-0.5">{{ t('areaManagerReviewsView.filedByCompetency', { manager: r.Manager, competency: r.Fluency ?? '—' }) }}</p>
           </div>
           </div>
         </template>
