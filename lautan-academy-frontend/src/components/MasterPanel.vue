@@ -3,16 +3,17 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMasterAuthStore } from '../store/masterAuth'
 import MasterPinReset from './MasterPinReset.vue'
+import MasterDataPurge from './MasterDataPurge.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
 
-// Subsystems C-H (see docs/superpowers/specs/2026-08-10-master-admin-
-// subsystem-a-design.md) each fill one of these in — this round only
-// pinReset is real, the rest stay disabled placeholders.
+// Subsystems D-H (see docs/superpowers/specs/2026-08-10-master-admin-
+// subsystem-a-design.md) each fill one of these in — pinReset and dataPurge
+// are real, the rest stay disabled placeholders.
 const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset']
+const ENABLED_TABS = ['pinReset', 'dataPurge']
 
 const activeTab = ref(null)
 
@@ -25,13 +26,14 @@ function handleLogout() {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex justify-end bg-ink/40" @click.self="emit('close')">
-      <div class="w-full max-w-sm h-full bg-white shadow-lg flex flex-col">
+      <div class="w-full h-full bg-white shadow-lg flex flex-col" :class="activeTab === 'dataPurge' ? 'max-w-3xl' : 'max-w-sm'">
         <div class="px-5 py-4 border-b border-seafoam flex items-center justify-between">
           <h2 class="font-display font-semibold text-ink text-lg">{{ t('masterPanel.panelTitle') }}</h2>
           <button type="button" @click="emit('close')" class="text-slate hover:text-ink text-xl leading-none" :aria-label="t('masterPanel.close')">&times;</button>
         </div>
 
         <MasterPinReset v-if="activeTab === 'pinReset'" @close="activeTab = null" />
+        <MasterDataPurge v-else-if="activeTab === 'dataPurge'" @close="activeTab = null" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button
