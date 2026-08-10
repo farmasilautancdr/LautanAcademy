@@ -2063,16 +2063,14 @@
 
             for(let i = answeredCount; i < currentQuizData.length; i++) {
                 const q = currentQuizData[i];
-                // AI Practice questions have no local `correct` field (see
+                // Neither quiz type has a local `correct` field anymore (see
                 // handleChoice) — showing the actual right answer here would
                 // need a live check call per leftover question for a purely
-                // informational summary line, not worth it. Standard Quiz
-                // still has it locally, so its exit-early summary is unchanged.
-                const correctIdx = isAIQuiz ? null : parseInt(q.correct);
+                // informational summary line, not worth it either way.
                 staffWrongs.push({
                     qText: currentLang === 'en' ? q.question_en : (q.question_ms || q.question_en),
                     userChoice: '(no answer — exited early)',
-                    correctText: correctIdx === null ? '(not shown)' : (currentLang === 'en' ? q[`opt${correctIdx + 1}_en`] : (q[`opt${correctIdx + 1}_ms`] || q[`opt${correctIdx + 1}_en`]))
+                    correctText: '(not shown)'
                 });
             }
 
