@@ -38,6 +38,22 @@ async function request(path, options = {}) {
     throw new Error(data.error || 'Maintenance')
   }
 
+  // Master Subsystem H: a 401 while impersonating means the 30-minute
+  // token expired (or Master force-revoked it via Active Sessions) —
+  // restore the stashed real session and bounce home instead of leaving
+  // the user stuck on a dead impersonated view. Same circular-import
+  // reasoning as the maintenance branch above: store/auth.js imports `api`
+  // from this file, so this import must be dynamic.
+  if (res.status === 401) {
+    const { useAuthStore } = await import('../store/auth')
+    const auth = useAuthStore()
+    if (auth.impersonating) {
+      await auth.exitImpersonation()
+      window.location.href = '/'
+      throw new Error(data.error || 'Impersonation session expired.')
+    }
+  }
+
   if (!res.ok) {
     throw new Error(data.error || `Request failed (${res.status})`)
   }
@@ -149,4 +165,8 @@ export const api = {
     request(`/master/sessions/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
   masterRevokeSessions: (ids, masterToken) =>
     request('/master/sessions/revoke', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterImpersonateStart: (scopeType, scopeKey, masterToken) =>
+    request('/master/impersonate/start', { method: 'POST', body: JSON.stringify({ scopeType, scopeKey }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterImpersonateEnd: (sessionId, masterToken) =>
+    request('/master/impersonate/end', { method: 'POST', body: JSON.stringify({ sessionId }), headers: { Authorization: `Bearer ${masterToken}` } }),
 }
