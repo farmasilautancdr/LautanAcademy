@@ -10,12 +10,13 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
-import { AREAS, outletsForArea } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 import PasswordField from '../components/PasswordField.vue'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 
+const { areas: AREAS, outletsForArea } = useOutlets()
 const areaId = ref('')
 const pin = ref('')
 const error = ref('')
@@ -67,7 +68,7 @@ async function handleLogin() {
           <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerLogin.area') }}</label>
           <select v-model="areaId" class="w-full border border-slate/30 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:border-aqua">
             <option value="">{{ t('areaManagerLogin.selectArea') }}</option>
-            <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
+            <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
           </select>
         </div>
 
