@@ -547,6 +547,27 @@
       "errorLoadFailed": "Gagal memuatkan status semasa.",
       "errorSaveFailed": "Gagal mengemas kini."
     },
+    "auditLogs": {
+      "title": "Log Audit",
+      "back": "Kembali",
+      "filterActorType": "Jenis Pelaku",
+      "filterActorTypeAll": "Semua",
+      "filterActorKey": "Pelaku",
+      "filterActorKeyPlaceholder": "cth. OUTLET05",
+      "filterAction": "Tindakan",
+      "filterActionPlaceholder": "cth. staff.add",
+      "filterDateFrom": "Dari",
+      "filterDateTo": "Hingga",
+      "search": "Cari",
+      "searching": "Mencari...",
+      "errorSearchFailed": "Carian gagal.",
+      "noResults": "Tiada rekod log audit yang sepadan.",
+      "colTime": "Masa",
+      "colActor": "Pelaku",
+      "colAction": "Tindakan",
+      "colSummary": "Ringkasan",
+      "colCount": "Bilangan"
+    },
     "dataPurge": {
       "title": "Padam Data Ujian",
       "back": "Kembali",

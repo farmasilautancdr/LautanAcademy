@@ -547,6 +547,27 @@
       "errorLoadFailed": "Could not load current status.",
       "errorSaveFailed": "Could not update."
     },
+    "auditLogs": {
+      "title": "Audit Log",
+      "back": "Back",
+      "filterActorType": "Actor Type",
+      "filterActorTypeAll": "All",
+      "filterActorKey": "Actor",
+      "filterActorKeyPlaceholder": "e.g. OUTLET05",
+      "filterAction": "Action",
+      "filterActionPlaceholder": "e.g. staff.add",
+      "filterDateFrom": "From",
+      "filterDateTo": "To",
+      "search": "Search",
+      "searching": "Searching...",
+      "errorSearchFailed": "Search failed.",
+      "noResults": "No matching audit log entries.",
+      "colTime": "Time",
+      "colActor": "Actor",
+      "colAction": "Action",
+      "colSummary": "Summary",
+      "colCount": "Count"
+    },
     "dataPurge": {
       "title": "Test Data Purge",
       "back": "Back",
