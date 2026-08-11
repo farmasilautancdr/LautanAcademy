@@ -101,6 +101,18 @@ export const api = {
   },
   getResources: () => request('/resources'),
   getQuestions: () => request('/questions'),
+  getOutlets: (division) => request(`/outlets${division ? `?division=${encodeURIComponent(division)}` : ''}`),
+  getAreas: () => request('/areas'),
+  masterGetOutlets: (masterToken) =>
+    request('/master/outlets', { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterCreateArea: (payload, masterToken) =>
+    request('/master/outlets/areas', { method: 'POST', body: JSON.stringify(payload), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterUpdateArea: (id, payload, masterToken) =>
+    request(`/master/outlets/areas/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterCreateOutlet: (payload, masterToken) =>
+    request('/master/outlets', { method: 'POST', body: JSON.stringify(payload), headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterUpdateOutlet: (code, payload, masterToken) =>
+    request(`/master/outlets/${encodeURIComponent(code)}`, { method: 'PATCH', body: JSON.stringify(payload), headers: { Authorization: `Bearer ${masterToken}` } }),
   // Live per-question reveal — not authoritative, saveResult/saveAiResult
   // independently re-grade the whole attempt server-side regardless of what
   // this returns.
