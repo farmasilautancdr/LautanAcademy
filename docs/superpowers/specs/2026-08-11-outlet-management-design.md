@@ -49,7 +49,7 @@ create table areas (
   created_at timestamptz not null default now()
 );
 
-create table outlets (
+create table store_outlets (
   code text primary key,      -- 'DG', 'AJ', or 'Taskforce' for warehouse —
                                -- stored with the exact casing today's
                                -- arrays already use (retail uppercase,
@@ -63,8 +63,19 @@ create table outlets (
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
-create index outlets_area_idx on outlets (area_id);
+create index store_outlets_area_idx on store_outlets (area_id);
 ```
+
+Named `store_outlets`, not `outlets` — this Supabase project already has an
+unrelated `outlets` table (with dependent `staff`/`quizzes`/`attempts`/
+`manager_reviews` tables belonging to a different app entirely, none of
+which match this codebase's own `schema.sql`) sharing the same DB.
+Discovered during implementation, not anticipated when this spec was first
+written — left untouched, same reasoning as `schema.sql`'s existing
+`standard_questions` table (renamed away from a similar unrelated `questions`
+table). This only affects the Postgres identifier — every HTTP route,
+JSON field, and frontend name in this spec (`GET /outlets`, `useOutlets`,
+etc.) is unaffected.
 
 ## Backend
 
@@ -112,7 +123,7 @@ pattern) — actor `master`, actions `area.create` / `area.update` /
 ### Existing call sites refactored
 
 `auth.js`'s `outletsForArea(areaId)` import becomes a DB query
-(`select code from outlets where area_id=$1 and active`) used the same
+(`select code from store_outlets where area_id=$1 and active`) used the same
 way it is today for area-manager PIN/registration validation.
 `reports.js`, `data.js`, `masterImpersonate.js` get the same swap
 wherever they currently import `AREAS`. Backend `config/areas.js` is
@@ -143,7 +154,7 @@ deleted once nothing imports it.
 
 One-time script (run once against the DB, not a code path that ships)
 inserts the current 9 areas (`R1..R9` + label parsed from today's
-combined id strings), the 49 retail outlet codes with their `area_id`,
+combined id strings), the 50 retail outlet codes with their `area_id`,
 and the 4 warehouse locations (`division='warehouse'`, `area_id=null`)
 — copied verbatim from the existing arrays so nothing changes for users
 on cutover day.

@@ -10,12 +10,13 @@
 
 ## Global Constraints
 
+- **Postgres table is named `store_outlets`, not `outlets`** (discovered during Task 1 execution, not anticipated in the original design spec). This Supabase project already has an unrelated `outlets` table with 4 dependent tables (`staff`, `quizzes`, `attempts`, `manager_reviews`) that don't match this codebase's own `schema.sql` at all — a separate app's data sharing the same DB, not abandoned test cruft. Not touched, same reasoning as `schema.sql`'s existing `standard_questions` comment (a different unrelated leftover `questions` table). This only affects the Postgres identifier — the HTTP routes (`/outlets`, `/master/outlets`), route filenames (`routes/outlets.js`), JSON field names, and every frontend name (`useOutlets`, `OUTLET_LIST`, etc.) are unaffected and stay exactly as originally planned.
 - Soft-delete only. No hard-delete endpoint exists anywhere in this feature — `active` boolean toggle is the only mutation besides create. Matches the approved design spec's decision.
 - Master only can write (`requireAuth` + `requireMaster` on every mutating route) — matches every prior Master subsystem (B-H).
-- `outlets.code` is the primary key other tables (`staff_roster`, `results`, `reports`, etc.) reference by free text — no rename endpoint, ever. A mistyped code is fixed by deactivating it and creating the correct one.
-- `outlets.code` is stored with the exact casing today's hardcoded arrays already use (uppercase for retail, e.g. `'DG'`; title-case for warehouse, e.g. `'Taskforce'`). The backend's existing `.toUpperCase()` on `scope_key` in `routes/auth.js` is unchanged and orthogonal to this table.
+- `store_outlets.code` is the primary key other tables (`staff_roster`, `results`, `reports`, etc.) reference by free text — no rename endpoint, ever. A mistyped code is fixed by deactivating it and creating the correct one.
+- `store_outlets.code` is stored with the exact casing today's hardcoded arrays already use (uppercase for retail, e.g. `'DG'`; title-case for warehouse, e.g. `'Taskforce'`). The backend's existing `.toUpperCase()` on `scope_key` in `routes/auth.js` is unchanged and orthogonal to this table.
 - Area id/label split: `areas.id` is a stable short code (`'R1'`), `areas.label` is the editable manager name (`'AMIRUL'`). Display as `${id} - ${label}` wherever the old combined string (`"R1 - AMIRUL"`) used to appear.
-- `sessions.id`-style bigint gotcha does not apply here — both new tables use `text` primary keys (`areas.id`, `outlets.code`), not `bigserial`, so there is no node-pg bigint-as-string concern for this feature.
+- `sessions.id`-style bigint gotcha does not apply here — both new tables use `text` primary keys (`areas.id`, `store_outlets.code`), not `bigserial`, so there is no node-pg bigint-as-string concern for this feature.
 - No test framework exists in either repo — verification is `curl` + `npm run build` + the EN/MS key-parity script (below) + live browser click-through, matching every prior Master subsystem.
 - Bilingual EN/MS strings required for all new UI text, following the exact key-nesting pattern already used under `masterPanel.*` in `src/i18n/locales/{en,ms}.json`.
 - This project is a single git repo rooted at `C:\Users\Hafiz\projects\lautan-academy`; the backend lives in the sibling directory `C:\Users\Hafiz\projects\lautan-academy-backend` (separate repo, independent commits), the frontend lives in `lautan-academy-frontend/` inside this repo.
@@ -53,10 +54,15 @@ Expected: both arrays empty.
 - [ ] **Step 1: Write `scripts/migrate-add-outlets.js`**
 
 ```js
-// One-off: creates areas + outlets tables and seeds them with the current
-// hardcoded region/outlet structure (previously duplicated across
+// One-off: creates areas + store_outlets tables and seeds them with the
+// current hardcoded region/outlet structure (previously duplicated across
 // lautan-academy-backend/src/config/areas.js and 10+ frontend files). See
 // docs/superpowers/specs/2026-08-11-outlet-management-design.md.
+// Table is named store_outlets, not outlets — this Supabase project already
+// has an unrelated `outlets` table (with dependent staff/quizzes/attempts/
+// manager_reviews tables belonging to a different app entirely, none of
+// which match this codebase's own schema.sql) sharing the same DB. Not
+// touched, same reasoning as schema.sql's standard_questions comment.
 // Safe to re-run — table creation is if-not-exists, seed rows use
 // on-conflict-do-nothing so re-running never clobbers a Master edit made
 // after the first run.
@@ -85,7 +91,7 @@ async function main() {
     )
   `);
   await pool.query(`
-    create table if not exists outlets (
+    create table if not exists store_outlets (
       code text primary key,
       division text not null,
       area_id text references areas(id),
@@ -93,7 +99,7 @@ async function main() {
       created_at timestamptz not null default now()
     )
   `);
-  await pool.query(`create index if not exists outlets_area_idx on outlets (area_id)`);
+  await pool.query(`create index if not exists store_outlets_area_idx on store_outlets (area_id)`);
 
   for (const area of AREAS) {
     await pool.query(
@@ -102,19 +108,19 @@ async function main() {
     );
     for (const code of area.outlets) {
       await pool.query(
-        `insert into outlets (code, division, area_id) values ($1, 'retail', $2) on conflict (code) do nothing`,
+        `insert into store_outlets (code, division, area_id) values ($1, 'retail', $2) on conflict (code) do nothing`,
         [code, area.id]
       );
     }
   }
   for (const code of WAREHOUSE_LOCATIONS) {
     await pool.query(
-      `insert into outlets (code, division, area_id) values ($1, 'warehouse', null) on conflict (code) do nothing`,
+      `insert into store_outlets (code, division, area_id) values ($1, 'warehouse', null) on conflict (code) do nothing`,
       [code]
     );
   }
 
-  console.log('Migration complete: areas + outlets tables created and seeded.');
+  console.log('Migration complete: areas + store_outlets tables created and seeded.');
   await pool.end();
 }
 
@@ -127,7 +133,7 @@ main().catch((err) => {
 - [ ] **Step 2: Run it against the dev DB**
 
 Run: `cd lautan-academy-backend && node scripts/migrate-add-outlets.js`
-Expected output: `Migration complete: areas + outlets tables created and seeded.`
+Expected output: `Migration complete: areas + store_outlets tables created and seeded.`
 
 - [ ] **Step 3: Verify row counts**
 
@@ -135,15 +141,15 @@ Expected output: `Migration complete: areas + outlets tables created and seeded.
 node -e "
 import('./src/config/db.js').then(async ({ pool }) => {
   const areas = await pool.query('select count(*) from areas');
-  const outlets = await pool.query('select count(*) from outlets');
-  const retail = await pool.query(\"select count(*) from outlets where division = 'retail'\");
-  const warehouse = await pool.query(\"select count(*) from outlets where division = 'warehouse'\");
+  const outlets = await pool.query('select count(*) from store_outlets');
+  const retail = await pool.query(\"select count(*) from store_outlets where division = 'retail'\");
+  const warehouse = await pool.query(\"select count(*) from store_outlets where division = 'warehouse'\");
   console.log({ areas: areas.rows[0].count, outlets: outlets.rows[0].count, retail: retail.rows[0].count, warehouse: warehouse.rows[0].count });
   await pool.end();
 });
 "
 ```
-Expected: `{ areas: '9', outlets: '53', retail: '49', warehouse: '4' }`
+Expected: `{ areas: '9', store_outlets: '54', retail: '50', warehouse: '4' }`
 
 - [ ] **Step 4: Append the tables to `sql/schema.sql`**
 
@@ -155,8 +161,12 @@ Append at the end of the file (after the existing last line, `create index if no
 -- WAREHOUSE_LOCATIONS arrays previously duplicated across this backend's
 -- config/areas.js and 10+ frontend files — Master edits these from the
 -- Control Panel now instead of a code change + redeploy. Soft-delete only
--- (active boolean); outlets.code has no rename endpoint since staff_roster/
--- results/reports/etc. all reference it by free text. See
+-- (active boolean); store_outlets.code has no rename endpoint since staff_roster/
+-- results/reports/etc. all reference it by free text. Named store_outlets,
+-- not outlets — this Supabase project already has an unrelated `outlets`
+-- table (dependent staff/quizzes/attempts/manager_reviews tables belonging
+-- to a different app, none matching this file's own schema) sharing the
+-- same DB. Not touched, same reasoning as standard_questions above. See
 -- docs/superpowers/specs/2026-08-11-outlet-management-design.md.
 create table if not exists areas (
   id text primary key,
@@ -165,14 +175,14 @@ create table if not exists areas (
   created_at timestamptz not null default now()
 );
 
-create table if not exists outlets (
+create table if not exists store_outlets (
   code text primary key,
   division text not null,        -- 'retail' | 'warehouse'
   area_id text references areas(id),  -- null for warehouse
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
-create index if not exists outlets_area_idx on outlets (area_id);
+create index if not exists store_outlets_area_idx on store_outlets (area_id);
 ```
 
 - [ ] **Step 5: Commit**
@@ -216,7 +226,7 @@ outletsRouter.get('/', async (req, res) => {
     conditions.push(`division = $${params.length}`);
   }
   const { rows } = await pool.query(
-    `select code, division from outlets where ${conditions.join(' and ')} order by code`,
+    `select code, division from store_outlets where ${conditions.join(' and ')} order by code`,
     params
   );
   res.json({ outlets: rows.map(r => ({ code: r.code, division: r.division })) });
@@ -233,7 +243,7 @@ areasRouter.get('/', async (req, res) => {
   const { rows } = await pool.query(`
     select a.id, a.label, coalesce(array_agg(o.code order by o.code) filter (where o.code is not null), '{}') as outlets
     from areas a
-    left join outlets o on o.area_id = a.id and o.active
+    left join store_outlets o on o.area_id = a.id and o.active
     where a.active
     group by a.id, a.label
     order by a.id
@@ -304,7 +314,7 @@ export const masterOutletsRouter = Router();
 masterOutletsRouter.get('/', requireAuth, requireMaster, async (req, res) => {
   const [areasResult, outletsResult] = await Promise.all([
     pool.query('select id, label, active from areas order by id'),
-    pool.query('select code, division, area_id, active from outlets order by division, code'),
+    pool.query('select code, division, area_id, active from store_outlets order by division, code'),
   ]);
   res.json({
     areas: areasResult.rows.map(a => ({ id: a.id, label: a.label, active: a.active })),
@@ -341,7 +351,7 @@ masterOutletsRouter.patch('/areas/:id', requireAuth, requireMaster, async (req, 
   const active = req.body.active !== undefined ? !!req.body.active : existing.active;
 
   if (active === false && existing.active === true) {
-    const { rows: activeOutlets } = await pool.query('select code from outlets where area_id = $1 and active', [id]);
+    const { rows: activeOutlets } = await pool.query('select code from store_outlets where area_id = $1 and active', [id]);
     if (activeOutlets.length) {
       return res.status(400).json({ status: 'error', error: `Deactivate or reassign this area's ${activeOutlets.length} active outlet(s) first.` });
     }
@@ -372,7 +382,7 @@ masterOutletsRouter.post('/', requireAuth, requireMaster, async (req, res) => {
   }
 
   try {
-    await pool.query('insert into outlets (code, division, area_id) values ($1, $2, $3)', [code, division, areaId]);
+    await pool.query('insert into store_outlets (code, division, area_id) values ($1, $2, $3)', [code, division, areaId]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ status: 'error', error: `Outlet '${code}' already exists.` });
     throw err;
@@ -382,15 +392,15 @@ masterOutletsRouter.post('/', requireAuth, requireMaster, async (req, res) => {
 });
 
 // {active: true|false} — covers both deactivate and reactivate, no rename
-// (see Global Constraints: outlets.code is referenced by free text
+// (see Global Constraints: store_outlets.code is referenced by free text
 // elsewhere, renaming it would silently break those joins).
 masterOutletsRouter.patch('/:code', requireAuth, requireMaster, async (req, res) => {
   const code = req.params.code;
-  const { rows } = await pool.query('select code, active from outlets where code = $1', [code]);
+  const { rows } = await pool.query('select code, active from store_outlets where code = $1', [code]);
   if (!rows[0]) return res.status(404).json({ status: 'error', error: 'Outlet not found.' });
   const active = req.body.active !== undefined ? !!req.body.active : rows[0].active;
 
-  await pool.query('update outlets set active = $1 where code = $2', [active, code]);
+  await pool.query('update store_outlets set active = $1 where code = $2', [active, code]);
   await logAudit(pool, {
     actorType: 'master',
     actorKey: req.session.scopeKey,
@@ -454,7 +464,7 @@ Expected: create succeeds (`{"status":"ok"}`), duplicate returns `409`, the outl
 ```bash
 node -e "
 import('./src/config/db.js').then(async ({ pool }) => {
-  await pool.query(\"delete from outlets where code = 'ZZTEST'\");
+  await pool.query(\"delete from store_outlets where code = 'ZZTEST'\");
   await pool.query(\"delete from areas where id = 'R99'\");
   await pool.end();
 });
@@ -550,7 +560,7 @@ import { outletsForArea } from '../config/areas.js';
 to:
 ```js
 async function outletsForArea(areaId) {
-  const { rows } = await pool.query('select code from outlets where area_id = $1 and active', [areaId]);
+  const { rows } = await pool.query('select code from store_outlets where area_id = $1 and active', [areaId]);
   return rows.map(r => r.code);
 }
 ```
@@ -575,7 +585,7 @@ import { outletsForArea } from '../config/areas.js';
 to:
 ```js
 async function outletsForArea(areaId) {
-  const { rows } = await pool.query('select code from outlets where area_id = $1 and active', [areaId]);
+  const { rows } = await pool.query('select code from store_outlets where area_id = $1 and active', [areaId]);
   return rows.map(r => r.code);
 }
 ```
@@ -606,7 +616,7 @@ Expected: 200 response with `results`/`wrong`/`reports` arrays scoped to that ar
 ```bash
 cd lautan-academy-backend
 git add src/routes/reports.js src/routes/data.js
-git commit -m "refactor: reports.js and data.js area scoping reads from outlets table"
+git commit -m "refactor: reports.js and data.js area scoping reads from store_outlets table"
 ```
 
 ---
@@ -643,7 +653,7 @@ to:
 ```js
 async function isValidOutlet(division, code) {
   const { rows } = await pool.query(
-    'select 1 from outlets where code = $1 and division = $2 and active',
+    'select 1 from store_outlets where code = $1 and division = $2 and active',
     [code, division]
   );
   return rows.length > 0;
