@@ -37,7 +37,8 @@ export const useAuthStore = defineStore('auth', {
     // submissions, matching GAS's disp-mgr-name. Not needed for roles that
     // don't file reports.
     // outlet doubles as the area id for area_manager (server scopes to that
-    // whole region, not one outlet — see backend's config/areas.js). outlets
+    // whole region, not one outlet — see backend's areas/store_outlets
+    // tables). outlets
     // is that region's outlet list, client-side only, for building pickers —
     // the backend independently re-resolves and enforces it server-side.
     async loginManager(role, outlet, pin, label = '', outlets = null) {

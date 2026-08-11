@@ -1,10 +1,10 @@
 <script setup>
-// Area Manager picks their region (fixed roster below, matches the vanilla
-// app's managerData exactly), then the shared category PIN. Scope is the
+// Area Manager picks their region (fetched from the areas table via
+// useOutlets(), not hardcoded), then the shared category PIN. Scope is the
 // whole region now, not one outlet within it — the backend independently
 // validates the area id and resolves it to that region's outlet list
-// (config/areas.js), so this list is for the picker only, not trusted for
-// scoping.
+// (areas/store_outlets tables), so this list is for the picker only, not
+// trusted for scoping.
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'

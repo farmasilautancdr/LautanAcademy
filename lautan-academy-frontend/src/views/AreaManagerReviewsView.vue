@@ -4,8 +4,8 @@
 // results (to pick a topic + auto-show score) and staff names, loaded here
 // independently since this is now a separate route.
 //
-// Area Manager now scopes to a whole region (see store/auth.js,
-// backend config/areas.js), not one outlet. auth.manager.outlet holds the
+// Area Manager now scopes to a whole region (see store/auth.js, backend's
+// areas/store_outlets tables), not one outlet. auth.manager.outlet holds the
 // area id ("R1 - AMIRUL"), and auth.manager.outlets is that region's outlet
 // list (client-side copy, for the picker below — the backend enforces the
 // real scope independently). Staff names aren't unique across the region's

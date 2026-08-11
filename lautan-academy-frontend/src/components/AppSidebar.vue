@@ -111,8 +111,8 @@ const sections = computed(() => {
   }
 
   // Cross-outlet: Supervisor only. Area Manager now scopes to their whole
-  // region (see store/auth.js, backend config/areas.js) — "Staff Results"
-  // in the Outlet Performance group above already covers every outlet in
+  // region (see store/auth.js, backend's areas/store_outlets tables) —
+  // "Staff Results" in the Outlet Performance group above already covers every outlet in
   // that region on one page, so a separate Cross-Outlet section here would
   // just duplicate the same link. All 3 items are real pages.
   if (isSupervisor.value) {
