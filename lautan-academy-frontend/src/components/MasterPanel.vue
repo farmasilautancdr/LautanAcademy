@@ -7,6 +7,7 @@ import MasterDataPurge from './MasterDataPurge.vue'
 import MasterMaintenance from './MasterMaintenance.vue'
 import MasterAuditLog from './MasterAuditLog.vue'
 import MasterBackupExport from './MasterBackupExport.vue'
+import MasterActiveSessions from './MasterActiveSessions.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -16,7 +17,7 @@ const masterAuth = useMasterAuthStore()
 // subsystem-a-design.md) each fill one of these in — pinReset, dataPurge,
 // and maintenanceMode are real, the rest stay disabled placeholders.
 const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport']
+const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions']
 
 const activeTab = ref(null)
 
@@ -29,7 +30,7 @@ function handleLogout() {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex justify-end bg-ink/40" @click.self="emit('close')">
-      <div class="w-full h-full bg-white shadow-lg flex flex-col" :class="['dataPurge', 'auditLogs'].includes(activeTab) ? 'max-w-3xl' : 'max-w-sm'">
+      <div class="w-full h-full bg-white shadow-lg flex flex-col" :class="['dataPurge', 'auditLogs', 'sessions'].includes(activeTab) ? 'max-w-3xl' : 'max-w-sm'">
         <div class="px-5 py-4 border-b border-seafoam flex items-center justify-between">
           <h2 class="font-display font-semibold text-ink text-lg">{{ t('masterPanel.panelTitle') }}</h2>
           <button type="button" @click="emit('close')" class="text-slate hover:text-ink text-xl leading-none" :aria-label="t('masterPanel.close')">&times;</button>
@@ -40,6 +41,7 @@ function handleLogout() {
         <MasterMaintenance v-else-if="activeTab === 'maintenanceMode'" @close="activeTab = null" />
         <MasterAuditLog v-else-if="activeTab === 'auditLogs'" @close="activeTab = null" />
         <MasterBackupExport v-else-if="activeTab === 'backupExport'" @close="activeTab = null" />
+        <MasterActiveSessions v-else-if="activeTab === 'sessions'" @close="activeTab = null" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button
