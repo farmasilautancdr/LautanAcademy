@@ -569,6 +569,15 @@
       "colSummary": "Summary",
       "colCount": "Count"
     },
+    "backupExport": {
+      "title": "Backup & Export",
+      "intro": "Download a full SQL export of the database — every staff, quiz, content, and account record. Restoring it requires the schema to already exist (see sql/schema.sql); this file only contains data.",
+      "back": "Back",
+      "exportButton": "Export Backup",
+      "exporting": "Exporting...",
+      "success": "Backup downloaded.",
+      "errorFailed": "Could not export backup."
+    },
     "dataPurge": {
       "title": "Test Data Purge",
       "back": "Back",

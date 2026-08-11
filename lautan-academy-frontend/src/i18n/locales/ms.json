@@ -569,6 +569,15 @@
       "colSummary": "Ringkasan",
       "colCount": "Bilangan"
     },
+    "backupExport": {
+      "title": "Sandaran & Eksport",
+      "intro": "Muat turun eksport SQL penuh pangkalan data — setiap rekod staf, kuiz, kandungan, dan akaun. Untuk memulihkannya, skema mesti sudah wujud (lihat sql/schema.sql); fail ini hanya mengandungi data.",
+      "back": "Kembali",
+      "exportButton": "Eksport Sandaran",
+      "exporting": "Mengeksport...",
+      "success": "Sandaran telah dimuat turun.",
+      "errorFailed": "Gagal mengeksport sandaran."
+    },
     "dataPurge": {
       "title": "Padam Data Ujian",
       "back": "Kembali",

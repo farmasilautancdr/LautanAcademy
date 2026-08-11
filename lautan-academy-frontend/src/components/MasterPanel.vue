@@ -6,6 +6,7 @@ import MasterPinReset from './MasterPinReset.vue'
 import MasterDataPurge from './MasterDataPurge.vue'
 import MasterMaintenance from './MasterMaintenance.vue'
 import MasterAuditLog from './MasterAuditLog.vue'
+import MasterBackupExport from './MasterBackupExport.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -15,7 +16,7 @@ const masterAuth = useMasterAuthStore()
 // subsystem-a-design.md) each fill one of these in — pinReset, dataPurge,
 // and maintenanceMode are real, the rest stay disabled placeholders.
 const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs']
+const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport']
 
 const activeTab = ref(null)
 
@@ -38,6 +39,7 @@ function handleLogout() {
         <MasterDataPurge v-else-if="activeTab === 'dataPurge'" @close="activeTab = null" />
         <MasterMaintenance v-else-if="activeTab === 'maintenanceMode'" @close="activeTab = null" />
         <MasterAuditLog v-else-if="activeTab === 'auditLogs'" @close="activeTab = null" />
+        <MasterBackupExport v-else-if="activeTab === 'backupExport'" @close="activeTab = null" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button
