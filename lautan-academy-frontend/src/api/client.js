@@ -145,4 +145,8 @@ export const api = {
     const filename = match ? match[1] : `lautan-academy-backup-${Date.now()}.sql`
     return { blob, filename }
   },
+  masterSearchSessions: (params, masterToken) =>
+    request(`/master/sessions/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterRevokeSessions: (ids, masterToken) =>
+    request('/master/sessions/revoke', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
 }
