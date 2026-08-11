@@ -1014,6 +1014,8 @@ git commit -m "refactor: area manager login/register views read areas from useOu
 
 ## Task 10: Frontend — refactor the 6 Master admin panels, delete frontend `config/areas.js`
 
+**Discovered during execution:** the original file grep this task was scoped from only matched files that redeclared their own `OUTLET_LIST`/`WAREHOUSE_LOCATIONS`/`AREAS =` constants, which missed 4 more real importers that consume `AREAS`/`outletsForArea` directly without a local re-declaration: `PurgeReportsContentPanel.vue`, `SupervisorDashboard.vue`, `SupervisorReportsView.vue`, `SupervisorStaffComparisonView.vue`. All 4 got the same composable swap as the 6 files below before `config/areas.js` was deleted, confirmed via `grep -rn "config/areas" src/` returning zero real (non-comment) importers.
+
 **Files:**
 - Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\MasterImpersonation.vue:12,19-21,34-36`
 - Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\MasterActiveSessions.vue:11,21-23,33-35`
@@ -1021,11 +1023,13 @@ git commit -m "refactor: area manager login/register views read areas from useOu
 - Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\PurgeManagerAccountsPanel.vue:6,16-18,24-26`
 - Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\PurgeQuizAttemptsPanel.vue:6,15-16`
 - Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\PurgeStaffPanel.vue:6,14-15`
+- Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\components\PurgeReportsContentPanel.vue` (retail-only `OUTLET_OPTIONS`, same swap as the outlet-code constants below)
+- Modify: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\views\SupervisorDashboard.vue`, `SupervisorReportsView.vue`, `SupervisorStaffComparisonView.vue` (each imports `AREAS, outletsForArea` for a region filter dropdown + region-to-outlets lookup; same swap as Task 9's area manager views, including the `{{ a.id }} - {{ a.label }}` display fix)
 - Delete: `C:\Users\Hafiz\projects\lautan-academy\lautan-academy-frontend\src\config\areas.js`
 
 **Interfaces:**
 - Consumes: `useOutlets()` from Task 7.
-- Produces: every `RETAIL_OUTLETS`/`WAREHOUSE_LOCATIONS`/`AREA_IDS`/`OUTLET_OPTIONS` constant in these 6 files becomes a composable-backed value, same names kept as local `const` bindings so every downstream `computed()`/template reference is untouched.
+- Produces: every `RETAIL_OUTLETS`/`WAREHOUSE_LOCATIONS`/`AREA_IDS`/`OUTLET_OPTIONS`/`AREAS`/`outletsForArea` reference across these 10 files becomes composable-backed, same names kept as local bindings so every downstream `computed()`/template reference is untouched.
 
 - [ ] **Step 1: `MasterImpersonation.vue`**
 

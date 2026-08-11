@@ -8,7 +8,7 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
-import { AREAS } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const emit = defineEmits(['close'])
@@ -18,9 +18,7 @@ const masterAuth = useMasterAuthStore()
 // Master itself is never tracked (see Global Constraints) — not in this list.
 const SCOPE_TYPES = ['staff_retail', 'staff_warehouse', 'outlet_manager', 'warehouse_manager', 'area_manager', 'supervisor']
 
-const RETAIL_OUTLETS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
-const AREA_IDS = AREAS.map(a => a.id)
+const { retailOutlets: RETAIL_OUTLETS, warehouseLocations: WAREHOUSE_LOCATIONS, areaIds: AREA_IDS } = useOutlets()
 
 const scopeType = ref('')
 const scopeKey = ref('')
@@ -30,9 +28,9 @@ const activeOnly = ref(true)
 // (scope_key is OUTLET|NAME for staff, always 'ALL' for supervisor) — those
 // fall back to free text, same pattern MasterAuditLog.vue already uses.
 const scopeKeyOptions = computed(() => {
-  if (scopeType.value === 'outlet_manager') return RETAIL_OUTLETS
-  if (scopeType.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS
-  if (scopeType.value === 'area_manager') return AREA_IDS
+  if (scopeType.value === 'outlet_manager') return RETAIL_OUTLETS.value
+  if (scopeType.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS.value
+  if (scopeType.value === 'area_manager') return AREA_IDS.value
   return null
 })
 watch(scopeType, () => { scopeKey.value = '' })

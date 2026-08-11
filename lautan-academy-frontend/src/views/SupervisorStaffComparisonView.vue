@@ -5,9 +5,10 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
-import { AREAS, outletsForArea } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 
 const { t } = useI18n()
+const { areas: AREAS, outletsForArea } = useOutlets()
 const windowMonths = ref(3)
 const loading = ref(true)
 const results = ref([])
@@ -76,7 +77,7 @@ const rows = computed(() => {
         </select>
         <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">{{ t('supervisorStaffComparisonView.allRegions') }}</option>
-          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }}</option>
+          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
         </select>
         <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">{{ t('supervisorStaffComparisonView.allOutlets') }}</option>

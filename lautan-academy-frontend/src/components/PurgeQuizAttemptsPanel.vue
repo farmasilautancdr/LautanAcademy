@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
-import { AREAS } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
@@ -12,8 +12,7 @@ const masterAuth = useMasterAuthStore()
 // Quiz attempts span both divisions — retail outlets plus the 4 fixed
 // warehouse locations (warehouse only ever has AI Practice attempts, but
 // this panel doesn't filter by division so both lists apply).
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
-const OUTLET_OPTIONS = [...new Set(AREAS.flatMap(a => a.outlets))].sort().concat(WAREHOUSE_LOCATIONS)
+const { allOutletCodes: OUTLET_OPTIONS } = useOutlets()
 
 const type = ref('standard') // 'standard' | 'ai'
 const outletFilter = ref('')

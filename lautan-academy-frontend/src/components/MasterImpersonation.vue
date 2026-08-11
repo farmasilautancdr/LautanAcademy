@@ -9,16 +9,14 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { useMasterAuthStore } from '../store/masterAuth'
-import { AREAS } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 
 const emit = defineEmits(['close', 'started'])
 const { t } = useI18n()
 const auth = useAuthStore()
 const masterAuth = useMasterAuthStore()
 
-const RETAIL_OUTLETS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
-const AREA_IDS = AREAS.map(a => a.id)
+const { retailOutlets: RETAIL_OUTLETS, warehouseLocations: WAREHOUSE_LOCATIONS, areaIds: AREA_IDS } = useOutlets()
 
 const targetType = ref('staff_retail')
 const outlet = ref('')
@@ -31,9 +29,9 @@ const error = ref('')
 
 const isStaffType = computed(() => targetType.value === 'staff_retail' || targetType.value === 'staff_warehouse')
 const outletOptions = computed(() => {
-  if (targetType.value === 'staff_warehouse' || targetType.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS
-  if (targetType.value === 'area_manager') return AREA_IDS
-  return RETAIL_OUTLETS
+  if (targetType.value === 'staff_warehouse' || targetType.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS.value
+  if (targetType.value === 'area_manager') return AREA_IDS.value
+  return RETAIL_OUTLETS.value
 })
 
 function resetPick() {

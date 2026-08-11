@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
-import { AREAS } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
@@ -11,7 +11,7 @@ const masterAuth = useMasterAuthStore()
 
 // Reports only ever target retail staff (warehouse has no report
 // capability end-to-end) — retail outlets only, no warehouse locations.
-const OUTLET_OPTIONS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
+const { retailOutlets: OUTLET_OPTIONS } = useOutlets()
 
 const mode = ref('reports') // 'reports' | 'content'
 const outletFilter = ref('')

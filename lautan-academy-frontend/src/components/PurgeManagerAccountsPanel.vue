@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
-import { AREAS } from '../config/areas'
+import { useOutlets } from '../composables/useOutlets'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
@@ -13,17 +13,15 @@ const masterAuth = useMasterAuthStore()
 // location, or area id — so the picker's option list follows whichever
 // role is currently selected. 'All roles' has no single list, so it falls
 // back to free text.
-const RETAIL_OUTLETS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
-const AREA_IDS = AREAS.map(a => a.id)
+const { retailOutlets: RETAIL_OUTLETS, warehouseLocations: WAREHOUSE_LOCATIONS, areaIds: AREA_IDS } = useOutlets()
 
 const roleFilter = ref('')
 const scopeKeyFilter = ref('')
 
 const scopeKeyOptions = computed(() => {
-  if (roleFilter.value === 'outlet_manager') return RETAIL_OUTLETS
-  if (roleFilter.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS
-  if (roleFilter.value === 'area_manager') return AREA_IDS
+  if (roleFilter.value === 'outlet_manager') return RETAIL_OUTLETS.value
+  if (roleFilter.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS.value
+  if (roleFilter.value === 'area_manager') return AREA_IDS.value
   return null
 })
 
