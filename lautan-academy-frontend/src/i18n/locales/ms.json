@@ -734,5 +734,9 @@
         "errorDeleteFailed": "Padam gagal."
       }
     }
+  },
+  "impersonationBanner": {
+    "viewingAs": "Melihat sebagai {label} — lihat sahaja",
+    "exit": "Keluar"
   }
 }

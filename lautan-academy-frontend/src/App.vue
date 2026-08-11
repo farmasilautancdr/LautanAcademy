@@ -12,6 +12,7 @@ import { useAuthStore } from './store/auth'
 import { useMaintenanceStore } from './store/maintenance'
 import AppSidebar from './components/AppSidebar.vue'
 import MaintenanceOverlay from './components/MaintenanceOverlay.vue'
+import ImpersonationBanner from './components/ImpersonationBanner.vue'
 
 const auth = useAuthStore()
 const maintenance = useMaintenanceStore()
@@ -23,10 +24,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="hasSession" class="flex">
-    <AppSidebar />
-    <div class="flex-1 min-w-0 pb-20 md:pb-0">
-      <router-view />
+  <div v-if="hasSession">
+    <ImpersonationBanner v-if="auth.impersonating" />
+    <div class="flex">
+      <AppSidebar />
+      <div class="flex-1 min-w-0 pb-20 md:pb-0">
+        <router-view />
+      </div>
     </div>
   </div>
   <router-view v-else />

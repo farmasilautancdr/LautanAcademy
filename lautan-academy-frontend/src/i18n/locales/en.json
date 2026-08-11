@@ -734,5 +734,9 @@
         "errorDeleteFailed": "Delete failed."
       }
     }
+  },
+  "impersonationBanner": {
+    "viewingAs": "Viewing as {label} — view-only",
+    "exit": "Exit"
   }
 }
