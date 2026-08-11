@@ -521,7 +521,8 @@
       "auditLogs": "Audit Logs",
       "backupExport": "Backup & Export",
       "sessions": "Active Sessions",
-      "impersonation": "View As"
+      "impersonation": "View As",
+      "outlets": "Outlets & Areas"
     },
     "pinReset": {
       "title": "Reset Supervisor PIN",
@@ -632,6 +633,29 @@
       "starting": "Starting...",
       "errorSelectTarget": "Pick a target first.",
       "errorStartFailed": "Could not start."
+    },
+    "outlets": {
+      "back": "Back",
+      "title": "Outlets & Areas",
+      "intro": "Add new outlets, warehouse locations, or areas as the company grows — no code changes needed. Deactivating hides an outlet/area from login dropdowns without deleting its history.",
+      "loading": "Loading...",
+      "warehouseSection": "Warehouse Locations",
+      "addArea": "Add Area",
+      "areaIdPlaceholder": "ID (e.g. R10)",
+      "areaLabelPlaceholder": "Label (e.g. manager name)",
+      "addOutlet": "Add Outlet",
+      "outletCodePlaceholder": "Outlet code",
+      "divisionRetail": "Retail",
+      "divisionWarehouse": "Warehouse",
+      "selectArea": "Select area",
+      "add": "Add",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "successAreaAdded": "Area {id} added.",
+      "successOutletAdded": "Outlet {code} added.",
+      "errorLoadFailed": "Could not load outlets.",
+      "errorAddFailed": "Could not add.",
+      "errorUpdateFailed": "Could not update."
     },
     "dataPurge": {
       "title": "Test Data Purge",

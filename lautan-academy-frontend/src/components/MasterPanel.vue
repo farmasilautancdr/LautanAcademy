@@ -9,6 +9,7 @@ import MasterAuditLog from './MasterAuditLog.vue'
 import MasterBackupExport from './MasterBackupExport.vue'
 import MasterActiveSessions from './MasterActiveSessions.vue'
 import MasterImpersonation from './MasterImpersonation.vue'
+import MasterOutletsPanel from './MasterOutletsPanel.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -17,8 +18,8 @@ const masterAuth = useMasterAuthStore()
 // Subsystems E-H (see docs/superpowers/specs/2026-08-10-master-admin-
 // subsystem-a-design.md) each fill one of these in — pinReset, dataPurge,
 // and maintenanceMode are real, the rest stay disabled placeholders.
-const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
+const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation', 'outlets']
+const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation', 'outlets']
 
 const activeTab = ref(null)
 
@@ -31,7 +32,7 @@ function handleLogout() {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex justify-end bg-ink/40" @click.self="emit('close')">
-      <div class="w-full h-full bg-white shadow-lg flex flex-col" :class="['dataPurge', 'auditLogs', 'sessions'].includes(activeTab) ? 'max-w-3xl' : 'max-w-sm'">
+      <div class="w-full h-full bg-white shadow-lg flex flex-col" :class="['dataPurge', 'auditLogs', 'sessions', 'outlets'].includes(activeTab) ? 'max-w-3xl' : 'max-w-sm'">
         <div class="px-5 py-4 border-b border-seafoam flex items-center justify-between">
           <h2 class="font-display font-semibold text-ink text-lg">{{ t('masterPanel.panelTitle') }}</h2>
           <button type="button" @click="emit('close')" class="text-slate hover:text-ink text-xl leading-none" :aria-label="t('masterPanel.close')">&times;</button>
@@ -44,6 +45,7 @@ function handleLogout() {
         <MasterBackupExport v-else-if="activeTab === 'backupExport'" @close="activeTab = null" />
         <MasterActiveSessions v-else-if="activeTab === 'sessions'" @close="activeTab = null" />
         <MasterImpersonation v-else-if="activeTab === 'impersonation'" @close="activeTab = null" @started="emit('close')" />
+        <MasterOutletsPanel v-else-if="activeTab === 'outlets'" @close="activeTab = null" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button

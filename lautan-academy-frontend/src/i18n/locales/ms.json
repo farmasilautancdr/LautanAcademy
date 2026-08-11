@@ -521,7 +521,8 @@
       "auditLogs": "Log Audit",
       "backupExport": "Sandaran & Eksport",
       "sessions": "Sesi Aktif",
-      "impersonation": "Lihat Sebagai"
+      "impersonation": "Lihat Sebagai",
+      "outlets": "Cawangan & Kawasan"
     },
     "pinReset": {
       "title": "Reset PIN Supervisor",
@@ -632,6 +633,29 @@
       "starting": "Memulakan...",
       "errorSelectTarget": "Pilih sasaran dahulu.",
       "errorStartFailed": "Gagal memulakan."
+    },
+    "outlets": {
+      "back": "Kembali",
+      "title": "Cawangan & Kawasan",
+      "intro": "Tambah cawangan baharu, lokasi gudang, atau kawasan apabila syarikat berkembang — tiada perubahan kod diperlukan. Menyahaktifkan menyembunyikan cawangan/kawasan daripada senarai log masuk tanpa memadam sejarahnya.",
+      "loading": "Memuatkan...",
+      "warehouseSection": "Lokasi Gudang",
+      "addArea": "Tambah Kawasan",
+      "areaIdPlaceholder": "ID (cth. R10)",
+      "areaLabelPlaceholder": "Label (cth. nama pengurus)",
+      "addOutlet": "Tambah Cawangan",
+      "outletCodePlaceholder": "Kod cawangan",
+      "divisionRetail": "Runcit",
+      "divisionWarehouse": "Gudang",
+      "selectArea": "Pilih kawasan",
+      "add": "Tambah",
+      "deactivate": "Nyahaktifkan",
+      "reactivate": "Aktifkan Semula",
+      "successAreaAdded": "Kawasan {id} ditambah.",
+      "successOutletAdded": "Cawangan {code} ditambah.",
+      "errorLoadFailed": "Gagal memuatkan cawangan.",
+      "errorAddFailed": "Gagal menambah.",
+      "errorUpdateFailed": "Gagal mengemas kini."
     },
     "dataPurge": {
       "title": "Padam Data Ujian",
