@@ -1,15 +1,34 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
+import { AREAS } from '../config/areas'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
 
+// scope_key means a different thing per role — outlet code, warehouse
+// location, or area id — so the picker's option list follows whichever
+// role is currently selected. 'All roles' has no single list, so it falls
+// back to free text.
+const RETAIL_OUTLETS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
+const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
+const AREA_IDS = AREAS.map(a => a.id)
+
 const roleFilter = ref('')
 const scopeKeyFilter = ref('')
+
+const scopeKeyOptions = computed(() => {
+  if (roleFilter.value === 'outlet_manager') return RETAIL_OUTLETS
+  if (roleFilter.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS
+  if (roleFilter.value === 'area_manager') return AREA_IDS
+  return null
+})
+
+// A previously-picked option may not exist in the new role's list.
+watch(roleFilter, () => { scopeKeyFilter.value = '' })
 const results = ref([])
 const selected = ref(new Set())
 const searching = ref(false)
@@ -77,7 +96,11 @@ async function confirmDelete() {
         <option value="warehouse_manager">{{ t('masterPanel.dataPurge.managerAccounts.roleWarehouseManager') }}</option>
         <option value="area_manager">{{ t('masterPanel.dataPurge.managerAccounts.roleAreaManager') }}</option>
       </select>
-      <input v-model="scopeKeyFilter" type="text" :placeholder="t('masterPanel.dataPurge.managerAccounts.scopeKeyPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+      <select v-if="scopeKeyOptions" v-model="scopeKeyFilter" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm">
+        <option value="">{{ t('masterPanel.dataPurge.managerAccounts.scopeKeyAll') }}</option>
+        <option v-for="o in scopeKeyOptions" :key="o" :value="o">{{ o }}</option>
+      </select>
+      <input v-else v-model="scopeKeyFilter" type="text" :placeholder="t('masterPanel.dataPurge.managerAccounts.scopeKeyPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <button type="submit" :disabled="searching" class="bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60">
         {{ searching ? t('masterPanel.dataPurge.managerAccounts.searching') : t('masterPanel.dataPurge.managerAccounts.search') }}
       </button>

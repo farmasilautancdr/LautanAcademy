@@ -554,6 +554,7 @@
       "filterActorTypeAll": "Semua",
       "filterActorKey": "Pelaku",
       "filterActorKeyPlaceholder": "cth. OUTLET05",
+      "filterActorKeyAll": "Semua",
       "filterAction": "Tindakan",
       "filterActionPlaceholder": "cth. staff.add",
       "filterDateFrom": "Dari",
@@ -583,7 +584,7 @@
         "deleting": "Memadam..."
       },
       "staff": {
-        "outletPlaceholder": "Outlet (cth. R3-ABC)",
+        "outletAll": "Semua Outlet",
         "namePlaceholder": "Nama staf",
         "search": "Cari",
         "searching": "Mencari...",
@@ -607,7 +608,7 @@
       "quizAttempts": {
         "typeStandard": "Module Quiz",
         "typeAi": "AI Practice",
-        "outletPlaceholder": "Outlet",
+        "outletAll": "Semua Outlet",
         "namePlaceholder": "Nama staf",
         "topicPlaceholder": "Topik",
         "dateFromLabel": "Dari",
@@ -635,6 +636,7 @@
         "roleWarehouseManager": "Pengurus Gudang",
         "roleAreaManager": "Pengurus Kawasan",
         "scopeKeyPlaceholder": "Kod outlet / kawasan",
+        "scopeKeyAll": "Semua",
         "search": "Cari",
         "searching": "Mencari...",
         "errorSearchFailed": "Carian gagal.",
@@ -651,7 +653,7 @@
       "reportsContent": {
         "toggleReports": "Laporan",
         "toggleContent": "Kandungan",
-        "outletPlaceholder": "Outlet",
+        "outletAll": "Semua Outlet",
         "staffNamePlaceholder": "Nama staf",
         "topicPlaceholder": "Topik",
         "categoryPlaceholder": "Kategori",

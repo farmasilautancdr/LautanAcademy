@@ -3,10 +3,17 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
+import { AREAS } from '../config/areas'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
+
+// Quiz attempts span both divisions — retail outlets plus the 4 fixed
+// warehouse locations (warehouse only ever has AI Practice attempts, but
+// this panel doesn't filter by division so both lists apply).
+const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
+const OUTLET_OPTIONS = [...new Set(AREAS.flatMap(a => a.outlets))].sort().concat(WAREHOUSE_LOCATIONS)
 
 const type = ref('standard') // 'standard' | 'ai'
 const outletFilter = ref('')
@@ -94,7 +101,10 @@ async function confirmDelete() {
     </div>
 
     <form @submit.prevent="search" class="flex flex-wrap gap-2 items-end">
-      <input v-model="outletFilter" type="text" :placeholder="t('masterPanel.dataPurge.quizAttempts.outletPlaceholder')" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+      <select v-model="outletFilter" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm">
+        <option value="">{{ t('masterPanel.dataPurge.quizAttempts.outletAll') }}</option>
+        <option v-for="o in OUTLET_OPTIONS" :key="o" :value="o">{{ o }}</option>
+      </select>
       <input v-model="nameFilter" type="text" :placeholder="t('masterPanel.dataPurge.quizAttempts.namePlaceholder')" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="topicFilter" type="text" :placeholder="t('masterPanel.dataPurge.quizAttempts.topicPlaceholder')" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <label class="text-xs text-slate">{{ t('masterPanel.dataPurge.quizAttempts.dateFromLabel') }}

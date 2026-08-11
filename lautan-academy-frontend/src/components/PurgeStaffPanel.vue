@@ -3,10 +3,16 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
+import { AREAS } from '../config/areas'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
+
+// Staff spans both divisions — retail outlets plus the 4 fixed warehouse
+// locations (same 4 values LoginView.vue's warehouse picker uses).
+const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
+const OUTLET_OPTIONS = [...new Set(AREAS.flatMap(a => a.outlets))].sort().concat(WAREHOUSE_LOCATIONS)
 
 const outletFilter = ref('')
 const nameFilter = ref('')
@@ -85,7 +91,10 @@ async function confirmDelete() {
 <template>
   <div class="space-y-3">
     <form @submit.prevent="search" class="flex flex-wrap gap-2">
-      <input v-model="outletFilter" type="text" :placeholder="t('masterPanel.dataPurge.staff.outletPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+      <select v-model="outletFilter" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm">
+        <option value="">{{ t('masterPanel.dataPurge.staff.outletAll') }}</option>
+        <option v-for="o in OUTLET_OPTIONS" :key="o" :value="o">{{ o }}</option>
+      </select>
       <input v-model="nameFilter" type="text" :placeholder="t('masterPanel.dataPurge.staff.namePlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <button type="submit" :disabled="searching" class="bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60">
         {{ searching ? t('masterPanel.dataPurge.staff.searching') : t('masterPanel.dataPurge.staff.search') }}

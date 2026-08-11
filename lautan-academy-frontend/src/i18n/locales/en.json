@@ -554,6 +554,7 @@
       "filterActorTypeAll": "All",
       "filterActorKey": "Actor",
       "filterActorKeyPlaceholder": "e.g. OUTLET05",
+      "filterActorKeyAll": "All",
       "filterAction": "Action",
       "filterActionPlaceholder": "e.g. staff.add",
       "filterDateFrom": "From",
@@ -583,7 +584,7 @@
         "deleting": "Deleting..."
       },
       "staff": {
-        "outletPlaceholder": "Outlet (e.g. R3-ABC)",
+        "outletAll": "All Outlets",
         "namePlaceholder": "Staff name",
         "search": "Search",
         "searching": "Searching...",
@@ -607,7 +608,7 @@
       "quizAttempts": {
         "typeStandard": "Module Quiz",
         "typeAi": "AI Practice",
-        "outletPlaceholder": "Outlet",
+        "outletAll": "All Outlets",
         "namePlaceholder": "Staff name",
         "topicPlaceholder": "Topic",
         "dateFromLabel": "From",
@@ -635,6 +636,7 @@
         "roleWarehouseManager": "Warehouse Manager",
         "roleAreaManager": "Area Manager",
         "scopeKeyPlaceholder": "Outlet / area code",
+        "scopeKeyAll": "All",
         "search": "Search",
         "searching": "Searching...",
         "errorSearchFailed": "Search failed.",
@@ -651,7 +653,7 @@
       "reportsContent": {
         "toggleReports": "Reports",
         "toggleContent": "Content",
-        "outletPlaceholder": "Outlet",
+        "outletAll": "All Outlets",
         "staffNamePlaceholder": "Staff name",
         "topicPlaceholder": "Topic",
         "categoryPlaceholder": "Category",

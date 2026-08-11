@@ -3,10 +3,15 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
+import { AREAS } from '../config/areas'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
 
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
+
+// Reports only ever target retail staff (warehouse has no report
+// capability end-to-end) — retail outlets only, no warehouse locations.
+const OUTLET_OPTIONS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
 
 const mode = ref('reports') // 'reports' | 'content'
 const outletFilter = ref('')
@@ -103,7 +108,10 @@ async function confirmDelete() {
 
     <form @submit.prevent="search" class="flex flex-wrap gap-2">
       <template v-if="mode === 'reports'">
-        <input v-model="outletFilter" type="text" :placeholder="t('masterPanel.dataPurge.reportsContent.outletPlaceholder')" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+        <select v-model="outletFilter" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm">
+          <option value="">{{ t('masterPanel.dataPurge.reportsContent.outletAll') }}</option>
+          <option v-for="o in OUTLET_OPTIONS" :key="o" :value="o">{{ o }}</option>
+        </select>
         <input v-model="staffNameFilter" type="text" :placeholder="t('masterPanel.dataPurge.reportsContent.staffNamePlaceholder')" class="flex-1 min-w-[7rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       </template>
       <template v-else>

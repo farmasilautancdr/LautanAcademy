@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
+import { AREAS } from '../config/areas'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -10,8 +11,25 @@ const masterAuth = useMasterAuthStore()
 
 const ACTOR_TYPES = ['master', 'outlet_manager', 'warehouse_manager', 'area_manager', 'supervisor']
 
+// actor_key means a different thing per actor type — outlet code,
+// warehouse location, or area id — same pattern as
+// PurgeManagerAccountsPanel's scope_key. 'All' / supervisor / master have
+// no single list, so they fall back to free text.
+const RETAIL_OUTLETS = [...new Set(AREAS.flatMap(a => a.outlets))].sort()
+const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic']
+const AREA_IDS = AREAS.map(a => a.id)
+
 const actorType = ref('')
 const actorKey = ref('')
+
+const actorKeyOptions = computed(() => {
+  if (actorType.value === 'outlet_manager') return RETAIL_OUTLETS
+  if (actorType.value === 'warehouse_manager') return WAREHOUSE_LOCATIONS
+  if (actorType.value === 'area_manager') return AREA_IDS
+  return null
+})
+
+watch(actorType, () => { actorKey.value = '' })
 const action = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
@@ -57,7 +75,11 @@ search()
         <option value="">{{ t('masterPanel.auditLogs.filterActorTypeAll') }}</option>
         <option v-for="opt in ACTOR_TYPES" :key="opt" :value="opt">{{ opt }}</option>
       </select>
-      <input v-model="actorKey" type="text" :placeholder="t('masterPanel.auditLogs.filterActorKeyPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
+      <select v-if="actorKeyOptions" v-model="actorKey" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm">
+        <option value="">{{ t('masterPanel.auditLogs.filterActorKeyAll') }}</option>
+        <option v-for="o in actorKeyOptions" :key="o" :value="o">{{ o }}</option>
+      </select>
+      <input v-else v-model="actorKey" type="text" :placeholder="t('masterPanel.auditLogs.filterActorKeyPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="action" type="text" :placeholder="t('masterPanel.auditLogs.filterActionPlaceholder')" class="flex-1 min-w-[8rem] border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="dateFrom" type="date" class="border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="dateTo" type="date" class="border border-slate/30 rounded-lg py-2 px-3 text-sm" />
