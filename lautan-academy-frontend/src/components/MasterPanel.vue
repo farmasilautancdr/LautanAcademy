@@ -8,6 +8,7 @@ import MasterMaintenance from './MasterMaintenance.vue'
 import MasterAuditLog from './MasterAuditLog.vue'
 import MasterBackupExport from './MasterBackupExport.vue'
 import MasterActiveSessions from './MasterActiveSessions.vue'
+import MasterImpersonation from './MasterImpersonation.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -17,7 +18,7 @@ const masterAuth = useMasterAuthStore()
 // subsystem-a-design.md) each fill one of these in — pinReset, dataPurge,
 // and maintenanceMode are real, the rest stay disabled placeholders.
 const TABS = ['pinReset', 'overrides', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
-const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions']
+const ENABLED_TABS = ['pinReset', 'dataPurge', 'maintenanceMode', 'auditLogs', 'backupExport', 'sessions', 'impersonation']
 
 const activeTab = ref(null)
 
@@ -42,6 +43,7 @@ function handleLogout() {
         <MasterAuditLog v-else-if="activeTab === 'auditLogs'" @close="activeTab = null" />
         <MasterBackupExport v-else-if="activeTab === 'backupExport'" @close="activeTab = null" />
         <MasterActiveSessions v-else-if="activeTab === 'sessions'" @close="activeTab = null" />
+        <MasterImpersonation v-else-if="activeTab === 'impersonation'" @close="activeTab = null" @started="emit('close')" />
 
         <nav v-else class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <button

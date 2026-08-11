@@ -605,6 +605,28 @@
       "errorSearchFailed": "Gagal memuatkan sesi.",
       "errorRevokeFailed": "Gagal log keluar paksa."
     },
+    "impersonation": {
+      "title": "Lihat Sebagai",
+      "intro": "Lihat aplikasi sepertimana staf atau pengurus tertentu melihatnya. Lihat sahaja — tiada perubahan disimpan. Tamat secara automatik selepas 30 minit.",
+      "back": "Kembali",
+      "targetType": "Jenis",
+      "targetTypeStaffRetail": "Staf (Retail)",
+      "targetTypeStaffWarehouse": "Staf (Gudang)",
+      "targetTypeOutletManager": "Pengurus Outlet",
+      "targetTypeWarehouseManager": "Pengurus Gudang",
+      "targetTypeAreaManager": "Pengurus Kawasan",
+      "outletLabel": "Outlet",
+      "areaLabel": "Kawasan",
+      "selectOutlet": "Pilih...",
+      "staffSearchPlaceholder": "Cari mengikut nama",
+      "search": "Cari",
+      "searching": "Mencari...",
+      "noStaffResults": "Tiada staf dijumpai.",
+      "start": "Mula Lihat Sebagai",
+      "starting": "Memulakan...",
+      "errorSelectTarget": "Pilih sasaran dahulu.",
+      "errorStartFailed": "Gagal memulakan."
+    },
     "dataPurge": {
       "title": "Padam Data Ujian",
       "back": "Kembali",

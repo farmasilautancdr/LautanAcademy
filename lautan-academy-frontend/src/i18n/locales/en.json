@@ -605,6 +605,28 @@
       "errorSearchFailed": "Could not load sessions.",
       "errorRevokeFailed": "Could not force logout."
     },
+    "impersonation": {
+      "title": "View As",
+      "intro": "View the app exactly as a specific staff member or manager sees it. View-only — no changes are saved. Ends automatically after 30 minutes.",
+      "back": "Back",
+      "targetType": "Type",
+      "targetTypeStaffRetail": "Staff (Retail)",
+      "targetTypeStaffWarehouse": "Staff (Warehouse)",
+      "targetTypeOutletManager": "Outlet Manager",
+      "targetTypeWarehouseManager": "Warehouse Manager",
+      "targetTypeAreaManager": "Area Manager",
+      "outletLabel": "Outlet",
+      "areaLabel": "Area",
+      "selectOutlet": "Select...",
+      "staffSearchPlaceholder": "Search by name",
+      "search": "Search",
+      "searching": "Searching...",
+      "noStaffResults": "No matching staff found.",
+      "start": "Start Viewing As",
+      "starting": "Starting...",
+      "errorSelectTarget": "Pick a target first.",
+      "errorStartFailed": "Could not start."
+    },
     "dataPurge": {
       "title": "Test Data Purge",
       "back": "Back",
