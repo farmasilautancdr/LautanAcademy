@@ -6,16 +6,11 @@
 3. Move old/resolved items from MEMORY.md to ARCHIVE.md to prevent token bloat.
 4. Log all mistakes & fixes. Never repeat them.
 5. Upon task completion, summarize outcomes to MEMORY.md, check off the item in SCOPE_TRACKER.md (ONLY after verifying programmatically), then prompt the user to `/clear` chat history to reset token burn.
-6. Target: Lautan Academy (Internal PWA for Farmasi Lautan. Lautan Academy (formerly PharmAcademy) is an internal PWA for Farmasi Lautan,
-a Malaysian pharmacy retail chain (50+ outlets, R1–R9 clusters). It's a staff training/quiz platform: role-scoped sessions, AI-generated quizzes, per-attempt tracking, outlet-scoped data access. **Migration from GAS to Vue/Node/Postgres is COMPLETE as of 2026-08-11** — GAS web app deployment decommissioned, Postgres is sole source of truth, no code path anywhere talks to GAS.
+6. Target: Lautan Academy (Internal PWA for Farmasi Lautan. Lautan Academy (formerly PharmAcademy) is an internal PWA for Farmasi Lautan, a Malaysian pharmacy retail chain (50+ outlets, R1–R9 clusters). It's a staff training/quiz platform: role-scoped sessions, AI-generated quizzes, per-attempt tracking, outlet-scoped data access. **Migration from GAS to Vue/Node/Postgres is COMPLETE as of 2026-08-11** — GAS web app deployment decommissioned, Postgres is sole source of truth, no code path anywhere talks to GAS.
 7. Stack (new): Vue 3 + Vite + Tailwind (frontend), Node.js + Express + Postgres (backend), Supabase for hosted DB. No other frameworks/libraries added without asking first.
 
 # About me
-I'm a self-taught "vibe coder" — no formal CS background, learned by
-building this in production. I work fast and expect direct, no-filler
-answers. I primarily work in Bahasa Malaysia for business context, but
-this codebase is bilingual (BM/EN) — keep both in sync when editing
-user-facing text.
+I'm a self-taught "vibe coder" — no formal CS background, learned by building this in production. I work fast and expect direct, no-filler answers. I primarily work in Bahasa Malaysia for business context, but this codebase is bilingual (BM/EN) — keep both in sync when editing user-facing text.
 
 # PATHS & COMMANDS
 - Frontend Root: `/frontend` -> `cd frontend && npm run dev`
@@ -32,6 +27,19 @@ user-facing text.
 - **Scope Strictness:** Don't touch unrelated code/bugs unless asked. Don't expand scope silently.
 - **Honesty:** Flag fragile workarounds explicitly. Don't present hacks as clean fixes.
 - **Style:** Terse, no filler. Code comments in English, user-facing text in EN & MS (Bahasa Malaysia). Match existing file conventions over textbook best practices.
+
+# DELEGATION & WORKFLOWS
+- **Model Tiers:** Explicitly set model parameter on EVERY delegated call (Agent-tool or Workflow `agent()`). Never omit.
+  - `haiku`: Mechanical bulk work (renames, boilerplate, format conversion, log triage).
+  - `sonnet`: Default for well-specified implementation with clear acceptance criteria.
+  - `opus`: Tricky work (concurrency, subtle algorithms, adversarial verify/judge panels, gnarly debugging).
+  - `fable`: Rare; for context-independent review. ALWAYS ask user first before spawning.
+  - *Rule of thumb:* When unsure, pick cheaper model and escalate on failure.
+- **Dynamic Workflows (Workflow Tool):**
+  - Use when task has 3+ independent parallelizable subtasks or needs a pipeline/judge panel.
+  - **Opt-in Rule:** If "ultracode" is NOT active (no keyword/toggle/orchestration request), ask user first with 1–2 sentence shape & cost pitch. If active, invoke directly.
+  - **Workflow Agents:** Every `agent()` call MUST specify model explicitly (`haiku`, `sonnet`, or `opus`).
+  - **NEVER use `fable` inside a workflow script.** Fable reviews must occur AFTER workflow completes as a standalone Agent-tool call (ask first).
 
 # PLUGINS
 - /frontend-design: High-speed, efficient UI matching existing Tailwind tokens (blue/orange).
