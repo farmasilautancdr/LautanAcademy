@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import { useOutlets } from '../composables/useOutlets'
 import DigitCode from '../components/DigitCode.vue'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import MasterKeyButton from '../components/MasterKeyButton.vue'
@@ -11,13 +12,7 @@ import logoUrl from '../assets/logo-transparent.png'
 
 const { t } = useI18n()
 
-// Static outlet list — same 49 codes hardcoded in the vanilla-JS app
-// (index.html's `outletList`). Not fetched from the backend; there's no
-// "outlets" table backing the real system, outlets are just codes.
-const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
-// Warehouse division picks a location instead of a retail outlet code —
-// same 4 fixed values as the vanilla app's wh-staff-location select.
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
+const { retailOutlets: OUTLET_LIST, warehouseLocations: WAREHOUSE_LOCATIONS } = useOutlets()
 
 const division = ref('retail')
 const outlet = ref('')
@@ -30,7 +25,7 @@ const loading = ref(false)
 const router = useRouter()
 const auth = useAuthStore()
 
-const outletOptions = computed(() => division.value === 'warehouse' ? WAREHOUSE_LOCATIONS : OUTLET_LIST)
+const outletOptions = computed(() => division.value === 'warehouse' ? WAREHOUSE_LOCATIONS.value : OUTLET_LIST.value)
 
 // Switching division invalidates whatever outlet/location was picked (a
 // retail code isn't a valid warehouse location and vice versa).

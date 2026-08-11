@@ -7,14 +7,14 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
+import { useOutlets } from '../composables/useOutlets'
 import logoUrl from '../assets/logo-transparent.png'
 import PasswordField from '../components/PasswordField.vue'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 
-const OUTLET_LIST = ["AJ", "B6", "BB", "BJR", "BP", "CDR", "CK", "DG", "DGD", "GB", "GBD", "GM", "HL", "HQ", "HQCT", "JL", "JLD", "JTH", "KB", "KBKK", "KBKS", "KBTJ", "KKR", "KL", "KMD", "KMN", "KMSK", "KS", "MC", "MCD", "MLR", "MR", "PC", "PDM", "PK", "PM", "PP", "PPK", "PSPD", "PT", "RJ", "SLS", "SMR", "ST", "TM", "TMD", "TMT", "TPOH", "TPT", "WM"];
-const WAREHOUSE_LOCATIONS = ['Taskforce', 'Warehouse', 'Inventory', 'Logistic'];
+const { retailOutlets: OUTLET_LIST, warehouseLocations: WAREHOUSE_LOCATIONS } = useOutlets()
 
 const division = ref('retail')
 const outlet = ref('')
@@ -26,7 +26,7 @@ const loading = ref(false)
 const router = useRouter()
 const auth = useAuthStore()
 
-const outletOptions = computed(() => division.value === 'warehouse' ? WAREHOUSE_LOCATIONS : OUTLET_LIST)
+const outletOptions = computed(() => division.value === 'warehouse' ? WAREHOUSE_LOCATIONS.value : OUTLET_LIST.value)
 
 function switchDivision(d) {
   division.value = d
