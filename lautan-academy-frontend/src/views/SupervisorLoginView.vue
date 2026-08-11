@@ -7,7 +7,6 @@ import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import PasswordField from '../components/PasswordField.vue'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
-import MasterKeyButton from '../components/MasterKeyButton.vue'
 
 const { t } = useI18n()
 
@@ -39,7 +38,6 @@ async function handleLogin() {
   <div class="min-h-screen bg-seafoam flex items-center justify-center px-6">
     <div class="w-full max-w-sm">
       <div class="flex justify-end items-center gap-2 mb-2">
-        <MasterKeyButton />
         <LanguageSwitcher />
       </div>
       <div class="mb-8 flex items-center justify-center gap-3 w-full">

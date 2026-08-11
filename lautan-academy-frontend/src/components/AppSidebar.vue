@@ -17,7 +17,6 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import logoUrl from '../assets/logo-transparent.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
-import MasterKeyButton from './MasterKeyButton.vue'
 
 const props = defineProps({
   // No real "pending reviews" concept exists yet (Reports are just
@@ -184,7 +183,6 @@ const ICONS = {
         <p class="text-xs text-slate truncate">{{ subtitle }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <MasterKeyButton />
         <LanguageSwitcher />
       </div>
     </div>
@@ -271,8 +269,5 @@ const ICONS = {
       </svg>
       <span class="text-[10px] font-medium">{{ t('sidebar.logOut') }}</span>
     </button>
-    <div class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0">
-      <MasterKeyButton />
-    </div>
   </nav>
 </template>

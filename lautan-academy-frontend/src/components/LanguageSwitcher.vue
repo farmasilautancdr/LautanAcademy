@@ -18,20 +18,22 @@ function setLocale(lang) {
       role="radio"
       :aria-checked="locale === 'en'"
       @click="setLocale('en')"
-      class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+      class="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition-colors"
       :class="locale === 'en' ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'"
     >
-      EN
+      <span aria-hidden="true">🇬🇧</span>
+      <span>EN</span>
     </button>
     <button
       type="button"
       role="radio"
       :aria-checked="locale === 'ms'"
       @click="setLocale('ms')"
-      class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+      class="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition-colors"
       :class="locale === 'ms' ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'"
     >
-      BM
+      <span aria-hidden="true">🇲🇾</span>
+      <span>BM</span>
     </button>
   </div>
 </template>
