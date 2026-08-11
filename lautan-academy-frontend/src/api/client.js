@@ -120,6 +120,8 @@ export const api = {
     request(`/master/purge/content/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
   masterDeleteContent: (ids, masterToken) =>
     request('/master/purge/content/delete', { method: 'POST', body: JSON.stringify({ ids }), headers: { Authorization: `Bearer ${masterToken}` } }),
+  searchAuditLog: (params, masterToken) =>
+    request(`/master/audit-log/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
   getMaintenanceStatus: () => request('/maintenance-status'),
   setMaintenanceStatus: (enabled, message, masterToken) =>
     request('/master/maintenance', {
