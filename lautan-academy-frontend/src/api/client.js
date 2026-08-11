@@ -129,4 +129,20 @@ export const api = {
       body: JSON.stringify({ enabled, message }),
       headers: { Authorization: `Bearer ${masterToken}` },
     }),
+  // Not routed through request() — that helper always calls res.json(), but
+  // this response body is raw SQL text, not JSON.
+  masterBackupExport: async (masterToken) => {
+    const res = await fetch(`${BASE_URL}/master/backup-export`, {
+      headers: { Authorization: `Bearer ${masterToken}` },
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || `Request failed (${res.status})`)
+    }
+    const blob = await res.blob()
+    const disposition = res.headers.get('Content-Disposition') || ''
+    const match = disposition.match(/filename="?([^"]+)"?/)
+    const filename = match ? match[1] : `lautan-academy-backup-${Date.now()}.sql`
+    return { blob, filename }
+  },
 }
