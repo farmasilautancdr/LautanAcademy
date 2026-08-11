@@ -170,7 +170,7 @@ async function submitReport() {
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-10">
       <section>
         <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('areaManagerReviewsView.assessmentHeading') }}</h2>
-        <form @submit.prevent="submitReport" class="bg-white rounded-xl2 p-5 shadow-sm space-y-4">
+        <form v-if="!auth.impersonating" @submit.prevent="submitReport" class="bg-white rounded-xl2 p-5 shadow-sm space-y-4">
           <div>
             <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.outletLabel') }}</label>
             <select v-model="formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3">
@@ -240,6 +240,7 @@ async function submitReport() {
             {{ submitting ? t('areaManagerReviewsView.saving') : (isEdit ? t('areaManagerReviewsView.updateAssessment') : t('areaManagerReviewsView.submitAssessment')) }}
           </button>
         </form>
+        <p v-else class="text-slate text-sm bg-white rounded-xl2 p-5 shadow-sm">{{ t('areaManagerReviewsView.impersonatingNotice') }}</p>
       </section>
 
       <section>

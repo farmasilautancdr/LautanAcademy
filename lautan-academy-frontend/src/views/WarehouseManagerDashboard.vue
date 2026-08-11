@@ -181,7 +181,7 @@ async function endQuiz() {
           <button @click="endQuiz" class="mt-3 text-coral text-xs font-medium underline">{{ t('warehouseManagerDashboard.endCodeNow') }}</button>
         </div>
 
-        <form @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
+        <form v-if="!auth.impersonating" @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
           <div v-if="resourceSource" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
             <span>{{ t('warehouseManagerDashboard.sourcedFromCourse') }}</span>
             <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('warehouseManagerDashboard.useTopicInstead') }}</button>
@@ -224,6 +224,7 @@ async function endQuiz() {
             {{ creating ? t('warehouseManagerDashboard.generating') : (activeQuiz ? t('warehouseManagerDashboard.replaceCode') : t('warehouseManagerDashboard.generateCode')) }}
           </button>
         </form>
+        <p v-else class="text-slate text-sm bg-white rounded-xl2 p-5 shadow-sm">{{ t('warehouseManagerDashboard.impersonatingNotice') }}</p>
       </section>
     </main>
   </div>

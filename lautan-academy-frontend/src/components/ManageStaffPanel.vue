@@ -6,8 +6,10 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
+import { useAuthStore } from '../store/auth'
 
 const { t } = useI18n()
+const auth = useAuthStore()
 
 const props = defineProps({
   division: { type: String, required: true }, // 'retail' | 'warehouse'
@@ -106,7 +108,7 @@ async function removeStaff(name) {
                 {{ s.AddedBy ? t('manageStaffPanel.addedOnBy', { date: new Date(s.Timestamp).toLocaleDateString(), addedBy: s.AddedBy }) : t('manageStaffPanel.addedOn', { date: new Date(s.Timestamp).toLocaleDateString() }) }}
               </p>
             </div>
-            <div class="flex items-center gap-3 shrink-0">
+            <div v-if="!auth.impersonating" class="flex items-center gap-3 shrink-0">
               <button @click="startReset(s.Name)" class="text-aqua text-xs font-medium underline">{{ t('manageStaffPanel.resetPin') }}</button>
               <button @click="removeStaff(s.Name)" class="text-coral text-xs font-medium underline">{{ t('manageStaffPanel.remove') }}</button>
             </div>
@@ -124,13 +126,14 @@ async function removeStaff(name) {
       </div>
     </div>
 
-    <form @submit.prevent="addStaff" class="border-t border-seafoam p-5 flex items-center gap-2">
+    <form v-if="!auth.impersonating" @submit.prevent="addStaff" class="border-t border-seafoam p-5 flex items-center gap-2">
       <input v-model="addName" type="text" :placeholder="t('manageStaffPanel.namePlaceholder')" class="flex-1 min-w-0 border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <input v-model="addPin" type="password" inputmode="numeric" maxlength="4" :placeholder="t('manageStaffPanel.pinPlaceholder')" class="w-32 border border-slate/30 rounded-lg py-2 px-3 text-sm" />
       <button type="submit" :disabled="adding" class="bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60 shrink-0">
         {{ adding ? t('manageStaffPanel.adding') : t('manageStaffPanel.add') }}
       </button>
     </form>
+    <p v-else class="text-slate text-xs px-5 py-4 border-t border-seafoam">{{ t('manageStaffPanel.impersonatingNotice') }}</p>
     <p v-if="addError" class="text-coral text-xs px-5 pb-4 -mt-3">{{ addError }}</p>
   </div>
 </template>

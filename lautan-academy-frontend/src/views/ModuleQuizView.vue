@@ -89,9 +89,10 @@ function start() {
 
         <p v-if="error" class="text-coral text-sm">{{ error }}</p>
 
-        <button @click="start" :disabled="!selectedTopic" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
+        <button v-if="!auth.impersonating" @click="start" :disabled="!selectedTopic" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
           {{ t('moduleQuizView.startQuiz') }}
         </button>
+        <p v-else class="text-slate text-sm text-center">{{ t('moduleQuizView.impersonatingNotice') }}</p>
       </div>
     </main>
   </div>

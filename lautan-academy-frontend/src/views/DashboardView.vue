@@ -136,7 +136,7 @@ async function joinQuiz() {
           <p class="text-white/60 text-sm mt-0.5">
             {{ history.length === 0 ? t('dashboardView.joinCodeBelow') : t('dashboardView.practiceAttempts', history.length) }}
           </p>
-          <button type="button" @click="scrollToJoin" class="mt-4 bg-aqua text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+          <button v-if="!auth.impersonating" type="button" @click="scrollToJoin" class="mt-4 bg-aqua text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
             {{ t('dashboardView.joinQuizBtn') }}
           </button>
         </div>
@@ -199,7 +199,7 @@ async function joinQuiz() {
       </aside>
 
       <!-- Join a Practice Quiz: unchanged existing feature, just relocated. -->
-      <section ref="joinSection" class="area-join">
+      <section v-if="!auth.impersonating" ref="joinSection" class="area-join">
         <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('dashboardView.joinPracticeQuiz') }}</h2>
         <form @submit.prevent="joinQuiz" class="bg-white rounded-xl2 p-5 shadow-sm">
           <div class="flex items-center justify-center gap-4 flex-wrap">
@@ -217,6 +217,7 @@ async function joinQuiz() {
           </p>
         </form>
       </section>
+      <p v-else class="text-slate text-sm text-center py-4">{{ t('dashboardView.impersonatingNotice') }}</p>
     </main>
   </div>
 </template>

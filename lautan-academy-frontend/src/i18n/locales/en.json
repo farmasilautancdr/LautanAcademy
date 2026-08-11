@@ -169,7 +169,8 @@
     "joining": "Joining...",
     "join": "Join",
     "errorBadCode": "Enter the 3-digit practice code your manager shared.",
-    "errorInvalidCode": "Invalid or expired code for your outlet."
+    "errorInvalidCode": "Invalid or expired code for your outlet.",
+    "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else."
   },
   "moduleQuizView": {
     "title": "Module Quiz",
@@ -180,7 +181,8 @@
     "errorPickModule": "Pick a module first.",
     "errorAlreadyAttempted": "You've already attempted \"{topic}\" today. Try again tomorrow.",
     "errorNoQuestions": "No questions available for this module yet.",
-    "startQuiz": "Start quiz"
+    "startQuiz": "Start quiz",
+    "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else."
   },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
@@ -260,7 +262,8 @@
     "errorGenerateFailed": "Could not generate the quiz.",
     "generating": "Generating...",
     "replaceCode": "Replace active code",
-    "generateCode": "Generate code"
+    "generateCode": "Generate code",
+    "impersonatingNotice": "Quiz creation is hidden while viewing as someone else."
   },
   "outletManagerResultsView": {
     "title": "Staff Results — {outlet}",
@@ -294,7 +297,8 @@
     "adding": "Adding...",
     "add": "Add",
     "errorAddStaff": "Enter a name and a 4-digit passcode.",
-    "errorAddFailed": "Could not add staff."
+    "errorAddFailed": "Could not add staff.",
+    "impersonatingNotice": "Staff management is hidden while viewing as someone else."
   },
   "outletManagerStaffView": {
     "title": "Manage Staff — {outlet}"
@@ -336,7 +340,8 @@
     "errorGenerateFailed": "Could not generate the quiz.",
     "generating": "Generating...",
     "replaceCode": "Replace active code",
-    "generateCode": "Generate code"
+    "generateCode": "Generate code",
+    "impersonatingNotice": "Quiz creation is hidden while viewing as someone else."
   },
   "warehouseManagerResultsView": {
     "title": "Staff Results — {location}",
@@ -401,7 +406,8 @@
     "last6Months": "Last 6 months",
     "last12Months": "Last 12 months",
     "noSubmissionsFiltered": "No submissions match this filter.",
-    "filedByCompetency": "Filed by {manager} · Competency {competency}/10"
+    "filedByCompetency": "Filed by {manager} · Competency {competency}/10",
+    "impersonatingNotice": "Filing reports is hidden while viewing as someone else."
   },
   "supervisorDashboard": {
     "title": "Company-wide",

@@ -169,7 +169,8 @@
     "joining": "Menyertai...",
     "join": "Sertai",
     "errorBadCode": "Masukkan kod latihan 3-digit yang dikongsi pengurus anda.",
-    "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda."
+    "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda.",
+    "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain."
   },
   "moduleQuizView": {
     "title": "Kuiz Modul",
@@ -180,7 +181,8 @@
     "errorPickModule": "Pilih modul dahulu.",
     "errorAlreadyAttempted": "Anda telah mencuba \"{topic}\" hari ini. Cuba lagi esok.",
     "errorNoQuestions": "Tiada soalan tersedia untuk modul ini lagi.",
-    "startQuiz": "Mula kuiz"
+    "startQuiz": "Mula kuiz",
+    "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain."
   },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
@@ -260,7 +262,8 @@
     "errorGenerateFailed": "Tidak dapat menjana kuiz.",
     "generating": "Menjana...",
     "replaceCode": "Ganti kod aktif",
-    "generateCode": "Jana kod"
+    "generateCode": "Jana kod",
+    "impersonatingNotice": "Penciptaan kuiz disembunyikan semasa melihat sebagai orang lain."
   },
   "outletManagerResultsView": {
     "title": "Keputusan Staf — {outlet}",
@@ -294,7 +297,8 @@
     "adding": "Menambah...",
     "add": "Tambah",
     "errorAddStaff": "Masukkan nama dan kod laluan 4-digit.",
-    "errorAddFailed": "Tidak dapat menambah staf."
+    "errorAddFailed": "Tidak dapat menambah staf.",
+    "impersonatingNotice": "Pengurusan staf disembunyikan semasa melihat sebagai orang lain."
   },
   "outletManagerStaffView": {
     "title": "Urus Staf — {outlet}"
@@ -336,7 +340,8 @@
     "errorGenerateFailed": "Tidak dapat menjana kuiz.",
     "generating": "Menjana...",
     "replaceCode": "Ganti kod aktif",
-    "generateCode": "Jana kod"
+    "generateCode": "Jana kod",
+    "impersonatingNotice": "Penciptaan kuiz disembunyikan semasa melihat sebagai orang lain."
   },
   "warehouseManagerResultsView": {
     "title": "Keputusan Staf — {location}",
@@ -401,7 +406,8 @@
     "last6Months": "6 bulan lepas",
     "last12Months": "12 bulan lepas",
     "noSubmissionsFiltered": "Tiada penyerahan sepadan dengan penapis ini.",
-    "filedByCompetency": "Difailkan oleh {manager} · Kecekapan {competency}/10"
+    "filedByCompetency": "Difailkan oleh {manager} · Kecekapan {competency}/10",
+    "impersonatingNotice": "Memfailkan laporan disembunyikan semasa melihat sebagai orang lain."
   },
   "supervisorDashboard": {
     "title": "Seluruh Syarikat",
