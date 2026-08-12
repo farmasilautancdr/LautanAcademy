@@ -15,7 +15,7 @@
 // vue-i18n locale, same as the rest of the app's UI chrome — this used to
 // be a separate local `lang` ref with its own toggle button; reconciled
 // onto the one shared mechanism (see Phase 1 spec's flagged open risk).
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
@@ -108,6 +108,27 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
   sessionStorage.removeItem('lautan_active_quiz')
   next()
+})
+
+// Best-effort only: pagehide fires on real navigation-away/tab-close/app-
+// close, not on mere backgrounding (that's visibilitychange, deliberately
+// NOT used here — hooking grading to a simple tab-switch/backgrounding
+// event would wrongly lock in an attempt every time staff get interrupted
+// mid-quiz, which happens constantly on the shop floor). A hard force-kill
+// before pagehide fires still won't be recorded — accepted limitation, no
+// fully reliable client-side alternative exists.
+function handlePageHide() {
+  if (kind !== 'standard' || answeredCount.value === 0 || hasSubmitted.value) return
+  hasSubmitted.value = true
+  const payloadAnswers = questions.value.map((q, i) => ({ id: q.id, chosen: answers.value[i]?.chosen }))
+  api.saveResultKeepalive({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+}
+
+onMounted(() => {
+  window.addEventListener('pagehide', handlePageHide)
+})
+onUnmounted(() => {
+  window.removeEventListener('pagehide', handlePageHide)
 })
 
 async function gradeAndSave() {

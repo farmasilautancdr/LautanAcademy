@@ -82,6 +82,23 @@ export const api = {
   endQuiz: (outlet) => request(`/quiz/${encodeURIComponent(outlet)}/end`, { method: 'POST' }),
   saveResult: (payload) => request('/data/results', { method: 'POST', body: JSON.stringify(payload) }),
   saveAiResult: (payload) => request('/data/ai-results', { method: 'POST', body: JSON.stringify(payload) }),
+  // Fire-and-forget variant of saveResult for page-unload time (Module Quiz
+  // anti-fraud abandon lock, Task 5). Deliberately bypasses request() — we
+  // can't await a response once the page is being torn down, and
+  // navigator.sendBeacon() can't carry the Authorization header this API
+  // requires, so this uses fetch's keepalive flag instead.
+  saveResultKeepalive: (payload) => {
+    const token = getToken()
+    fetch(`${BASE_URL}/data/results`, {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    })
+  },
   getContent: () => request('/content'),
   // Returns { status: 'created'|'updated'|'duplicate'|'auth_error'|'error' } —
   // duplicate/auth_error are normal 200 responses, not thrown errors, since
