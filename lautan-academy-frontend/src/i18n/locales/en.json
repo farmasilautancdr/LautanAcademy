@@ -465,7 +465,16 @@
     "errorUploadFailed": "Upload failed.",
     "errorSaveFailed": "Could not save.",
     "saving": "Saving...",
-    "addEntry": "Add entry"
+    "addEntry": "Add entry",
+    "videoSectionTitle": "Video Training",
+    "videoNoEntriesYet": "No video trainings yet — add one below.",
+    "videoTopicLabel": "Topic",
+    "videoTopicHelper": "Must match a topic with questions already added to the video_questions bank (Supabase table editor for now).",
+    "videoLinkLabel": "YouTube link",
+    "videoErrorRequiredFields": "Title, topic, and YouTube link are required.",
+    "videoErrorSaveFailed": "Could not save.",
+    "videoConfirmRemove": "Remove \"{title}\"?",
+    "videoAddEntry": "Add video training"
   },
   "supervisorReportsView": {
     "title": "Cluster Reports",

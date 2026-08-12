@@ -22,6 +22,13 @@ const { t } = useI18n()
 // match yet.
 const content = ref([])
 const loadingContent = ref(true)
+const videoTrainings = ref([])
+const loadingVideos = ref(true)
+const vTitle = ref('')
+const vTopic = ref('')
+const vYoutubeUrl = ref('')
+const vError = ref('')
+const vSaving = ref(false)
 const driveCategories = ref([])
 const categoryOptions = computed(() => [...new Set([...driveCategories.value, ...content.value.map(c => c.Category)])].filter(Boolean).sort())
 const cTopic = ref('')
@@ -43,6 +50,44 @@ async function loadContent() {
   loadingContent.value = false
 }
 loadContent()
+
+async function loadVideoTrainings() {
+  loadingVideos.value = true
+  try {
+    const data = await api.getVideoTrainings()
+    videoTrainings.value = data.videoTrainings || []
+  } catch (e) { /* leave empty */ }
+  loadingVideos.value = false
+}
+loadVideoTrainings()
+
+async function addVideoTraining() {
+  vError.value = ''
+  if (!vTitle.value.trim() || !vTopic.value.trim() || !vYoutubeUrl.value.trim()) {
+    vError.value = t('supervisorAddResourcesView.videoErrorRequiredFields')
+    return
+  }
+  vSaving.value = true
+  try {
+    await api.addVideoTraining({ title: vTitle.value.trim(), topic: vTopic.value.trim(), youtubeUrl: vYoutubeUrl.value.trim() })
+    vTitle.value = ''
+    vTopic.value = ''
+    vYoutubeUrl.value = ''
+    await loadVideoTrainings()
+  } catch (err) {
+    vError.value = err.message || t('supervisorAddResourcesView.videoErrorSaveFailed')
+  } finally {
+    vSaving.value = false
+  }
+}
+
+async function removeVideoTraining(video) {
+  if (!confirm(t('supervisorAddResourcesView.videoConfirmRemove', { title: video.title }))) return
+  try {
+    await api.deleteVideoTraining(video.id)
+    await loadVideoTrainings()
+  } catch (e) { /* best-effort */ }
+}
 
 // Uploads immediately on file selection — link field fills in with the
 // resulting public URL, same field a manually-typed link would use.
@@ -151,6 +196,40 @@ async function removeContent(item) {
         <p v-if="cError" class="text-coral text-sm">{{ cError }}</p>
         <button type="submit" :disabled="cSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
           {{ cSaving ? t('supervisorAddResourcesView.saving') : t('supervisorAddResourcesView.addEntry') }}
+        </button>
+      </form>
+
+      <h2 class="font-display text-lg font-semibold text-ink mt-8 mb-3">{{ t('supervisorAddResourcesView.videoSectionTitle') }}</h2>
+
+      <div v-if="loadingVideos" class="text-slate text-sm">{{ t('supervisorAddResourcesView.loading') }}</div>
+      <div v-else-if="videoTrainings.length === 0" class="text-slate text-sm mb-4">{{ t('supervisorAddResourcesView.videoNoEntriesYet') }}</div>
+      <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
+        <div v-for="video in videoTrainings" :key="video.id" class="px-5 py-3 flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-ink truncate">{{ video.title }}</p>
+            <p class="text-xs text-slate">{{ video.topic }}</p>
+          </div>
+          <button @click="removeVideoTraining(video)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
+        </div>
+      </div>
+
+      <form @submit.prevent="addVideoTraining" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.titleLabel') }}</label>
+          <input v-model="vTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoTopicLabel') }}</label>
+          <input v-model="vTopic" type="text" :placeholder="t('supervisorAddResourcesView.topicPlaceholder')" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.videoTopicHelper') }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoLinkLabel') }}</label>
+          <input v-model="vYoutubeUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+        </div>
+        <p v-if="vError" class="text-coral text-sm">{{ vError }}</p>
+        <button type="submit" :disabled="vSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
+          {{ vSaving ? t('supervisorAddResourcesView.saving') : t('supervisorAddResourcesView.videoAddEntry') }}
         </button>
       </form>
     </main>

@@ -465,7 +465,16 @@
     "errorUploadFailed": "Muat naik gagal.",
     "errorSaveFailed": "Tidak dapat menyimpan.",
     "saving": "Menyimpan...",
-    "addEntry": "Tambah entri"
+    "addEntry": "Tambah entri",
+    "videoSectionTitle": "Latihan Video",
+    "videoNoEntriesYet": "Belum ada latihan video — tambah satu di bawah.",
+    "videoTopicLabel": "Topik",
+    "videoTopicHelper": "Mesti sepadan dengan topik yang sudah mempunyai soalan dalam bank video_questions (Supabase table editor buat masa ini).",
+    "videoLinkLabel": "Pautan YouTube",
+    "videoErrorRequiredFields": "Tajuk, topik, dan pautan YouTube diperlukan.",
+    "videoErrorSaveFailed": "Tidak dapat menyimpan.",
+    "videoConfirmRemove": "Alih keluar \"{title}\"?",
+    "videoAddEntry": "Tambah latihan video"
   },
   "supervisorReportsView": {
     "title": "Laporan Kluster",
