@@ -133,14 +133,14 @@ function wrongsForAi(attemptId) {
       <div v-if="loading" class="text-slate text-sm">{{ t('outletManagerResultsView.loading') }}</div>
 
       <template v-else>
-        <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+        <section v-if="auth.impersonating" class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 class="font-display text-base font-semibold text-ink">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
             <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
               <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
             </select>
           </div>
-          <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
             <div v-for="s in cpdSummary" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
               <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
               <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
@@ -148,8 +148,11 @@ function wrongsForAi(attemptId) {
               </span>
             </div>
           </div>
+          <div v-else class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</p>
+          </div>
         </section>
-        <section v-else-if="!auth.impersonating" class="mb-8">
+        <section v-else class="mb-8">
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
           <div class="bg-white rounded-xl2 px-5 py-4">
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('outletManagerResultsView.cpdComingSoon') }}</p>
