@@ -38,6 +38,7 @@ const checking = ref(false)
 const checkError = ref('')
 const submitting = ref(false)
 const errorMsg = ref('')
+const hasSubmitted = ref(false)
 
 const currentQuestion = computed(() => questions.value[currentIndex.value])
 const isLastQuestion = computed(() => currentIndex.value === questions.value.length - 1)
@@ -86,19 +87,27 @@ function back() {
   if (currentIndex.value > 0) currentIndex.value--
 }
 
-async function submit() {
-  submitting.value = true
-  errorMsg.value = ''
+async function gradeAndSave() {
+  if (hasSubmitted.value) return null
+  hasSubmitted.value = true
 
   const payloadAnswers = questions.value.map((q, i) => {
     const a = answers.value[i]
     return kind === 'standard' ? { id: q.id, chosen: a?.chosen } : { index: i, chosen: a?.chosen }
   })
 
+  return kind === 'standard'
+    ? api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+    : api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
+}
+
+async function submitQuiz() {
+  submitting.value = true
+  errorMsg.value = ''
+
   try {
-    const data = kind === 'standard'
-      ? await api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
-      : await api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
+    const data = await gradeAndSave()
+    if (!data) return
 
     // Missed-question summary for ResultView comes from the live per-answer
     // checks already done during the quiz, not recomputed here — the score
@@ -120,6 +129,7 @@ async function submit() {
     sessionStorage.removeItem('lautan_active_quiz')
     router.push('/result')
   } catch (err) {
+    hasSubmitted.value = false
     errorMsg.value = err.message || t('quizView.errorSubmitFailed')
   } finally {
     submitting.value = false
@@ -184,7 +194,7 @@ async function submit() {
         </button>
         <button
           v-else
-          @click="submit"
+          @click="submitQuiz"
           :disabled="submitting || answeredCount < questions.length"
           class="bg-coral text-white text-sm font-medium px-6 py-2.5 rounded-lg disabled:opacity-50"
         >
