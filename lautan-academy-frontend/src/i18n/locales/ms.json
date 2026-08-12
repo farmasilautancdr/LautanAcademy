@@ -391,7 +391,10 @@
     "noResultsFiltered": "Tiada keputusan sepadan dengan penapis ini.",
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}",
-    "cpdHeading": "Jam CPD (tahun ini)",
+    "videoTrainingHeading": "Latihan Video",
+    "moduleQuizHeading": "Modul Kuiz",
+    "aiPracticeHeading": "Amalan AI",
+    "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang"
   },

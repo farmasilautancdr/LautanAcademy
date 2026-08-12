@@ -391,7 +391,10 @@
     "noResultsFiltered": "No results match this filter.",
     "questionPrefix": "Q: {text}",
     "correctLabel": "✓ Correct: {text}",
-    "cpdHeading": "CPD Hours (this year)",
+    "videoTrainingHeading": "Video Training",
+    "moduleQuizHeading": "Module Quiz",
+    "aiPracticeHeading": "AI Practice",
+    "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
     "cpdComingSoon": "Coming soon"
   },
