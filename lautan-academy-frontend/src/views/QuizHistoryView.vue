@@ -15,6 +15,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
 import ProgressRing from '../components/ProgressRing.vue'
 
 const { t } = useI18n()
@@ -23,23 +24,58 @@ const aiHistory = ref([])
 const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
 const reports = ref([])
+const videoTrainings = ref([])
 const loading = ref(true)
 const auth = useAuthStore()
+const CPD_TARGET_HOURS = 120
 
 const reportYear = ref('ALL')
 const reportTopic = ref('ALL')
+const videoYear = ref('ALL')
+const standardYear = ref('ALL')
+const aiYear = ref('ALL')
+const cpdYear = ref(new Date().getFullYear())
 
 onMounted(async () => {
   try {
-    const data = await api.getScopedData()
+    const [data, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
     standardHistory.value = (data.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = data.wrongAnswers || []
     aiWrongAnswers.value = data.aiWrongAnswers || []
     reports.value = (data.reports || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
+    videoTrainings.value = videos.videoTrainings || []
   } catch (e) { /* leave empty — not fatal */ }
   loading.value = false
 })
+
+// standardHistory carries every Video Training + Module Quiz result for
+// this staff member (both write into the same results table, distinguished
+// only by topic membership) — split once here, both sections below read
+// from this.
+const splitStandard = computed(() => splitByVideoTopic(standardHistory.value, videoHoursByTopic(videoTrainings.value)))
+const videoTrainingHistory = computed(() => splitStandard.value.video)
+const moduleQuizHistory = computed(() => splitStandard.value.moduleQuiz)
+
+const filteredVideoHistory = computed(() => videoYear.value === 'ALL' ? videoTrainingHistory.value : videoTrainingHistory.value.filter((h) => new Date(h.Timestamp).getFullYear() === videoYear.value))
+const videoYears = computed(() => [...new Set(videoTrainingHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+
+const filteredStandardHistory = computed(() => standardYear.value === 'ALL' ? moduleQuizHistory.value : moduleQuizHistory.value.filter((h) => new Date(h.Timestamp).getFullYear() === standardYear.value))
+const standardYears = computed(() => [...new Set(moduleQuizHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+
+const filteredAiHistory = computed(() => aiYear.value === 'ALL' ? aiHistory.value : aiHistory.value.filter((h) => new Date(h.Timestamp).getFullYear() === aiYear.value))
+const aiYears = computed(() => [...new Set(aiHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+
+// CPD year dropdown always offers the current year even with zero data
+// yet, plus any year real attempts exist for — no "ALL" option.
+const cpdYears = computed(() => {
+  const years = new Set([...standardHistory.value, ...aiHistory.value].map((h) => new Date(h.Timestamp).getFullYear()))
+  years.add(new Date().getFullYear())
+  return [...years].sort((a, b) => b - a)
+})
+// Single-staff variant of the manager views' cpdSummary — hoursByStaff()
+// still returns an array (one entry, this staff member), read [0].
+const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value)[0]?.hours || 0)
 
 // Same thresholds AreaManagerReviewsView uses to compute the badge when
 // filing — reports store the label already, this just picks its color.
@@ -98,13 +134,43 @@ function wrongsForAi(attemptId) {
       <div v-if="loading" class="text-slate text-sm">{{ t('quizHistoryView.loading') }}</div>
 
       <template v-else>
+        <section v-if="auth.impersonating" class="mb-8">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-display text-base font-semibold text-ink">{{ t('quizHistoryView.cpdHeading') }}</h2>
+            <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
+          <div class="bg-white rounded-xl2 px-5 py-4 flex items-center justify-between">
+            <p class="text-sm text-slate">{{ t('quizHistoryView.cpdHeading') }}</p>
+            <span class="text-sm font-display font-semibold" :class="cpdHoursThisYear >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+              {{ t('quizHistoryView.cpdHoursOfTarget', { hours: cpdHoursThisYear, target: CPD_TARGET_HOURS }) }}
+            </span>
+          </div>
+        </section>
+        <section v-else class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('quizHistoryView.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('quizHistoryView.cpdComingSoon') }}</p>
+          </div>
+        </section>
+
         <section>
-          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('quizHistoryView.moduleQuizHeading') }}</h2>
-          <div v-if="standardHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
-            <p class="text-slate text-sm">{{ t('quizHistoryView.noModuleHistory') }}</p>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-display text-base font-semibold text-ink">{{ t('quizHistoryView.videoTrainingHeading') }}</h2>
+            <select v-if="videoTrainingHistory.length" v-model="videoYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">{{ t('quizHistoryView.allYears') }}</option>
+              <option v-for="y in videoYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
+          <div v-if="videoTrainingHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">{{ t('quizHistoryView.noVideoHistory') }}</p>
+          </div>
+          <div v-else-if="filteredVideoHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(h, i) in standardHistory" :key="i" class="px-5 py-3.5">
+            <details v-for="(h, i) in filteredVideoHistory" :key="i" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
@@ -124,12 +190,55 @@ function wrongsForAi(attemptId) {
         </section>
 
         <section class="mt-8">
-          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('quizHistoryView.aiPracticeHeading') }}</h2>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-display text-base font-semibold text-ink">{{ t('quizHistoryView.moduleQuizHeading') }}</h2>
+            <select v-if="moduleQuizHistory.length" v-model="standardYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">{{ t('quizHistoryView.allYears') }}</option>
+              <option v-for="y in standardYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
+          <div v-if="moduleQuizHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">{{ t('quizHistoryView.noModuleHistory') }}</p>
+          </div>
+          <div v-else-if="filteredStandardHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
+          </div>
+          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <details v-for="(h, i) in filteredStandardHistory" :key="i" class="px-5 py-3.5">
+              <summary class="flex items-center gap-4 cursor-pointer">
+                <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink truncate">{{ h.Topic }}</p>
+                  <p class="text-xs text-slate">{{ relativeTime(h.Timestamp) }}</p>
+                </div>
+                <span class="text-sm font-display font-semibold text-ink shrink-0">{{ h.Score }}</span>
+              </summary>
+              <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
+                <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
+                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: w['Question Text'] }) }}</p>
+                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-display text-base font-semibold text-ink">{{ t('quizHistoryView.aiPracticeHeading') }}</h2>
+            <select v-if="aiHistory.length" v-model="aiYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">{{ t('quizHistoryView.allYears') }}</option>
+              <option v-for="y in aiYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
           <div v-if="aiHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
             <p class="text-slate text-sm">{{ t('quizHistoryView.noAiHistory') }}</p>
           </div>
+          <div v-else-if="filteredAiHistory.length === 0" class="bg-white rounded-xl2 p-6 text-center">
+            <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
+          </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="h in aiHistory" :key="h.AttemptID" class="px-5 py-3.5">
+            <details v-for="h in filteredAiHistory" :key="h.AttemptID" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
