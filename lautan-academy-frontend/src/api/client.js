@@ -120,6 +120,12 @@ export const api = {
   },
   getResources: () => request('/resources'),
   getQuestions: () => request('/questions'),
+  getVideoTrainings: () => request('/video-trainings'),
+  getVideoQuestions: (topic) => request(`/video-questions?topic=${encodeURIComponent(topic)}`),
+  checkVideoAnswer: (id, chosen) => request(`/video-questions/${id}/check`, { method: 'POST', body: JSON.stringify({ chosen }) }),
+  saveVideoResult: (payload) => request('/data/video-results', { method: 'POST', body: JSON.stringify(payload) }),
+  addVideoTraining: (payload) => request('/video-trainings', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteVideoTraining: (id) => request(`/video-trainings/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   getOutlets: (division) => request(`/outlets${division ? `?division=${encodeURIComponent(division)}` : ''}`),
   getAreas: () => request('/areas'),
   masterGetOutlets: (masterToken) =>
