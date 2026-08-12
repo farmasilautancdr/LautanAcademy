@@ -25,6 +25,20 @@ export function videoHoursByTopic(videoTrainings) {
   return map
 }
 
+// Splits a `results` array (Video Training + Module Quiz share one table)
+// into the two sources by topic membership — the same check hoursByStaff()
+// already does internally, exposed standalone so views can render them as
+// separate sections instead of only summing them together. See
+// docs/superpowers/specs/2026-08-13-results-filters-sections-design.md.
+export function splitByVideoTopic(results, hoursByTopic) {
+  const video = []
+  const moduleQuiz = []
+  for (const r of results) {
+    (hoursByTopic.has(r.Topic) ? video : moduleQuiz).push(r)
+  }
+  return { video, moduleQuiz }
+}
+
 // results rows (Video Training + Module Quiz, shared table) + aiResults
 // rows (AI Practice, separate table) -> per-staff hours-this-year, both
 // filtered to Timestamp falling in `year` (defaults to the current
