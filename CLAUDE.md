@@ -47,3 +47,23 @@ I'm a self-taught "vibe coder" — no formal CS background, learned by building 
 - /context7: Global codebase awareness (Frontend + Backend + DB).
 - /caveman: Zero fluff. Extreme brevity. Direct answers only. No "Great question!" preambles.
 - playwright: Browser automation MCP. Use to drive the running app (navigate/click/fill/screenshot) and verify a change actually works in-browser, not just eyeball the code.
+- impeccable: Design work skill (`/impeccable <command>`). `PRODUCT.md` at repo root has confirmed product truth (users, purpose, positioning, principles) — read it before design work instead of re-asking the user. No `DESIGN.md` yet — run `/impeccable document` to record the incumbent visual system before a redesign, or let a narrow refinement command (`polish`, `critique`, `clarify`, etc.) read the existing CSS/tokens/components directly.
+
+## Frontend & Design Guidelines (Impeccable Rules)
+
+### Core Rules & Anti-Slop Policy
+- **No AI Slop:** Strictly avoid purple/blue default gradients, unnecessary card-in-card nesting, generic drop shadows, and default Inter font implementations unless explicitly part of the design system.
+- **Token Alignment:** Before modifying or adding UI components, inspect `DESIGN.md` (or Tailwind/CSS config) for existing colors, spacing scale, font weights, and border radii. Never invent arbitrary values (e.g., use `p-4` or `--spacing-md`, not `p-[17px]`).
+- **Simplicity First:** Default to cleaner, quieter UI. Remove excess borders, decorative background shapes, and superfluous dividers.
+- **Accessibility:** Ensure all text/background combinations pass WCAG AA contrast standards.
+
+### Automatic Workflow on UI Tasks
+Whenever editing or creating UI components:
+1. **Audit:** Scan the target component against Impeccable design rules.
+2. **Normalize:** Reuse existing UI primitives and design tokens.
+3. **Polish:** Ensure clear typographic hierarchy, micro-interactions (hover/focus states), and mobile responsiveness.
+
+### Custom Slash Commands Available
+- `/impeccable audit <path>` - Static analysis for UI anti-patterns
+- `/impeccable polish <target>` - Visual refinement and hierarchy pass
+- `/impeccable extract <target>` - Pull reusable tokens/components into the design system
