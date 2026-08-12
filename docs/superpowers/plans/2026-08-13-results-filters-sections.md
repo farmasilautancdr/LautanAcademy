@@ -897,25 +897,71 @@ expand.
 
 - [ ] **Step 3: Add the CPD year `<select>`**
 
+**Note (caught during Task 2's review — apply the same fix here proactively):**
+gating the section on `cpdSummary.length` hides the year `<select>` itself
+whenever the selected year has zero matching staff — there is then no
+control left to pick a year that *does* have data, short of a page reload
+resetting `cpdYear` back to its default. Split the condition: the section
+(header + year select) shows whenever `auth.impersonating` is true, and an
+inner `v-if`/`v-else` picks between the real list and an empty-state
+message depending on `cpdSummary.length`.
+
 Change:
 
 ```html
         <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
           <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+                <p class="text-xs text-slate">{{ s.outlet }}</p>
+              </div>
+              <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+                {{ t('areaManagerDashboard.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+              </span>
+            </div>
+          </div>
+        </section>
+        <section v-else-if="!auth.impersonating" class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.cpdComingSoon') }}</p>
+          </div>
+        </section>
 ```
 
 to:
 
 ```html
-        <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+        <section v-if="auth.impersonating" class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 class="font-display text-base font-semibold text-ink">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
             <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
               <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
             </select>
           </div>
-          <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+                <p class="text-xs text-slate">{{ s.outlet }}</p>
+              </div>
+              <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+                {{ t('areaManagerDashboard.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.noResultsFiltered') }}</p>
+          </div>
+        </section>
+        <section v-else class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.cpdComingSoon') }}</p>
+          </div>
+        </section>
 ```
 
 - [ ] **Step 4: Add the i18n keys**
@@ -1193,25 +1239,70 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
 
 - [ ] **Step 3: Replace the template's single filter row + single list with three sections, add CPD year select**
 
+**Note (caught during Task 2's review — apply the same fix here proactively):**
+gating the section on `cpdSummary.length` hides the year `<select>` itself
+whenever the selected year has zero matching staff — there is then no
+control left to pick a year that *does* have data. Split the condition:
+the section (header + year select) shows whenever `auth.impersonating` is
+true, and an inner `v-if`/`v-else` picks between the real list and an
+empty-state message depending on `cpdSummary.length`.
+
 Change:
 
 ```html
       <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
         <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
         <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+              <p class="text-xs text-slate">{{ s.outlet }}</p>
+            </div>
+            <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+              {{ t('supervisorStaffComparisonView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+            </span>
+          </div>
+        </div>
+      </section>
+      <section v-else-if="!auth.impersonating" class="mb-8">
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
+        <div class="bg-white rounded-xl2 px-5 py-4">
+          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdComingSoon') }}</p>
+        </div>
+      </section>
 ```
 
 to:
 
 ```html
-      <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+      <section v-if="auth.impersonating" class="mb-8">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h2 class="font-display text-base font-semibold text-ink">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
           <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
             <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
-        <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+        <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+              <p class="text-xs text-slate">{{ s.outlet }}</p>
+            </div>
+            <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+              {{ t('supervisorStaffComparisonView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+            </span>
+          </div>
+        </div>
+        <div v-else class="bg-white rounded-xl2 px-5 py-4">
+          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.noActivity') }}</p>
+        </div>
+      </section>
+      <section v-else class="mb-8">
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
+        <div class="bg-white rounded-xl2 px-5 py-4">
+          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdComingSoon') }}</p>
+        </div>
+      </section>
 ```
 
 Change:
