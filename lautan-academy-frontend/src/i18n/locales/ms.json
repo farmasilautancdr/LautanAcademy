@@ -288,15 +288,17 @@
   "outletManagerResultsView": {
     "title": "Keputusan Staf — {outlet}",
     "loading": "Memuatkan...",
+    "videoTrainingHeading": "Latihan Video",
     "moduleQuizHeading": "Kuiz Modul",
     "noAttemptsYet": "Belum ada percubaan.",
     "allYears": "Semua tahun",
     "allTopics": "Semua topik",
+    "allStaff": "Semua staf",
     "noAttemptsFiltered": "Tiada percubaan sepadan dengan penapis ini.",
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}",
     "aiPracticeHeading": "Latihan AI",
-    "cpdHeading": "Jam CPD (tahun ini)",
+    "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang"
   },

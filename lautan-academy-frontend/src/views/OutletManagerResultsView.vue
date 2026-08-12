@@ -16,7 +16,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff } from '../composables/useCpdHours'
+import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
 
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
@@ -30,10 +30,16 @@ const videoTrainings = ref([])
 const loading = ref(true)
 const CPD_TARGET_HOURS = 120
 
+const videoYear = ref('ALL')
+const videoTopic = ref('ALL')
+const videoStaff = ref('ALL')
 const standardYear = ref('ALL')
 const standardTopic = ref('ALL')
+const standardStaff = ref('ALL')
 const aiYear = ref('ALL')
 const aiTopic = ref('ALL')
+const aiStaff = ref('ALL')
+const cpdYear = ref(new Date().getFullYear())
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 function dateBadge(iso) {
@@ -41,21 +47,52 @@ function dateBadge(iso) {
   return { month: MONTHS[d.getMonth()], day: d.getDate() }
 }
 
-const standardYears = computed(() => [...new Set(standardHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
-const standardTopics = computed(() => [...new Set(standardHistory.value.map((h) => h.Topic))].sort())
-const filteredStandardHistory = computed(() => standardHistory.value.filter((h) => {
+// standardHistory carries every Video Training + Module Quiz result for
+// this outlet (both write into the same results table, distinguished only
+// by which topic namespace they belong to) — split once here, both
+// sections below read from this.
+const splitStandard = computed(() => splitByVideoTopic(standardHistory.value, videoHoursByTopic(videoTrainings.value)))
+const videoTrainingHistory = computed(() => splitStandard.value.video)
+const moduleQuizHistory = computed(() => splitStandard.value.moduleQuiz)
+
+const videoYears = computed(() => [...new Set(videoTrainingHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const videoTopics = computed(() => [...new Set(videoTrainingHistory.value.map((h) => h.Topic))].sort())
+const videoStaffNames = computed(() => [...new Set(videoTrainingHistory.value.map((h) => h.Name))].sort())
+const filteredVideoHistory = computed(() => videoTrainingHistory.value.filter((h) => {
+  if (videoYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== videoYear.value) return false
+  if (videoTopic.value !== 'ALL' && h.Topic !== videoTopic.value) return false
+  if (videoStaff.value !== 'ALL' && h.Name !== videoStaff.value) return false
+  return true
+}))
+
+const standardYears = computed(() => [...new Set(moduleQuizHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const standardTopics = computed(() => [...new Set(moduleQuizHistory.value.map((h) => h.Topic))].sort())
+const standardStaffNames = computed(() => [...new Set(moduleQuizHistory.value.map((h) => h.Name))].sort())
+const filteredStandardHistory = computed(() => moduleQuizHistory.value.filter((h) => {
   if (standardYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== standardYear.value) return false
   if (standardTopic.value !== 'ALL' && h.Topic !== standardTopic.value) return false
+  if (standardStaff.value !== 'ALL' && h.Name !== standardStaff.value) return false
   return true
 }))
 
 const aiYears = computed(() => [...new Set(aiHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
 const aiTopics = computed(() => [...new Set(aiHistory.value.map((h) => h.Topic))].sort())
+const aiStaffNames = computed(() => [...new Set(aiHistory.value.map((h) => h.Name))].sort())
 const filteredAiHistory = computed(() => aiHistory.value.filter((h) => {
   if (aiYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== aiYear.value) return false
   if (aiTopic.value !== 'ALL' && h.Topic !== aiTopic.value) return false
+  if (aiStaff.value !== 'ALL' && h.Name !== aiStaff.value) return false
   return true
 }))
+
+// CPD year dropdown always offers the current year even with zero data yet,
+// plus any year real attempts exist for — no "ALL" option, CPD is
+// inherently per-calendar-year (see plan's Global Constraints).
+const cpdYears = computed(() => {
+  const years = new Set([...standardHistory.value, ...aiHistory.value].map((h) => new Date(h.Timestamp).getFullYear()))
+  years.add(new Date().getFullYear())
+  return [...years].sort((a, b) => b - a)
+})
 
 onMounted(async () => {
   try {
@@ -74,7 +111,7 @@ onMounted(async () => {
 // distinguished only by which topic namespace they belong to); aiHistory
 // carries every AI Practice result. hoursByStaff() handles the
 // video-vs-module split internally via hoursByTopic.
-const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value)))
+const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
 
 function wrongsForStandard(h) {
   if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
@@ -97,7 +134,12 @@ function wrongsForAi(attemptId) {
 
       <template v-else>
         <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
-          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-display text-base font-semibold text-ink">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
+            <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+          </div>
           <div class="bg-white rounded-xl2 divide-y divide-seafoam">
             <div v-for="s in cpdSummary" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
               <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
@@ -115,8 +157,52 @@ function wrongsForAi(attemptId) {
         </section>
 
         <section>
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.videoTrainingHeading') }}</h2>
+          <div v-if="videoTrainingHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsYet') }}</div>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="videoYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allYears') }}</option>
+                <option v-for="y in videoYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="videoTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allTopics') }}</option>
+                <option v-for="t2 in videoTopics" :key="t2" :value="t2">{{ t2 }}</option>
+              </select>
+              <select v-model="videoStaff" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allStaff') }}</option>
+                <option v-for="n in videoStaffNames" :key="n" :value="n">{{ n }}</option>
+              </select>
+            </div>
+            <div v-if="filteredVideoHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
+            <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+              <details v-for="h in filteredVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
+                <summary class="flex items-center gap-3 cursor-pointer">
+                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
+                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(h.Timestamp).day }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ h.Name }} · {{ h.Topic }}</p>
+                  </div>
+                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                    {{ h.Score }}
+                  </span>
+                </summary>
+                <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
+                  <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
+                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: w['Question Text'] }) }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </template>
+        </section>
+
+        <section class="mt-8">
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.moduleQuizHeading') }}</h2>
-          <div v-if="standardHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsYet') }}</div>
+          <div v-if="moduleQuizHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsYet') }}</div>
           <template v-else>
             <div class="flex flex-wrap gap-2 mb-3">
               <select v-model="standardYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
@@ -126,6 +212,10 @@ function wrongsForAi(attemptId) {
               <select v-model="standardTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">{{ t('outletManagerResultsView.allTopics') }}</option>
                 <option v-for="t2 in standardTopics" :key="t2" :value="t2">{{ t2 }}</option>
+              </select>
+              <select v-model="standardStaff" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allStaff') }}</option>
+                <option v-for="n in standardStaffNames" :key="n" :value="n">{{ n }}</option>
               </select>
             </div>
             <div v-if="filteredStandardHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
@@ -166,6 +256,10 @@ function wrongsForAi(attemptId) {
               <select v-model="aiTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
                 <option value="ALL">{{ t('outletManagerResultsView.allTopics') }}</option>
                 <option v-for="t2 in aiTopics" :key="t2" :value="t2">{{ t2 }}</option>
+              </select>
+              <select v-model="aiStaff" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allStaff') }}</option>
+                <option v-for="n in aiStaffNames" :key="n" :value="n">{{ n }}</option>
               </select>
             </div>
             <div v-if="filteredAiHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
