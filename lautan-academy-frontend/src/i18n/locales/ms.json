@@ -192,6 +192,13 @@
     "noVideosYet": "Belum ada video latihan tersedia.",
     "watch": "Tonton →"
   },
+  "videoWatchView": {
+    "title": "Latihan Video",
+    "watchToContinue": "Habiskan tontonan untuk membuka kuiz.",
+    "errorNotFound": "Video ini tidak ditemui.",
+    "errorPlayerLoad": "Tidak dapat memuatkan pemain video — muat semula dan cuba lagi.",
+    "errorNoQuestions": "Tidak dapat memuatkan kuiz untuk video ini — muat semula dan cuba lagi."
+  },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
     "questionProgress": "Soalan {current} daripada {total}",

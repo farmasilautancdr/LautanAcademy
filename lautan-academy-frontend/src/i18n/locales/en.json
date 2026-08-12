@@ -192,6 +192,13 @@
     "noVideosYet": "No training videos available yet.",
     "watch": "Watch →"
   },
+  "videoWatchView": {
+    "title": "Video Training",
+    "watchToContinue": "Finish watching to unlock the quiz.",
+    "errorNotFound": "This video could not be found.",
+    "errorPlayerLoad": "Couldn't load the video player — refresh and try again.",
+    "errorNoQuestions": "Couldn't load the quiz for this video — refresh and try again."
+  },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
     "questionProgress": "Question {current} of {total}",
