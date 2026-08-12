@@ -1659,6 +1659,197 @@ editor only, matching standard_questions today)."
 
 ---
 
+### Task 11: Frontend — gate the Video Training nav item behind "Coming Soon"
+
+**Files:**
+- Modify: `lautan-academy-frontend/src/components/AppSidebar.vue`
+- Modify: `lautan-academy-frontend/src/i18n/locales/en.json`, `ms.json`
+
+**Interfaces:**
+- Consumes: `auth.impersonating` (`store/auth.js`, already a reactive
+  Pinia state boolean — no change needed there).
+
+Added per `docs/superpowers/specs/2026-08-13-cpd-hours-revision-design.md`'s
+gating addendum: this whole feature is a multi-session build not yet
+verified end-to-end in production. Real staff logging in directly must see
+a "Coming Soon" placeholder, not a half-tested feature; Master viewing-as
+that staff (impersonation, Subsystem H) sees the real, working nav item —
+that's how this gets tested on localhost and in production before being
+turned on for everyone. This is a **display-only** gate — no backend/
+permission change, the routes/pages built in Tasks 1-10 stay fully
+functional and reachable by direct URL for an impersonated session.
+
+- [ ] **Step 1: Make the nav item conditional on `auth.impersonating`**
+
+In `lautan-academy-frontend/src/components/AppSidebar.vue`, change (this is
+the exact line Task 6 Step 3 added):
+
+```js
+    if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' })
+```
+
+to:
+
+```js
+    if (auth.staff?.division === 'retail') {
+      quizItems.push(
+        auth.impersonating
+          ? { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' }
+          : { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video', disabled: true }
+      )
+    }
+```
+
+(`to` stays set even when `disabled` — `RouterLink` requires a valid `to`
+prop; Step 2 below stops the click from actually navigating.)
+
+- [ ] **Step 2: Render the disabled state in both the desktop and mobile nav**
+
+In the desktop `<nav>` block, change:
+
+```html
+            <button
+              type="button"
+              @click="navigate"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors"
+              :class="isActive ? 'bg-aqua text-white font-medium' : 'text-ink hover:bg-seafoam'"
+            >
+              <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" fill="none" :stroke="isActive ? 'white' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path :d="ICONS[item.icon]" />
+              </svg>
+              <span class="flex-1 text-left truncate">{{ item.label }}</span>
+              <span v-if="item.badge" class="text-[10px] font-bold text-white bg-coral rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0">
+                {{ item.badge }}
+              </span>
+            </button>
+```
+
+to:
+
+```html
+            <button
+              type="button"
+              @click="item.disabled ? null : navigate"
+              :disabled="item.disabled"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors"
+              :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'bg-aqua text-white font-medium' : 'text-ink hover:bg-seafoam')"
+            >
+              <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" fill="none" :stroke="isActive ? 'white' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path :d="ICONS[item.icon]" />
+              </svg>
+              <span class="flex-1 text-left truncate">{{ item.label }}</span>
+              <span v-if="item.disabled" class="text-[9px] font-semibold uppercase tracking-wide text-slate/50 shrink-0">{{ t('sidebar.comingSoon') }}</span>
+              <span v-else-if="item.badge" class="text-[10px] font-bold text-white bg-coral rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0">
+                {{ item.badge }}
+              </span>
+            </button>
+```
+
+In the mobile bottom-nav `<nav>` block, change:
+
+```html
+      <button
+        type="button"
+        @click="navigate"
+        class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
+        :class="isActive ? 'text-aqua' : 'text-slate'"
+      >
+        <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path :d="ICONS[item.icon]" />
+        </svg>
+        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.label }}</span>
+      </button>
+```
+
+to:
+
+```html
+      <button
+        type="button"
+        @click="item.disabled ? null : navigate"
+        :disabled="item.disabled"
+        class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
+        :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'text-aqua' : 'text-slate')"
+      >
+        <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path :d="ICONS[item.icon]" />
+        </svg>
+        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.disabled ? t('sidebar.comingSoon') : item.label }}</span>
+      </button>
+```
+
+(Mobile row is too narrow for label + a separate "Coming Soon" chip, so the
+label itself swaps to "Coming Soon" there instead.)
+
+- [ ] **Step 3: Add the `sidebar.comingSoon` i18n key**
+
+This exact English/Malay pair already exists at `masterPanel.comingSoon` —
+add the same copy under the `sidebar` namespace too (i18n keys aren't
+cross-namespace-shared in this codebase's convention; each view/component
+namespace carries its own copy, matching how `sidebar.roleOutletManager`
+etc. are each their own key even when reused verbatim elsewhere).
+
+In `lautan-academy-frontend/src/i18n/locales/en.json`, inside the `sidebar`
+block, change:
+
+```json
+    "videoTraining": "Video Training",
+```
+
+to:
+
+```json
+    "videoTraining": "Video Training",
+    "comingSoon": "Coming Soon",
+```
+
+In `lautan-academy-frontend/src/i18n/locales/ms.json`, change:
+
+```json
+    "videoTraining": "Latihan Video",
+```
+
+to:
+
+```json
+    "videoTraining": "Latihan Video",
+    "comingSoon": "Akan Datang",
+```
+
+- [ ] **Step 4: Verify build is clean**
+
+Run: `cd lautan-academy-frontend && npm run build`
+Expected: clean.
+
+- [ ] **Step 5: Manual verification — both states**
+
+On the local dev server: log in directly as CDR/MOHD HAFIZ (real login, not
+impersonated). Confirm the sidebar shows "Video Training" greyed out with
+a "Coming Soon" chip, and clicking it does nothing (no navigation, no route
+change). Then, as Master, use the existing "View As" impersonation flow to
+view-as that same staff member. Confirm the nav item now shows normally
+(no chip, aqua-highlighted when active) and clicking it navigates to
+`/video-training` and works exactly as verified in Tasks 6-10 — this is
+the actual mechanism for testing the full feature on localhost before it
+goes live for real staff.
+
+- [ ] **Step 6: Commit**
+
+```bash
+cd lautan-academy
+git add lautan-academy-frontend/src/components/AppSidebar.vue lautan-academy-frontend/src/i18n/locales/en.json lautan-academy-frontend/src/i18n/locales/ms.json
+git commit -m "Gate Video Training nav item behind Coming Soon for real staff
+
+Real staff logins see a greyed-out, non-clickable Coming Soon label;
+Master-impersonated sessions see the real working nav item — lets
+this multi-session build be tested end-to-end (localhost and
+production) before going live for everyone. Display-only gate, no
+backend/permission change. To go live: remove the auth.impersonating
+condition added here."
+```
+
+---
+
 ## Self-review notes (for the plan author, not a task)
 
 - **Spec coverage:** YouTube embed, in-app playback, free seeking (Task 8)
@@ -1672,6 +1863,8 @@ editor only, matching standard_questions today)."
   throughout (every task with new UI copy) ✓. Accepted-risk note (YouTube
   Unlisted leak risk) — this is a decision documented in the spec, not a
   code behavior, so no task implements it; nothing further needed.
+  "Coming Soon" gating (Task 11, per the 2026-08-13 revision spec's
+  addendum) ✓.
 - **Placeholder scan:** no TBD/TODO, no "similar to Task N" shortcuts —
   every code block is complete and copy-pasteable.
 - **Type/name consistency:** `kind: 'video'` is the exact string used
@@ -1685,4 +1878,8 @@ editor only, matching standard_questions today)."
   topic, youtubeUrl}]}` (Task 2) matches exactly what `VideoTrainingListView`
   (Task 7) and `VideoWatchView` (Task 8) read. `{questions: [...]}` (Task 2)
   matches what `VideoWatchView` (Task 8) and `QuizView` (Task 9, via the
-  sessionStorage envelope) expect.
+  sessionStorage envelope) expect. `item.disabled` (Task 11) is a new
+  optional field on the nav item objects `sections`/`flatItems` already
+  produce (Task 6) — only the Video Training item ever sets it, every other
+  item's `disabled` is `undefined` (falsy), so existing items' rendering is
+  unaffected.
