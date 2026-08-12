@@ -63,7 +63,13 @@ const sections = computed(() => {
     // GAS, which never gave warehouse staff anything but AI Practice.
     const quizItems = []
     if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' })
-    if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' })
+    if (auth.staff?.division === 'retail') {
+      quizItems.push(
+        auth.impersonating
+          ? { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' }
+          : { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video', disabled: true }
+      )
+    }
     quizItems.push({ label: t('sidebar.quizHistory'), to: '/history', icon: 'history' })
     groups.push({ label: t('sidebar.groupQuizzes'), items: quizItems })
 
@@ -212,15 +218,17 @@ const ICONS = {
           >
             <button
               type="button"
-              @click="navigate"
+              @click="item.disabled ? null : navigate()"
+              :disabled="item.disabled"
               class="w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors"
-              :class="isActive ? 'bg-aqua text-white font-medium' : 'text-ink hover:bg-seafoam'"
+              :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'bg-aqua text-white font-medium' : 'text-ink hover:bg-seafoam')"
             >
               <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" fill="none" :stroke="isActive ? 'white' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path :d="ICONS[item.icon]" />
               </svg>
               <span class="flex-1 text-left truncate">{{ item.label }}</span>
-              <span v-if="item.badge" class="text-[10px] font-bold text-white bg-coral rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0">
+              <span v-if="item.disabled" class="text-[9px] font-semibold uppercase tracking-wide text-slate/50 shrink-0">{{ t('sidebar.comingSoon') }}</span>
+              <span v-else-if="item.badge" class="text-[10px] font-bold text-white bg-coral rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0">
                 {{ item.badge }}
               </span>
             </button>
@@ -255,14 +263,15 @@ const ICONS = {
     >
       <button
         type="button"
-        @click="navigate"
+        @click="item.disabled ? null : navigate()"
+        :disabled="item.disabled"
         class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
-        :class="isActive ? 'text-aqua' : 'text-slate'"
+        :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'text-aqua' : 'text-slate')"
       >
         <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path :d="ICONS[item.icon]" />
         </svg>
-        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.label }}</span>
+        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.disabled ? t('sidebar.comingSoon') : item.label }}</span>
       </button>
     </RouterLink>
     <button type="button" @click="handleLogout" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" :aria-label="t('sidebar.logOut')">
