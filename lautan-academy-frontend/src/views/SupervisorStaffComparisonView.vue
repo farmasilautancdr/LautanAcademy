@@ -2,12 +2,15 @@
 // Per-staff rollup across every outlet — real data only (results+aiResults
 // combined, same fields SupervisorDashboard already uses), no fabricated
 // "trend"/"streak" metrics.
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
+import { useAuthStore } from '../store/auth'
+import { videoHoursByTopic, hoursByStaff } from '../composables/useCpdHours'
 
 const { t } = useI18n()
+const auth = useAuthStore()
 const { areas: AREAS, outletsForArea } = useOutlets()
 const windowMonths = ref(3)
 const loading = ref(true)
@@ -16,6 +19,10 @@ const aiResults = ref([])
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
 const sortBy = ref('avg') // 'avg' | 'attempts' | 'name'
+const cpdResults = ref([])
+const cpdAiResults = ref([])
+const videoTrainings = ref([])
+const CPD_TARGET_HOURS = 120
 
 function onRegionChange() { outletFilter.value = 'ALL' }
 
@@ -30,6 +37,24 @@ async function load() {
 }
 watch(windowMonths, load)
 load()
+
+// Deliberately separate from `results`/`aiResults` above — those refs are
+// scoped by the windowMonths dropdown (default 3 months), which would
+// silently under-report a staff member's real year-to-date CPD hours
+// whenever the dropdown isn't set to "All time". getScopedData(0) always
+// returns every result regardless of the dropdown; useCpdHours' own year
+// filter (default current calendar year) does the actual scoping this
+// summary needs.
+onMounted(async () => {
+  try {
+    const [scoped, videos] = await Promise.all([api.getScopedData(0), api.getVideoTrainings()])
+    cpdResults.value = scoped.results || []
+    cpdAiResults.value = scoped.aiResults || []
+    videoTrainings.value = videos.videoTrainings || []
+  } catch (e) { /* leave empty */ }
+})
+
+const cpdSummary = computed(() => hoursByStaff(cpdResults.value, cpdAiResults.value, videoHoursByTopic(videoTrainings.value)))
 
 const outlets = computed(() => {
   if (regionFilter.value !== 'ALL') return outletsForArea(regionFilter.value)
@@ -68,6 +93,27 @@ const rows = computed(() => {
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
+      <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
+        <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+              <p class="text-xs text-slate">{{ s.outlet }}</p>
+            </div>
+            <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+              {{ t('supervisorStaffComparisonView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+            </span>
+          </div>
+        </div>
+      </section>
+      <section v-else-if="!auth.impersonating" class="mb-8">
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
+        <div class="bg-white rounded-xl2 px-5 py-4">
+          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdComingSoon') }}</p>
+        </div>
+      </section>
+
       <div class="flex flex-wrap items-center gap-3 mb-6">
         <select v-model.number="windowMonths" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option :value="3">{{ t('supervisorStaffComparisonView.last3Months') }}</option>
