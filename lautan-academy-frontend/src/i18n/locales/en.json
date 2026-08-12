@@ -186,6 +186,12 @@
     "startQuiz": "Start quiz",
     "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else."
   },
+  "videoTrainingListView": {
+    "title": "Video Training",
+    "loading": "Loading...",
+    "noVideosYet": "No training videos available yet.",
+    "watch": "Watch →"
+  },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
     "questionProgress": "Question {current} of {total}",

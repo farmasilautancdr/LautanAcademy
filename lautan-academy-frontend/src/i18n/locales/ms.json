@@ -186,6 +186,12 @@
     "startQuiz": "Mula kuiz",
     "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain."
   },
+  "videoTrainingListView": {
+    "title": "Latihan Video",
+    "loading": "Memuatkan...",
+    "noVideosYet": "Belum ada video latihan tersedia.",
+    "watch": "Tonton →"
+  },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
     "questionProgress": "Soalan {current} daripada {total}",
