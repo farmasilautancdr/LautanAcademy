@@ -172,6 +172,36 @@ instead of `data.videoHoursThisYear`. Display copy/i18n keys unchanged
 (the strings never said "video" — "{hours} / {target} training hours this
 year" already read correctly for the broadened meaning).
 
+## Addendum (2026-08-13): "Coming Soon" gating for both Video Training and this revision
+
+User requested, same session: since Video Training and CPD Hours are both
+multi-session builds not yet started, real retail staff must not see
+half-built functionality mid-build. Decision: gate on the existing
+impersonation flag (`auth.impersonating`, Subsystem H) rather than adding
+a new feature-flag mechanism.
+
+- **`AppSidebar.vue`'s new "Video Training" nav item** (Video Training
+  plan): real staff (`!auth.impersonating`) see a greyed-out, non-clickable
+  "Coming Soon" label instead of a working link. Master viewing-as that
+  staff member (`auth.impersonating === true`) sees the real, working nav
+  item — this is how the feature gets tested end-to-end (including on
+  localhost) before it's turned on for everyone.
+- **CPD hours UI additions** (this spec's Dashboard progress line, and the
+  three manager-facing summary sections): same condition. Real staff/
+  managers (`!auth.impersonating`) see a small "Coming Soon" chip where the
+  real number/list would go; an impersonated session sees the real
+  computed value.
+- **No change to any backend authorization** — this is a display-only gate
+  on already-built, already-working functionality behind the existing
+  impersonation mechanism, not a new permission system. Once satisfied via
+  localhost + impersonated testing, removing the `auth.impersonating`
+  condition (a small, explicit follow-up task) is what "goes live" for
+  real staff — tracked as the final task of each plan, not done
+  automatically by either plan itself.
+- Applies to both the Video Training plan (`docs/superpowers/plans/2026-08-12-video-training.md`)
+  and this spec's own plan — both currently unexecuted, both get this
+  gating added as their last task before the existing "ship" state.
+
 ## Out of scope / explicitly not fixed here
 
 - Breakdown by source (Video / Module Quiz / AI Practice) in any CPD
