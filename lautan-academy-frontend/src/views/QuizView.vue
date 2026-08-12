@@ -179,7 +179,7 @@ async function submitQuiz() {
       <div class="flex items-center justify-between mt-6">
         <button
           @click="back"
-          :disabled="currentIndex === 0"
+          :disabled="currentIndex === 0 || (kind === 'standard' && answeredCount >= 1)"
           class="text-slate text-sm disabled:opacity-30"
         >
           {{ t('quizView.back') }}
