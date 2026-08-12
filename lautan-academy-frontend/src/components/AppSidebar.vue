@@ -63,6 +63,7 @@ const sections = computed(() => {
     // GAS, which never gave warehouse staff anything but AI Practice.
     const quizItems = []
     if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' })
+    if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' })
     quizItems.push({ label: t('sidebar.quizHistory'), to: '/history', icon: 'history' })
     groups.push({ label: t('sidebar.groupQuizzes'), items: quizItems })
 
@@ -163,6 +164,7 @@ const ICONS = {
   send: 'M22 2 11 13M22 2 15 22l-4-9-9-4 20-7z',
   chart: 'M4 20V10M4 20h16M10 20V4M16 20v-7',
   clipboard: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 12h6M9 16h6',
+  video: 'M23 7l-7 5 7 5V7zM1 5h15v14H1z',
   grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   users: 'M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
   file: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5zM14 3v5h5M9 13h6M9 17h6',

@@ -11,6 +11,8 @@ import DashboardView from '../views/DashboardView.vue'
 import QuizHistoryView from '../views/QuizHistoryView.vue'
 import ModuleQuizView from '../views/ModuleQuizView.vue'
 import ResourcesView from '../views/ResourcesView.vue'
+import VideoTrainingListView from '../views/VideoTrainingListView.vue'
+import VideoWatchView from '../views/VideoWatchView.vue'
 import QuizView from '../views/QuizView.vue'
 import ResultView from '../views/ResultView.vue'
 import OutletManagerDashboard from '../views/OutletManagerDashboard.vue'
@@ -49,6 +51,10 @@ const router = createRouter({
     // screen at all just to hit that wall.
     { path: '/module-quiz', name: 'module-quiz', component: ModuleQuizView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/resources', name: 'resources', component: ResourcesView, meta: { requiresAuth: true, role: 'staff' } },
+    // Same retail-only gating as Module Quiz — warehouse staff don't get
+    // this today either.
+    { path: '/video-training', name: 'video-training', component: VideoTrainingListView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
+    { path: '/video-watch/:id', name: 'video-watch', component: VideoWatchView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/manager', name: 'manager', component: OutletManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
