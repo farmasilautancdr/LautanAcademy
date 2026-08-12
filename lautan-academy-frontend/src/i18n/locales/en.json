@@ -173,7 +173,9 @@
     "join": "Join",
     "errorBadCode": "Enter the 3-digit practice code your manager shared.",
     "errorInvalidCode": "Invalid or expired code for your outlet.",
-    "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else."
+    "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else.",
+    "cpdHoursProgress": "{hours} / {target} training hours this year",
+    "cpdHoursComingSoon": "Training hours tracking — coming soon"
   },
   "moduleQuizView": {
     "title": "Module Quiz",
@@ -293,7 +295,10 @@
     "noAttemptsFiltered": "No attempts match this filter.",
     "questionPrefix": "Q: {text}",
     "correctLabel": "✓ Correct: {text}",
-    "aiPracticeHeading": "AI Practice"
+    "aiPracticeHeading": "AI Practice",
+    "cpdHeading": "CPD Hours (this year)",
+    "cpdHoursOfTarget": "{hours} / {target} hrs",
+    "cpdComingSoon": "Coming soon"
   },
   "manageStaffPanel": {
     "loading": "Loading...",
@@ -383,7 +388,10 @@
     "allTopics": "All topics",
     "noResultsFiltered": "No results match this filter.",
     "questionPrefix": "Q: {text}",
-    "correctLabel": "✓ Correct: {text}"
+    "correctLabel": "✓ Correct: {text}",
+    "cpdHeading": "CPD Hours (this year)",
+    "cpdHoursOfTarget": "{hours} / {target} hrs",
+    "cpdComingSoon": "Coming soon"
   },
   "areaManagerReviewsView": {
     "title": "Assessment — {area}",
@@ -475,7 +483,11 @@
     "videoErrorRequiredFields": "Title, topic, and YouTube link are required.",
     "videoErrorSaveFailed": "Could not save.",
     "videoConfirmRemove": "Remove \"{title}\"?",
-    "videoAddEntry": "Add video training"
+    "videoAddEntry": "Add video training",
+    "videoHoursLabel": "CPD hours",
+    "videoHoursHelper": "How many hours this video counts toward the 120hr/year target — set by you, not the video's real length.",
+    "videoHoursValue": "{hours}h",
+    "videoErrorBadHours": "Hours must be a positive number."
   },
   "supervisorReportsView": {
     "title": "Cluster Reports",
@@ -506,7 +518,10 @@
     "sortName": "Sort: Name",
     "loading": "Loading...",
     "noActivity": "No activity in this window.",
-    "attemptsCount": "{count} attempt | {count} attempts"
+    "attemptsCount": "{count} attempt | {count} attempts",
+    "cpdHeading": "CPD Hours (this year)",
+    "cpdHoursOfTarget": "{hours} / {target} hrs",
+    "cpdComingSoon": "Coming soon"
   },
   "supervisorManagerAccessView": {
     "title": "Manager Access",

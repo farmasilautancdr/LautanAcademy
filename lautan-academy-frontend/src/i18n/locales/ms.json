@@ -173,7 +173,9 @@
     "join": "Sertai",
     "errorBadCode": "Masukkan kod latihan 3-digit yang dikongsi pengurus anda.",
     "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda.",
-    "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain."
+    "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain.",
+    "cpdHoursProgress": "{hours} / {target} jam latihan tahun ini",
+    "cpdHoursComingSoon": "Penjejakan jam latihan — akan datang"
   },
   "moduleQuizView": {
     "title": "Kuiz Modul",
@@ -293,7 +295,10 @@
     "noAttemptsFiltered": "Tiada percubaan sepadan dengan penapis ini.",
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}",
-    "aiPracticeHeading": "Latihan AI"
+    "aiPracticeHeading": "Latihan AI",
+    "cpdHeading": "Jam CPD (tahun ini)",
+    "cpdHoursOfTarget": "{hours} / {target} jam",
+    "cpdComingSoon": "Akan datang"
   },
   "manageStaffPanel": {
     "loading": "Memuatkan...",
@@ -383,7 +388,10 @@
     "allTopics": "Semua topik",
     "noResultsFiltered": "Tiada keputusan sepadan dengan penapis ini.",
     "questionPrefix": "S: {text}",
-    "correctLabel": "✓ Betul: {text}"
+    "correctLabel": "✓ Betul: {text}",
+    "cpdHeading": "Jam CPD (tahun ini)",
+    "cpdHoursOfTarget": "{hours} / {target} jam",
+    "cpdComingSoon": "Akan datang"
   },
   "areaManagerReviewsView": {
     "title": "Penilaian — {area}",
@@ -475,7 +483,11 @@
     "videoErrorRequiredFields": "Tajuk, topik, dan pautan YouTube diperlukan.",
     "videoErrorSaveFailed": "Tidak dapat menyimpan.",
     "videoConfirmRemove": "Alih keluar \"{title}\"?",
-    "videoAddEntry": "Tambah latihan video"
+    "videoAddEntry": "Tambah latihan video",
+    "videoHoursLabel": "Jam CPD",
+    "videoHoursHelper": "Berapa jam video ini dikira ke arah target 120 jam/tahun — anda yang tetapkan, bukan durasi sebenar video.",
+    "videoHoursValue": "{hours}j",
+    "videoErrorBadHours": "Jam mesti nombor positif."
   },
   "supervisorReportsView": {
     "title": "Laporan Kluster",
@@ -506,7 +518,10 @@
     "sortName": "Susun: Nama",
     "loading": "Memuatkan...",
     "noActivity": "Tiada aktiviti dalam tempoh ini.",
-    "attemptsCount": "{count} percubaan"
+    "attemptsCount": "{count} percubaan",
+    "cpdHeading": "Jam CPD (tahun ini)",
+    "cpdHoursOfTarget": "{hours} / {target} jam",
+    "cpdComingSoon": "Akan datang"
   },
   "supervisorManagerAccessView": {
     "title": "Akses Pengurus",
