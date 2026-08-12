@@ -7,8 +7,8 @@
 // carry a `correct` field anymore (backend strips it from GET /questions
 // and POST /quiz/redeem). Picking an answer calls a live per-question check
 // endpoint for the instant reveal — that response is UX only, not
-// authoritative. submit() sends the raw {id/index, chosen} answer set and
-// the server independently grades the whole attempt from its own stored
+// authoritative. gradeAndSave() sends the raw {id/index, chosen} answer set
+// and the server independently grades the whole attempt from its own stored
 // data, so a tampered/faked check response can't change what gets saved.
 //
 // Question-content language (_en/_ms field suffix) follows the shared
@@ -16,7 +16,7 @@
 // be a separate local `lang` ref with its own toggle button; reconciled
 // onto the one shared mechanism (see Phase 1 spec's flagged open risk).
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
@@ -86,6 +86,29 @@ function next() {
 function back() {
   if (currentIndex.value > 0) currentIndex.value--
 }
+
+// Module Quiz only — once >=1 question is answered, leaving via in-app
+// navigation (not the Submit button) still records the attempt, so
+// abandoning can't be used to retry for a better score. AI Practice is
+// explicitly excluded (kind !== 'standard' check).
+onBeforeRouteLeave(async (to, from, next) => {
+  if (kind !== 'standard' || answeredCount.value === 0 || hasSubmitted.value) {
+    next()
+    return
+  }
+  if (!window.confirm(t('quizView.confirmLeaveAutoSubmit'))) {
+    next(false)
+    return
+  }
+  try {
+    await gradeAndSave()
+  } catch (e) {
+    // Best-effort — still let them leave rather than trapping them on a
+    // quiz they've already confirmed they want to exit.
+  }
+  sessionStorage.removeItem('lautan_active_quiz')
+  next()
+})
 
 async function gradeAndSave() {
   if (hasSubmitted.value) return null
