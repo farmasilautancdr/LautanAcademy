@@ -27,6 +27,7 @@ const loadingVideos = ref(true)
 const vTitle = ref('')
 const vTopic = ref('')
 const vYoutubeUrl = ref('')
+const vHours = ref('1')
 const vError = ref('')
 const vSaving = ref(false)
 const driveCategories = ref([])
@@ -67,12 +68,18 @@ async function addVideoTraining() {
     vError.value = t('supervisorAddResourcesView.videoErrorRequiredFields')
     return
   }
+  const hours = parseFloat(vHours.value)
+  if (!Number.isFinite(hours) || hours <= 0) {
+    vError.value = t('supervisorAddResourcesView.videoErrorBadHours')
+    return
+  }
   vSaving.value = true
   try {
-    await api.addVideoTraining({ title: vTitle.value.trim(), topic: vTopic.value.trim(), youtubeUrl: vYoutubeUrl.value.trim() })
+    await api.addVideoTraining({ title: vTitle.value.trim(), topic: vTopic.value.trim(), youtubeUrl: vYoutubeUrl.value.trim(), hours })
     vTitle.value = ''
     vTopic.value = ''
     vYoutubeUrl.value = ''
+    vHours.value = '1'
     await loadVideoTrainings()
   } catch (err) {
     vError.value = err.message || t('supervisorAddResourcesView.videoErrorSaveFailed')
@@ -207,7 +214,7 @@ async function removeContent(item) {
         <div v-for="video in videoTrainings" :key="video.id" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">{{ video.title }}</p>
-            <p class="text-xs text-slate">{{ video.topic }}</p>
+            <p class="text-xs text-slate">{{ video.topic }} · {{ t('supervisorAddResourcesView.videoHoursValue', { hours: video.hours }) }}</p>
           </div>
           <button @click="removeVideoTraining(video)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
         </div>
@@ -226,6 +233,11 @@ async function removeContent(item) {
         <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoLinkLabel') }}</label>
           <input v-model="vYoutubeUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoHoursLabel') }}</label>
+          <input v-model="vHours" type="number" step="0.5" min="0.5" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.videoHoursHelper') }}</p>
         </div>
         <p v-if="vError" class="text-coral text-sm">{{ vError }}</p>
         <button type="submit" :disabled="vSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
