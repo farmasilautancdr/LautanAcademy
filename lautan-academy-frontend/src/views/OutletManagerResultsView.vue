@@ -16,6 +16,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { videoHoursByTopic, hoursByStaff } from '../composables/useCpdHours'
 
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
@@ -25,7 +26,9 @@ const standardHistory = ref([])
 const aiHistory = ref([])
 const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
+const videoTrainings = ref([])
 const loading = ref(true)
+const CPD_TARGET_HOURS = 120
 
 const standardYear = ref('ALL')
 const standardTopic = ref('ALL')
@@ -56,14 +59,22 @@ const filteredAiHistory = computed(() => aiHistory.value.filter((h) => {
 
 onMounted(async () => {
   try {
-    const data = await api.getScopedData()
+    const [data, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
     standardHistory.value = (data.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = data.wrongAnswers || []
     aiWrongAnswers.value = data.aiWrongAnswers || []
+    videoTrainings.value = videos.videoTrainings || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 })
+
+// standardHistory already carries every Video Training + Module Quiz
+// result for this outlet (both write into the same results table,
+// distinguished only by which topic namespace they belong to); aiHistory
+// carries every AI Practice result. hoursByStaff() handles the
+// video-vs-module split internally via hoursByTopic.
+const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value)))
 
 function wrongsForStandard(h) {
   if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
@@ -85,6 +96,24 @@ function wrongsForAi(attemptId) {
       <div v-if="loading" class="text-slate text-sm">{{ t('outletManagerResultsView.loading') }}</div>
 
       <template v-else>
+        <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <div v-for="s in cpdSummary" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
+              <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+              <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+                {{ t('outletManagerResultsView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+              </span>
+            </div>
+          </div>
+        </section>
+        <section v-else-if="!auth.impersonating" class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('outletManagerResultsView.cpdComingSoon') }}</p>
+          </div>
+        </section>
+
         <section>
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.moduleQuizHeading') }}</h2>
           <div v-if="standardHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsYet') }}</div>
