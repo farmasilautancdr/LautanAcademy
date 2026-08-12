@@ -524,7 +524,12 @@
     "loading": "Memuatkan...",
     "noActivity": "Tiada aktiviti dalam tempoh ini.",
     "attemptsCount": "{count} percubaan",
-    "cpdHeading": "Jam CPD (tahun ini)",
+    "allYears": "Semua tahun",
+    "allTopics": "Semua topik",
+    "videoTrainingHeading": "Latihan Video",
+    "moduleQuizHeading": "Modul Kuiz",
+    "aiPracticeHeading": "Amalan AI",
+    "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang"
   },

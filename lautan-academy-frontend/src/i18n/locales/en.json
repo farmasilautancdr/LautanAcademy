@@ -524,7 +524,12 @@
     "loading": "Loading...",
     "noActivity": "No activity in this window.",
     "attemptsCount": "{count} attempt | {count} attempts",
-    "cpdHeading": "CPD Hours (this year)",
+    "allYears": "All years",
+    "allTopics": "All topics",
+    "videoTrainingHeading": "Video Training",
+    "moduleQuizHeading": "Module Quiz",
+    "aiPracticeHeading": "AI Practice",
+    "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
     "cpdComingSoon": "Coming soon"
   },
