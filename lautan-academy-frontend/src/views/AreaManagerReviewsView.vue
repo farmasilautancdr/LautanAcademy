@@ -184,7 +184,7 @@ async function submitReport() {
               <label class="block text-sm font-medium text-ink mb-1">{{ t('areaManagerReviewsView.staffLabel') }}</label>
               <select v-model="formStaff" :disabled="!formOutlet" @change="formTopic = ''; formNotice = ''; isEdit = false" class="w-full border border-slate/30 rounded-lg py-2 px-3 disabled:opacity-50">
                 <option value="">{{ !formOutlet ? t('areaManagerReviewsView.selectOutletFirst') : loadingStaff ? t('areaManagerReviewsView.loading') : t('areaManagerReviewsView.selectStaff') }}</option>
-                <option v-for="n in staffNames" :key="n" :value="n">{{ n }}</option>
+                <option v-for="n in staffNames" :key="n.name" :value="n.name">{{ n.name }}{{ n.idNote ? ' (' + n.idNote + ')' : '' }}</option>
               </select>
             </div>
             <div>
