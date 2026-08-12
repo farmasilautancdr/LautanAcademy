@@ -58,7 +58,7 @@ async function handleLogin() {
     await auth.login(division.value, outlet.value.trim(), name.value.trim(), pin.value)
     router.push('/')
   } catch (err) {
-    error.value = t('loginView.errorNotRecognized')
+    error.value = err.status === 429 ? t('loginView.errorTooManyAttempts') : t('loginView.errorNotRecognized')
     pin.value = ''
     pinBox.value?.focus()
   } finally {

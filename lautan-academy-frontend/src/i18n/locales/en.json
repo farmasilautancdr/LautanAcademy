@@ -20,7 +20,8 @@
     "logInHere": "Log in here",
     "errorMissingFields": "Enter your outlet and name.",
     "errorBadPasscode": "Enter your 4-digit passcode.",
-    "errorNotRecognized": "That name/passcode combination was not recognized. Check with your outlet manager."
+    "errorNotRecognized": "That name/passcode combination was not recognized. Check with your outlet manager.",
+    "errorTooManyAttempts": "Too many attempts. Please wait a few minutes and try again."
   },
   "managerLogin": {
     "subtitle": "Outlet / Warehouse Manager",

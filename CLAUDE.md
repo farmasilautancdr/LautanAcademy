@@ -46,3 +46,4 @@ I'm a self-taught "vibe coder" — no formal CS background, learned by building 
 - /superpowers: Anticipate edge cases (e.g., auth lockouts, state sync). Architect robust systems.
 - /context7: Global codebase awareness (Frontend + Backend + DB).
 - /caveman: Zero fluff. Extreme brevity. Direct answers only. No "Great question!" preambles.
+- playwright: Browser automation MCP. Use to drive the running app (navigate/click/fill/screenshot) and verify a change actually works in-browser, not just eyeball the code.

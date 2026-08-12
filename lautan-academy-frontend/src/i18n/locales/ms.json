@@ -20,7 +20,8 @@
     "logInHere": "Log masuk di sini",
     "errorMissingFields": "Masukkan cawangan dan nama anda.",
     "errorBadPasscode": "Masukkan kod laluan 4-digit anda.",
-    "errorNotRecognized": "Kombinasi nama/kod laluan tidak dikenali. Sila semak dengan pengurus cawangan anda."
+    "errorNotRecognized": "Kombinasi nama/kod laluan tidak dikenali. Sila semak dengan pengurus cawangan anda.",
+    "errorTooManyAttempts": "Terlalu banyak percubaan. Sila tunggu beberapa minit dan cuba lagi."
   },
   "managerLogin": {
     "subtitle": "Pengurus Cawangan / Gudang",
