@@ -35,6 +35,27 @@ const questions = ref(stored?.questions || [])
 const currentIndex = ref(0)
 const answers = ref({}) // { questionIndex: { chosen, correct, correctIndex } }
 const checking = ref(false)
+const QUESTION_TIMER_SECONDS = 30
+const timeRemaining = ref(QUESTION_TIMER_SECONDS)
+let timerInterval = null
+
+// kind === 'video' only. Counts down from 30s each time the question
+// changes; reaching 0 with the question still unanswered behaves exactly
+// like clicking Next (or Submit, if it's the last question) with it blank
+// — no separate grading path, it flows through the same unanswered-
+// question handling 'standard' already has in gradeAndSave().
+function startQuestionTimer() {
+  clearInterval(timerInterval)
+  timeRemaining.value = QUESTION_TIMER_SECONDS
+  timerInterval = setInterval(() => {
+    timeRemaining.value--
+    if (timeRemaining.value <= 0) {
+      clearInterval(timerInterval)
+      if (isLastQuestion.value) submitQuiz()
+      else next()
+    }
+  }, 1000)
+}
 const checkError = ref('')
 const submitting = ref(false)
 const errorMsg = ref('')
@@ -60,9 +81,10 @@ async function selectAnswer(optIndex) {
   checkError.value = ''
   checking.value = true
   try {
-    const result = kind === 'standard'
-      ? await api.checkStandardAnswer(currentQuestion.value.id, optIndex)
-      : await api.checkAiAnswer(auth.staff.outlet, passcode, currentIndex.value, optIndex)
+    let result
+    if (kind === 'standard') result = await api.checkStandardAnswer(currentQuestion.value.id, optIndex)
+    else if (kind === 'video') result = await api.checkVideoAnswer(currentQuestion.value.id, optIndex)
+    else result = await api.checkAiAnswer(auth.staff.outlet, passcode, currentIndex.value, optIndex)
     answers.value[currentIndex.value] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
   } catch (err) {
     checkError.value = t('quizView.errorCheckFailed')
@@ -81,7 +103,10 @@ function optionClass(i) {
 }
 
 function next() {
-  if (!isLastQuestion.value) currentIndex.value++
+  if (!isLastQuestion.value) {
+    currentIndex.value++
+    if (kind === 'video') startQuestionTimer()
+  }
 }
 function back() {
   if (currentIndex.value > 0) currentIndex.value--
@@ -92,7 +117,7 @@ function back() {
 // abandoning can't be used to retry for a better score. AI Practice is
 // explicitly excluded (kind !== 'standard' check).
 onBeforeRouteLeave(async (to, from, next) => {
-  if (kind !== 'standard' || answeredCount.value === 0 || hasSubmitted.value) {
+  if (!['standard', 'video'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) {
     next()
     return
   }
@@ -118,7 +143,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 // before pagehide fires still won't be recorded — accepted limitation, no
 // fully reliable client-side alternative exists.
 function handlePageHide() {
-  if (kind !== 'standard' || answeredCount.value === 0 || hasSubmitted.value) return
+  if (!['standard', 'video'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) return
   hasSubmitted.value = true
   const payloadAnswers = questions.value.map((q, i) => ({ id: q.id, chosen: answers.value[i]?.chosen }))
   api.saveResultKeepalive({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
@@ -126,23 +151,26 @@ function handlePageHide() {
 
 onMounted(() => {
   window.addEventListener('pagehide', handlePageHide)
+  if (kind === 'video') startQuestionTimer()
 })
 onUnmounted(() => {
   window.removeEventListener('pagehide', handlePageHide)
+  clearInterval(timerInterval)
 })
 
 async function gradeAndSave() {
   if (hasSubmitted.value) return null
   hasSubmitted.value = true
+  clearInterval(timerInterval)
 
   const payloadAnswers = questions.value.map((q, i) => {
     const a = answers.value[i]
-    return kind === 'standard' ? { id: q.id, chosen: a?.chosen } : { index: i, chosen: a?.chosen }
+    return kind === 'ai' ? { index: i, chosen: a?.chosen } : { id: q.id, chosen: a?.chosen }
   })
 
-  return kind === 'standard'
-    ? api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
-    : api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
+  if (kind === 'standard') return api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+  if (kind === 'video') return api.saveVideoResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+  return api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
 }
 
 async function submitQuiz() {
@@ -188,6 +216,7 @@ async function submitQuiz() {
     <div v-else class="max-w-lg mx-auto px-6 py-8">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate text-xs">{{ t('quizView.questionProgress', { current: currentIndex + 1, total: questions.length }) }}</span>
+        <span v-if="kind === 'video'" class="text-coral text-xs font-medium">{{ t('quizView.timeRemaining', { seconds: timeRemaining }) }}</span>
         <LanguageSwitcher />
       </div>
 
@@ -223,7 +252,7 @@ async function submitQuiz() {
       <div class="flex items-center justify-between mt-6">
         <button
           @click="back"
-          :disabled="currentIndex === 0 || (kind === 'standard' && answeredCount >= 1)"
+          :disabled="currentIndex === 0 || (['standard', 'video'].includes(kind) && answeredCount >= 1)"
           class="text-slate text-sm disabled:opacity-30"
         >
           {{ t('quizView.back') }}

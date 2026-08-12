@@ -209,7 +209,8 @@
     "submitting": "Menghantar...",
     "submitQuiz": "Hantar kuiz",
     "errorSubmitFailed": "Tidak dapat menghantar jawapan anda. Semak sambungan anda dan cuba lagi.",
-    "confirmLeaveAutoSubmit": "Keluar sekarang akan menghantar kuiz anda dengan jawapan yang telah diberikan setakat ini — soalan yang tidak dijawab akan dikira salah. Ini tidak boleh dibuat asal. Keluar dan hantar?"
+    "confirmLeaveAutoSubmit": "Keluar sekarang akan menghantar kuiz anda dengan jawapan yang telah diberikan setakat ini — soalan yang tidak dijawab akan dikira salah. Ini tidak boleh dibuat asal. Keluar dan hantar?",
+    "timeRemaining": "{seconds}s berbaki"
   },
   "resultView": {
     "noResult": "Tiada keputusan dijumpai.",
