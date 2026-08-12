@@ -18,7 +18,6 @@ const results = ref([])
 const aiResults = ref([])
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
-const sortBy = ref('avg') // 'avg' | 'attempts' | 'name'
 const cpdResults = ref([])
 const cpdAiResults = ref([])
 const videoTrainings = ref([])
@@ -35,6 +34,21 @@ const aiSort = ref('avg')
 const cpdYear = ref(new Date().getFullYear())
 
 function onRegionChange() { outletFilter.value = 'ALL' }
+
+// Every year/topic filter's option list is derived from region/outlet-scoped
+// data, so a value picked under one scope can be meaningless under another
+// (renders blank, list goes empty) — reset all six back to ALL whenever any
+// of the three scope controls change. cpdYear is left alone — the current
+// year is always a valid, always-present option regardless of scope. The
+// three sort refs are scope-independent and don't need resetting.
+watch([windowMonths, regionFilter, outletFilter], () => {
+  videoYear.value = 'ALL'
+  videoTopic.value = 'ALL'
+  standardYear.value = 'ALL'
+  standardTopic.value = 'ALL'
+  aiYear.value = 'ALL'
+  aiTopic.value = 'ALL'
+})
 
 async function load() {
   loading.value = true
@@ -55,6 +69,13 @@ load()
 // returns every result regardless of the dropdown; useCpdHours' own year
 // filter (default current calendar year) does the actual scoping this
 // summary needs.
+//
+// videoTrainingsLoaded gates the page-level loading state alongside
+// `loading` (load()'s own flag) so the leaderboards don't render before
+// videoTrainings arrives — without it, splitResults briefly classifies
+// every row as Module Quiz (videoHoursByTopic has nothing yet), flashing
+// an empty Video Training section + an over-full Module Quiz section.
+const videoTrainingsLoaded = ref(false)
 onMounted(async () => {
   try {
     const [scoped, videos] = await Promise.all([api.getScopedData(0), api.getVideoTrainings()])
@@ -62,6 +83,7 @@ onMounted(async () => {
     cpdAiResults.value = scoped.aiResults || []
     videoTrainings.value = videos.videoTrainings || []
   } catch (e) { /* leave empty */ }
+  videoTrainingsLoaded.value = true
 })
 
 const outlets = computed(() => {
@@ -164,7 +186,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
           </div>
         </div>
         <div v-else class="bg-white rounded-xl2 px-5 py-4">
-          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.noActivity') }}</p>
+          <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdNoData') }}</p>
         </div>
       </section>
       <section v-else class="mb-8">
@@ -191,7 +213,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
         </select>
       </div>
 
-      <div v-if="loading" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.loading') }}</div>
+      <div v-if="loading || !videoTrainingsLoaded" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.loading') }}</div>
       <template v-else>
         <section>
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.videoTrainingHeading') }}</h2>

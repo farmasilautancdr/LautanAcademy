@@ -104,7 +104,7 @@ const filteredAiResults = computed(() => outletScopedAiResults.value.filter((r) 
 // CPD year dropdown always offers the current year even with zero data
 // yet, plus any year real attempts exist for — no "ALL" option.
 const cpdYears = computed(() => {
-  const years = new Set([...outletScopedResults.value, ...outletScopedAiResults.value].map((r) => new Date(r.Timestamp).getFullYear()))
+  const years = new Set([...allResults.value, ...allAiResults.value].map((r) => new Date(r.Timestamp).getFullYear()))
   years.add(new Date().getFullYear())
   return [...years].sort((a, b) => b - a)
 })
@@ -133,7 +133,7 @@ function wrongsFor(h) {
 
     <main class="max-w-3xl mx-auto px-6 py-8">
       <div v-if="loading" class="text-slate text-sm">{{ t('areaManagerDashboard.loading') }}</div>
-      <div v-else-if="allResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
+      <div v-else-if="allResults.length === 0 && allAiResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
       <template v-else>
         <section v-if="auth.impersonating" class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">

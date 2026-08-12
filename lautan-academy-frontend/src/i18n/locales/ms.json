@@ -232,7 +232,7 @@
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang",
     "videoTrainingHeading": "Latihan Video",
-    "noVideoHistory": "Belum ada apa-apa di sini — tonton video latihan dari bar sisi.",
+    "noVideoHistory": "Belum ada apa-apa di sini.",
     "moduleQuizHeading": "Kuiz Modul",
     "noModuleHistory": "Belum ada apa-apa di sini — cuba kuiz modul dari bar sisi.",
     "noHistoryFiltered": "Tiada percubaan sepadan dengan penapis ini.",
@@ -398,8 +398,8 @@
     "questionPrefix": "S: {text}",
     "correctLabel": "✓ Betul: {text}",
     "videoTrainingHeading": "Latihan Video",
-    "moduleQuizHeading": "Modul Kuiz",
-    "aiPracticeHeading": "Amalan AI",
+    "moduleQuizHeading": "Kuiz Modul",
+    "aiPracticeHeading": "Latihan AI",
     "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang"
@@ -533,11 +533,12 @@
     "allYears": "Semua tahun",
     "allTopics": "Semua topik",
     "videoTrainingHeading": "Latihan Video",
-    "moduleQuizHeading": "Modul Kuiz",
-    "aiPracticeHeading": "Amalan AI",
+    "moduleQuizHeading": "Kuiz Modul",
+    "aiPracticeHeading": "Latihan AI",
     "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
-    "cpdComingSoon": "Akan datang"
+    "cpdComingSoon": "Akan datang",
+    "cpdNoData": "Tiada jam CPD direkodkan untuk tahun ini."
   },
   "supervisorManagerAccessView": {
     "title": "Akses Pengurus",

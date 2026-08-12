@@ -38,7 +38,10 @@ const cpdYear = ref(new Date().getFullYear())
 
 onMounted(async () => {
   try {
-    const [data, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
+    const [data, videos] = await Promise.all([
+      api.getScopedData(),
+      api.getVideoTrainings().catch(() => ({ videoTrainings: [] })),
+    ])
     standardHistory.value = (data.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = data.wrongAnswers || []
@@ -74,8 +77,15 @@ const cpdYears = computed(() => {
   return [...years].sort((a, b) => b - a)
 })
 // Single-staff variant of the manager views' cpdSummary — hoursByStaff()
-// still returns an array (one entry, this staff member), read [0].
-const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value)[0]?.hours || 0)
+// still returns an array grouped by name+outlet, so a staff member with
+// historical rows under more than one outlet (transfers) produces more
+// than one entry; sum instead of indexing [0] so none of it is dropped.
+// Client-side equivalent of DashboardView.vue's server-computed
+// cpdHoursThisYear (current year only there) — this one supports picking
+// past years via cpdYear, which the backend field doesn't provide. Keep
+// the underlying rate logic (hoursByStaff/videoHoursByTopic) in sync with
+// the backend's cpdHoursThisYear() helper in data.js if either ever changes.
+const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value).reduce((sum, e) => sum + e.hours, 0))
 
 // Same thresholds AreaManagerReviewsView uses to compute the badge when
 // filing — reports store the label already, this just picks its color.
@@ -142,7 +152,6 @@ function wrongsForAi(attemptId) {
             </select>
           </div>
           <div class="bg-white rounded-xl2 px-5 py-4 flex items-center justify-between">
-            <p class="text-sm text-slate">{{ t('quizHistoryView.cpdHeading') }}</p>
             <span class="text-sm font-display font-semibold" :class="cpdHoursThisYear >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
               {{ t('quizHistoryView.cpdHoursOfTarget', { hours: cpdHoursThisYear, target: CPD_TARGET_HOURS }) }}
             </span>
@@ -170,7 +179,7 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(h, i) in filteredVideoHistory" :key="i" class="px-5 py-3.5">
+            <details v-for="h in filteredVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
@@ -204,7 +213,7 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(h, i) in filteredStandardHistory" :key="i" class="px-5 py-3.5">
+            <details v-for="h in filteredStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">

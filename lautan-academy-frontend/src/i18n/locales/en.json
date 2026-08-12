@@ -232,7 +232,7 @@
     "cpdHoursOfTarget": "{hours} / {target} hrs",
     "cpdComingSoon": "Coming soon",
     "videoTrainingHeading": "Video Training",
-    "noVideoHistory": "Nothing here yet — watch a training video from the sidebar.",
+    "noVideoHistory": "Nothing here yet.",
     "moduleQuizHeading": "Module Quiz",
     "noModuleHistory": "Nothing here yet — take a module quiz from the sidebar.",
     "noHistoryFiltered": "No attempts match this filter.",
@@ -537,7 +537,8 @@
     "aiPracticeHeading": "AI Practice",
     "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
-    "cpdComingSoon": "Coming soon"
+    "cpdComingSoon": "Coming soon",
+    "cpdNoData": "No CPD hours recorded for this year."
   },
   "supervisorManagerAccessView": {
     "title": "Manager Access",
