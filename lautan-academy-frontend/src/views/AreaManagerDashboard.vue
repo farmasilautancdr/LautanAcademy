@@ -11,6 +11,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import { videoHoursByTopic, hoursByStaff } from '../composables/useCpdHours'
 
 const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
@@ -20,7 +21,10 @@ const { t } = useI18n()
 
 const allResults = ref([])
 const wrongAnswers = ref([])
+const allAiResults = ref([])
+const videoTrainings = ref([])
 const loading = ref(true)
+const CPD_TARGET_HOURS = 120
 const outletFilter = ref('ALL')
 const yearFilter = ref('ALL')
 const topicFilter = ref('ALL')
@@ -42,12 +46,22 @@ function dateBadge(iso) {
 
 onMounted(async () => {
   try {
-    const scoped = await api.getScopedData()
+    const [scoped, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
     allResults.value = (scoped.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = scoped.wrongAnswers || []
+    // Real data as of Task 4's backend fix — this branch used to hardcode
+    // aiResults to [].
+    allAiResults.value = scoped.aiResults || []
+    videoTrainings.value = videos.videoTrainings || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 })
+
+// allResults/allAiResults cover every outlet in the region (unlike Outlet
+// Manager's single-outlet scope) — hoursByStaff()'s `${Name}|${Outlet}`
+// grouping key already keeps two same-named staff at different outlets
+// separate.
+const cpdSummary = computed(() => hoursByStaff(allResults.value, allAiResults.value, videoHoursByTopic(videoTrainings.value)))
 
 const outletScopedResults = computed(() => outletFilter.value === 'ALL' ? allResults.value : allResults.value.filter((r) => r.Outlet === outletFilter.value))
 const resultYears = computed(() => [...new Set(outletScopedResults.value.map((r) => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
@@ -81,6 +95,27 @@ function wrongsFor(h) {
       <div v-if="loading" class="text-slate text-sm">{{ t('areaManagerDashboard.loading') }}</div>
       <div v-else-if="allResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
       <template v-else>
+        <section v-if="auth.impersonating && cpdSummary.length" class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+                <p class="text-xs text-slate">{{ s.outlet }}</p>
+              </div>
+              <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
+                {{ t('areaManagerDashboard.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
+              </span>
+            </div>
+          </div>
+        </section>
+        <section v-else-if="!auth.impersonating" class="mb-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
+          <div class="bg-white rounded-xl2 px-5 py-4">
+            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.cpdComingSoon') }}</p>
+          </div>
+        </section>
+
         <div class="flex flex-wrap gap-2 mb-6">
           <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option value="ALL">{{ t('areaManagerDashboard.allOutletsInRegion') }}</option>
