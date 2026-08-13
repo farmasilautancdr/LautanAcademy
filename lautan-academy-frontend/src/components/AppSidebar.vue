@@ -265,7 +265,7 @@ const ICONS = {
     </div>
   </aside>
 
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam flex items-stretch pb-[env(safe-area-inset-bottom)]" aria-label="Primary">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam grid grid-cols-4 pb-[env(safe-area-inset-bottom)] max-h-[30vh] overflow-y-auto" aria-label="Primary">
     <RouterLink
       v-for="item in flatItems"
       :key="item.label"
@@ -277,16 +277,16 @@ const ICONS = {
         type="button"
         @click="item.disabled ? null : navigate()"
         :disabled="item.disabled"
-        class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
+        class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
         :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'text-aqua' : 'text-slate')"
       >
         <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path :d="ICONS[item.icon]" />
         </svg>
-        <span class="text-[10px] font-medium truncate max-w-full px-0.5">{{ item.disabled ? t('sidebar.comingSoon') : item.label }}</span>
+        <span class="text-[10px] font-medium text-center leading-tight px-0.5">{{ item.disabled ? t('sidebar.comingSoon') : item.label }}</span>
       </button>
     </RouterLink>
-    <button type="button" @click="handleLogout" class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" :aria-label="t('sidebar.logOut')">
+    <button type="button" @click="handleLogout" class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" :aria-label="t('sidebar.logOut')">
       <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path :d="ICONS.logout" />
       </svg>
