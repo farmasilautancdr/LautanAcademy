@@ -126,6 +126,10 @@ export const api = {
   saveVideoResult: (payload) => request('/data/video-results', { method: 'POST', body: JSON.stringify(payload) }),
   addVideoTraining: (payload) => request('/video-trainings', { method: 'POST', body: JSON.stringify(payload) }),
   deleteVideoTraining: (id) => request(`/video-trainings/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  getAllStaffPharmacistTags: () => request('/staff-roster-manage/all'),
+  setStaffPharmacistTag: (id, isPharmacist) =>
+    request(`/staff-roster-manage/${id}/pharmacist`, { method: 'PATCH', body: JSON.stringify({ isPharmacist }) }),
+  getPharmacistCourses: () => request('/video-trainings/pharmacist'),
   getOutlets: (division) => request(`/outlets${division ? `?division=${encodeURIComponent(division)}` : ''}`),
   getAreas: () => request('/areas'),
   masterGetOutlets: (masterToken) =>

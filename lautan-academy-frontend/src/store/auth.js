@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
       const data = await api.login(division, outlet, name, pin)
       if (!data.authorized) throw new Error(data.error || 'Login failed')
       this.token = data.token
-      this.staff = { name, outlet, division }
+      this.staff = { name, outlet, division, isPharmacist: !!data.isPharmacist }
       this.manager = null
       localStorage.setItem('lautan_token', data.token)
       localStorage.setItem('lautan_staff', JSON.stringify(this.staff))
