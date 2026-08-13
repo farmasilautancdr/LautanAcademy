@@ -499,7 +499,13 @@
     "videoHoursLabel": "Jam CPD",
     "videoHoursHelper": "Berapa jam video ini dikira ke arah target 120 jam/tahun — anda yang tetapkan, bukan durasi sebenar video.",
     "videoHoursValue": "{hours}j",
-    "videoErrorBadHours": "Jam mesti nombor positif."
+    "videoErrorBadHours": "Jam mesti nombor positif.",
+    "videoKindLabel": "Jenis",
+    "videoKindVideo": "Video YouTube",
+    "videoKindReading": "Bahan bacaan",
+    "videoBodyLabel": "Teks bahan bacaan",
+    "videoErrorBodyRequired": "Teks bahan bacaan diperlukan.",
+    "videoPharmacistOnlyLabel": "Khas Ahli Farmasi (muncul dalam bahagian Kursus Ahli Farmasi terhad)"
   },
   "supervisorPharmacistTagView": {
     "title": "Ahli Farmasi",

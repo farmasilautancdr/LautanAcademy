@@ -28,6 +28,9 @@ const vTitle = ref('')
 const vTopic = ref('')
 const vYoutubeUrl = ref('')
 const vHours = ref('1')
+const vKind = ref('video')
+const vBody = ref('')
+const vPharmacistOnly = ref(false)
 const vError = ref('')
 const vSaving = ref(false)
 const driveCategories = ref([])
@@ -64,8 +67,16 @@ loadVideoTrainings()
 
 async function addVideoTraining() {
   vError.value = ''
-  if (!vTitle.value.trim() || !vTopic.value.trim() || !vYoutubeUrl.value.trim()) {
+  if (!vTitle.value.trim() || !vTopic.value.trim()) {
     vError.value = t('supervisorAddResourcesView.videoErrorRequiredFields')
+    return
+  }
+  if (vKind.value === 'video' && !vYoutubeUrl.value.trim()) {
+    vError.value = t('supervisorAddResourcesView.videoErrorRequiredFields')
+    return
+  }
+  if (vKind.value === 'reading' && !vBody.value.trim()) {
+    vError.value = t('supervisorAddResourcesView.videoErrorBodyRequired')
     return
   }
   const hours = parseFloat(vHours.value)
@@ -75,11 +86,22 @@ async function addVideoTraining() {
   }
   vSaving.value = true
   try {
-    await api.addVideoTraining({ title: vTitle.value.trim(), topic: vTopic.value.trim(), youtubeUrl: vYoutubeUrl.value.trim(), hours })
+    await api.addVideoTraining({
+      title: vTitle.value.trim(),
+      topic: vTopic.value.trim(),
+      kind: vKind.value,
+      youtubeUrl: vKind.value === 'video' ? vYoutubeUrl.value.trim() : '',
+      body: vKind.value === 'reading' ? vBody.value.trim() : '',
+      hours,
+      pharmacistOnly: vPharmacistOnly.value,
+    })
     vTitle.value = ''
     vTopic.value = ''
     vYoutubeUrl.value = ''
+    vBody.value = ''
     vHours.value = '1'
+    vKind.value = 'video'
+    vPharmacistOnly.value = false
     await loadVideoTrainings()
   } catch (err) {
     vError.value = err.message || t('supervisorAddResourcesView.videoErrorSaveFailed')
@@ -222,6 +244,13 @@ async function removeContent(item) {
 
       <form @submit.prevent="addVideoTraining" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
         <div>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoKindLabel') }}</label>
+          <select v-model="vKind" class="w-full border border-slate/30 rounded-lg py-2 px-3">
+            <option value="video">{{ t('supervisorAddResourcesView.videoKindVideo') }}</option>
+            <option value="reading">{{ t('supervisorAddResourcesView.videoKindReading') }}</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.titleLabel') }}</label>
           <input v-model="vTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
         </div>
@@ -230,15 +259,23 @@ async function removeContent(item) {
           <input v-model="vTopic" type="text" :placeholder="t('supervisorAddResourcesView.topicPlaceholder')" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.videoTopicHelper') }}</p>
         </div>
-        <div>
+        <div v-if="vKind === 'video'">
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoLinkLabel') }}</label>
           <input v-model="vYoutubeUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+        </div>
+        <div v-else>
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoBodyLabel') }}</label>
+          <textarea v-model="vBody" rows="4" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.videoHoursLabel') }}</label>
           <input v-model="vHours" type="number" step="0.5" min="0.5" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.videoHoursHelper') }}</p>
         </div>
+        <label class="flex items-center gap-2 text-sm text-ink">
+          <input v-model="vPharmacistOnly" type="checkbox" class="rounded border-slate/30" />
+          {{ t('supervisorAddResourcesView.videoPharmacistOnlyLabel') }}
+        </label>
         <p v-if="vError" class="text-coral text-sm">{{ vError }}</p>
         <button type="submit" :disabled="vSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
           {{ vSaving ? t('supervisorAddResourcesView.saving') : t('supervisorAddResourcesView.videoAddEntry') }}

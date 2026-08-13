@@ -499,7 +499,13 @@
     "videoHoursLabel": "CPD hours",
     "videoHoursHelper": "How many hours this video counts toward the 120hr/year target — set by you, not the video's real length.",
     "videoHoursValue": "{hours}h",
-    "videoErrorBadHours": "Hours must be a positive number."
+    "videoErrorBadHours": "Hours must be a positive number.",
+    "videoKindLabel": "Type",
+    "videoKindVideo": "YouTube video",
+    "videoKindReading": "Reading material",
+    "videoBodyLabel": "Reading material text",
+    "videoErrorBodyRequired": "Reading material text is required.",
+    "videoPharmacistOnlyLabel": "Pharmacist only (shows in the gated Pharmacist Courses section)"
   },
   "supervisorPharmacistTagView": {
     "title": "Pharmacist",
