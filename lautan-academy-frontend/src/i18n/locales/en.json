@@ -675,7 +675,24 @@
       "exportButton": "Export Backup",
       "exporting": "Exporting...",
       "success": "Backup downloaded.",
-      "errorFailed": "Could not export backup."
+      "errorFailed": "Could not export backup.",
+      "annualReset": {
+        "title": "Annual Data Reset",
+        "intro": "Permanently clears quiz results, wrong answers, assessment reports, and audit log entries dated before this calendar year. Staff accounts, manager accounts, and outlet/area config are never touched. Export a backup above first — the button below stays locked until you do.",
+        "cutoffLabel": "Everything before {date}",
+        "gateHint": "Export a backup first to unlock this.",
+        "resetButton": "Reset Old Data",
+        "confirmTitle": "Delete all quiz history and audit log entries before this year?",
+        "breakdownResults": "Module Quiz results",
+        "breakdownWrongAnswers": "Module Quiz wrong answers",
+        "breakdownAiResults": "AI Practice results",
+        "breakdownAiWrongAnswers": "AI Practice wrong answers",
+        "breakdownReports": "Assessment reports",
+        "breakdownAuditLog": "Audit log entries",
+        "successReset": "Reset complete — {count} row(s) deleted.",
+        "errorPreviewFailed": "Could not load the preview counts.",
+        "errorResetFailed": "Reset failed."
+      }
     },
     "sessions": {
       "title": "Active Sessions",

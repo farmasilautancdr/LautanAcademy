@@ -675,7 +675,24 @@
       "exportButton": "Eksport Sandaran",
       "exporting": "Mengeksport...",
       "success": "Sandaran telah dimuat turun.",
-      "errorFailed": "Gagal mengeksport sandaran."
+      "errorFailed": "Gagal mengeksport sandaran.",
+      "annualReset": {
+        "title": "Reset Data Tahunan",
+        "intro": "Memadam kekal keputusan kuiz, jawapan salah, laporan penilaian, dan log audit sebelum tahun kalendar semasa. Akaun staf, akaun pengurus, dan konfigurasi outlet/kawasan tidak disentuh. Eksport sandaran di atas dahulu — butang di bawah kekal berkunci sehingga anda berbuat demikian.",
+        "cutoffLabel": "Semua sebelum {date}",
+        "gateHint": "Eksport sandaran dahulu untuk membuka ini.",
+        "resetButton": "Reset Data Lama",
+        "confirmTitle": "Padam semua sejarah kuiz dan log audit sebelum tahun ini?",
+        "breakdownResults": "Keputusan Module Quiz",
+        "breakdownWrongAnswers": "Jawapan salah Module Quiz",
+        "breakdownAiResults": "Keputusan AI Practice",
+        "breakdownAiWrongAnswers": "Jawapan salah AI Practice",
+        "breakdownReports": "Laporan penilaian",
+        "breakdownAuditLog": "Entri log audit",
+        "successReset": "Reset selesai — {count} baris dipadam.",
+        "errorPreviewFailed": "Tidak dapat memuatkan jumlah pratonton.",
+        "errorResetFailed": "Reset gagal."
+      }
     },
     "sessions": {
       "title": "Sesi Aktif",
