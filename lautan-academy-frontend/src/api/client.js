@@ -202,6 +202,10 @@ export const api = {
     const filename = match ? match[1] : `lautan-academy-backup-${Date.now()}.sql`
     return { blob, filename }
   },
+  masterAnnualResetPreview: (masterToken) =>
+    request('/master/annual-reset/preview', { headers: { Authorization: `Bearer ${masterToken}` } }),
+  masterAnnualReset: (masterToken) =>
+    request('/master/annual-reset', { method: 'POST', headers: { Authorization: `Bearer ${masterToken}` } }),
   masterSearchSessions: (params, masterToken) =>
     request(`/master/sessions/search?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${masterToken}` } }),
   masterRevokeSessions: (ids, masterToken) =>
