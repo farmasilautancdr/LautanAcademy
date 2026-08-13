@@ -134,6 +134,7 @@
     "groupQuizzes": "Quizzes",
     "moduleQuiz": "Module Quiz",
     "videoTraining": "Video Training",
+    "pharmacistCourses": "Pharmacist Courses",
     "comingSoon": "Coming Soon",
     "quizHistory": "Quiz History",
     "groupBrowseCourses": "Browse Courses",
@@ -195,6 +196,13 @@
     "loading": "Loading...",
     "noVideosYet": "No training videos available yet.",
     "watch": "Watch →"
+  },
+  "pharmacistCoursesListView": {
+    "title": "Pharmacist Courses",
+    "loading": "Loading...",
+    "noCoursesYet": "No pharmacist courses available yet.",
+    "watch": "Watch →",
+    "read": "Read →"
   },
   "videoWatchView": {
     "title": "Video Training",

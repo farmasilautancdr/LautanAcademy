@@ -84,7 +84,17 @@ async function onVideoEnded() {
 onMounted(async () => {
   try {
     const data = await api.getVideoTrainings()
-    video.value = (data.videoTrainings || []).find(v => String(v.id) === route.params.id)
+    let found = (data.videoTrainings || []).find(v => String(v.id) === route.params.id)
+    if (!found) {
+      // Not in the general list — try the pharmacist-gated list. A 403 here
+      // just means this viewer isn't a tagged Pharmacist (or the id truly
+      // doesn't exist); either way, falls through to the "not found" error.
+      try {
+        const pharmData = await api.getPharmacistCourses()
+        found = (pharmData.videoTrainings || []).find(v => String(v.id) === route.params.id)
+      } catch (e) { /* not authorized or not found — handled below */ }
+    }
+    video.value = found
     if (!video.value) {
       loadError.value = t('videoWatchView.errorNotFound')
       return
