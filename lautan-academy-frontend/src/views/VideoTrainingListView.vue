@@ -9,6 +9,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -16,6 +18,7 @@ const { t } = useI18n()
 
 const videos = ref([])
 const loading = ref(true)
+const { currentPage, totalPages, paginatedItems: paginatedVideos, next, prev } = usePagination(videos)
 
 onMounted(async () => {
   try {
@@ -42,7 +45,7 @@ function watch(video) {
       <div v-else-if="videos.length === 0" class="text-slate text-sm">{{ t('videoTrainingListView.noVideosYet') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
         <button
-          v-for="v in videos"
+          v-for="v in paginatedVideos"
           :key="v.id"
           @click="watch(v)"
           class="w-full text-left px-5 py-4 flex items-center justify-between gap-3 hover:bg-seafoam/50"
@@ -53,6 +56,7 @@ function watch(video) {
           </div>
           <span class="text-aqua text-sm font-medium shrink-0">{{ t('videoTrainingListView.watch') }}</span>
         </button>
+        <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
       </div>
     </main>
   </div>

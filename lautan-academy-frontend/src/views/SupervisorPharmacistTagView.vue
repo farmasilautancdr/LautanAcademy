@@ -5,6 +5,8 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 
@@ -20,6 +22,7 @@ const outletFilter = ref('ALL')
 // documents for its own scope).
 const outletOptions = computed(() => [...new Set(staff.value.map(s => s.outlet))].sort())
 const filteredStaff = computed(() => outletFilter.value === 'ALL' ? staff.value : staff.value.filter(s => s.outlet === outletFilter.value))
+const { currentPage, totalPages, paginatedItems: paginatedStaff, next, prev } = usePagination(filteredStaff)
 
 async function load() {
   loading.value = true
@@ -64,7 +67,7 @@ async function toggle(row) {
         </div>
         <div v-if="filteredStaff.length === 0" class="text-slate text-sm">{{ t('supervisorPharmacistTagView.noStaffYet') }}</div>
         <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <div v-for="row in filteredStaff" :key="row.id" class="px-5 py-3 flex items-center justify-between gap-3">
+          <div v-for="row in paginatedStaff" :key="row.id" class="px-5 py-3 flex items-center justify-between gap-3">
             <div class="min-w-0">
               <p class="text-sm font-medium text-ink truncate">{{ row.name }}<span v-if="row.idNote" class="text-slate font-normal"> ({{ row.idNote }})</span></p>
               <p class="text-xs text-slate">{{ row.outlet }} · {{ row.division }}</p>
@@ -78,6 +81,7 @@ async function toggle(row) {
               {{ row.isPharmacist ? t('supervisorPharmacistTagView.untag') : t('supervisorPharmacistTagView.tag') }}
             </button>
           </div>
+          <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
         </div>
       </template>
     </main>

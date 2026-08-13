@@ -16,7 +16,9 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { usePagination } from '../composables/usePagination'
 import ProgressRing from '../components/ProgressRing.vue'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 const standardHistory = ref([])
@@ -103,6 +105,10 @@ const filteredReports = computed(() => reports.value.filter((r) => {
   if (reportTopic.value !== 'ALL' && r['Training Title'] !== reportTopic.value) return false
   return true
 }))
+const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoHistory, next: videoNext, prev: videoPrev } = usePagination(filteredVideoHistory)
+const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardHistory, next: standardNext, prev: standardPrev } = usePagination(filteredStandardHistory)
+const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiHistory, next: aiNext, prev: aiPrev } = usePagination(filteredAiHistory)
+const { currentPage: reportsCurrentPage, totalPages: reportsTotalPages, paginatedItems: paginatedReports, next: reportsNext, prev: reportsPrev } = usePagination(filteredReports)
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 function dateBadge(iso) {
@@ -179,7 +185,7 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="h in filteredVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
+            <details v-for="h in paginatedVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
@@ -195,6 +201,7 @@ function wrongsForAi(attemptId) {
                 </div>
               </div>
             </details>
+            <Pagination :current-page="videoCurrentPage" :total-pages="videoTotalPages" @prev="videoPrev" @next="videoNext" />
           </div>
         </section>
 
@@ -213,7 +220,7 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="h in filteredStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
+            <details v-for="h in paginatedStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
@@ -229,6 +236,7 @@ function wrongsForAi(attemptId) {
                 </div>
               </div>
             </details>
+            <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
           </div>
         </section>
 
@@ -247,7 +255,7 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-sm">{{ t('quizHistoryView.noHistoryFiltered') }}</p>
           </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="h in filteredAiHistory" :key="h.AttemptID" class="px-5 py-3.5">
+            <details v-for="h in paginatedAiHistory" :key="h.AttemptID" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <ProgressRing :percent="parseInt(h.Percentage) || 0" :size="40" :accent="parseInt(h.Percentage) >= 70 ? '#1E88C7' : '#E8622C'" />
                 <div class="flex-1 min-w-0">
@@ -263,6 +271,7 @@ function wrongsForAi(attemptId) {
                 </div>
               </div>
             </details>
+            <Pagination :current-page="aiCurrentPage" :total-pages="aiTotalPages" @prev="aiPrev" @next="aiNext" />
           </div>
         </section>
 
@@ -286,7 +295,7 @@ function wrongsForAi(attemptId) {
               <p class="text-slate text-sm">{{ t('quizHistoryView.noAssessmentsFiltered') }}</p>
             </div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <details v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3.5">
+            <details v-for="(r, i) in paginatedReports" :key="i" class="px-5 py-3.5">
               <summary class="flex items-center gap-4 cursor-pointer">
                 <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                   <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
@@ -316,6 +325,7 @@ function wrongsForAi(attemptId) {
                 </div>
               </div>
             </details>
+            <Pagination :current-page="reportsCurrentPage" :total-pages="reportsTotalPages" @prev="reportsPrev" @next="reportsNext" />
           </div>
           </template>
         </section>

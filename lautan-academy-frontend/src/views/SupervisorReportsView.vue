@@ -6,6 +6,8 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 const { areas: AREAS, outletsForArea } = useOutlets()
@@ -41,6 +43,7 @@ const filtered = computed(() => {
   if (outletFilter.value !== 'ALL') list = list.filter(r => r.Outlet === outletFilter.value)
   return list
 })
+const { currentPage, totalPages, paginatedItems: paginatedReports, next, prev } = usePagination(filtered)
 
 // Exports exactly what's currently on screen — same region/outlet/window
 // filters already applied to `filtered`, not the full unfiltered dataset.
@@ -111,7 +114,7 @@ function downloadCsv() {
       <div v-if="loading" class="text-slate text-sm">{{ t('supervisorReportsView.loading') }}</div>
       <div v-else-if="filtered.length === 0" class="text-slate text-sm">{{ t('supervisorReportsView.noReports') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-        <details v-for="(r, i) in filtered" :key="i" class="px-5 py-3">
+        <details v-for="(r, i) in paginatedReports" :key="i" class="px-5 py-3">
           <summary class="flex items-center justify-between cursor-pointer">
             <div>
               <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r.Outlet }} · {{ r['Training Title'] }}</p>
@@ -125,6 +128,7 @@ function downloadCsv() {
             <p v-if="r['Recommendations']"><span class="text-slate">{{ t('supervisorReportsView.recommendations') }}</span> {{ r['Recommendations'] }}</p>
           </div>
         </details>
+        <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
       </div>
     </main>
   </div>

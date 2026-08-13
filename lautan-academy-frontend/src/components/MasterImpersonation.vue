@@ -10,6 +10,8 @@ import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { useMasterAuthStore } from '../store/masterAuth'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
+import Pagination from './Pagination.vue'
 
 const emit = defineEmits(['close', 'started'])
 const { t } = useI18n()
@@ -26,6 +28,7 @@ const picked = ref(null)
 const searching = ref(false)
 const starting = ref(false)
 const error = ref('')
+const { currentPage, totalPages, paginatedItems: paginatedStaffResults, next, prev } = usePagination(staffResults)
 
 const isStaffType = computed(() => targetType.value === 'staff_retail' || targetType.value === 'staff_warehouse')
 const outletOptions = computed(() => {
@@ -127,11 +130,14 @@ async function start() {
         </button>
       </form>
       <p v-if="!searching && outlet && staffResults.length === 0" class="text-slate text-xs">{{ t('masterPanel.impersonation.noStaffResults') }}</p>
-      <div v-if="staffResults.length" class="border border-seafoam rounded-lg divide-y divide-seafoam max-h-48 overflow-y-auto">
-        <label v-for="s in staffResults" :key="s.id" class="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
-          <input type="radio" :checked="picked && picked.name === s.name && picked.outlet === s.outlet" @change="picked = { outlet: s.outlet, name: s.name }" />
-          {{ s.name }} <span class="text-slate text-xs">({{ s.outlet }})</span>
-        </label>
+      <div v-if="staffResults.length" class="border border-seafoam rounded-lg divide-y divide-seafoam">
+        <div class="max-h-48 overflow-y-auto divide-y divide-seafoam">
+          <label v-for="s in paginatedStaffResults" :key="s.id" class="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
+            <input type="radio" :checked="picked && picked.name === s.name && picked.outlet === s.outlet" @change="picked = { outlet: s.outlet, name: s.name }" />
+            {{ s.name }} <span class="text-slate text-xs">({{ s.outlet }})</span>
+          </label>
+        </div>
+        <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
       </div>
     </template>
 

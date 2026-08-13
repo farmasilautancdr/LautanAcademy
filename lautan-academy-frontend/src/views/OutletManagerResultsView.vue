@@ -17,6 +17,8 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
@@ -112,6 +114,10 @@ onMounted(async () => {
 // carries every AI Practice result. hoursByStaff() handles the
 // video-vs-module split internally via hoursByTopic.
 const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
+const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoHistory, next: videoNext, prev: videoPrev } = usePagination(filteredVideoHistory)
+const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardHistory, next: standardNext, prev: standardPrev } = usePagination(filteredStandardHistory)
+const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiHistory, next: aiNext, prev: aiPrev } = usePagination(filteredAiHistory)
 
 function wrongsForStandard(h) {
   if (h.AttemptID) return wrongAnswers.value.filter((w) => w.AttemptID === h.AttemptID)
@@ -141,12 +147,13 @@ function wrongsForAi(attemptId) {
             </select>
           </div>
           <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <div v-for="s in cpdSummary" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div v-for="s in paginatedCpdSummary" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
               <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
               <span class="text-sm font-display font-semibold shrink-0" :class="s.hours >= CPD_TARGET_HOURS ? 'text-aqua' : 'text-coral'">
                 {{ t('outletManagerResultsView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
               </span>
             </div>
+            <Pagination :current-page="cpdCurrentPage" :total-pages="cpdTotalPages" @prev="cpdPrev" @next="cpdNext" />
           </div>
           <div v-else class="bg-white rounded-xl2 px-5 py-4">
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</p>
@@ -179,7 +186,7 @@ function wrongsForAi(attemptId) {
             </div>
             <div v-if="filteredVideoHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
             <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-              <details v-for="h in filteredVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
+              <details v-for="h in paginatedVideoHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
                 <summary class="flex items-center gap-3 cursor-pointer">
                   <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                     <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
@@ -199,6 +206,7 @@ function wrongsForAi(attemptId) {
                   </div>
                 </div>
               </details>
+              <Pagination :current-page="videoCurrentPage" :total-pages="videoTotalPages" @prev="videoPrev" @next="videoNext" />
             </div>
           </template>
         </section>
@@ -223,7 +231,7 @@ function wrongsForAi(attemptId) {
             </div>
             <div v-if="filteredStandardHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
             <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-              <details v-for="h in filteredStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
+              <details v-for="h in paginatedStandardHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
                 <summary class="flex items-center gap-3 cursor-pointer">
                   <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                     <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
@@ -243,6 +251,7 @@ function wrongsForAi(attemptId) {
                   </div>
                 </div>
               </details>
+              <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
             </div>
           </template>
         </section>
@@ -267,7 +276,7 @@ function wrongsForAi(attemptId) {
             </div>
             <div v-if="filteredAiHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
             <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-              <details v-for="h in filteredAiHistory" :key="h.AttemptID" class="px-5 py-3">
+              <details v-for="h in paginatedAiHistory" :key="h.AttemptID" class="px-5 py-3">
                 <summary class="flex items-center gap-3 cursor-pointer">
                   <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                     <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
@@ -287,6 +296,7 @@ function wrongsForAi(attemptId) {
                   </div>
                 </div>
               </details>
+              <Pagination :current-page="aiCurrentPage" :total-pages="aiTotalPages" @prev="aiPrev" @next="aiNext" />
             </div>
           </template>
         </section>

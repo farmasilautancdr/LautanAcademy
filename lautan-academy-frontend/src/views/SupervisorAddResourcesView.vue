@@ -10,6 +10,8 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 
@@ -45,6 +47,8 @@ const cSaving = ref(false)
 const cUploading = ref(false)
 const cUploadedName = ref('')
 const cFileInput = ref(null)
+const { currentPage: contentCurrentPage, totalPages: contentTotalPages, paginatedItems: paginatedContent, next: contentNext, prev: contentPrev } = usePagination(content)
+const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoTrainings, next: videoNext, prev: videoPrev } = usePagination(videoTrainings)
 
 async function loadContent() {
   loadingContent.value = true
@@ -188,13 +192,14 @@ async function removeContent(item) {
       <div v-if="loadingContent" class="text-slate text-sm">{{ t('supervisorAddResourcesView.loading') }}</div>
       <div v-else-if="content.length === 0" class="text-slate text-sm mb-4">{{ t('supervisorAddResourcesView.noEntriesYet') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
-        <div v-for="item in content" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
+        <div v-for="item in paginatedContent" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">{{ item.Title }}</p>
             <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}</p>
           </div>
           <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
         </div>
+        <Pagination :current-page="contentCurrentPage" :total-pages="contentTotalPages" @prev="contentPrev" @next="contentNext" />
       </div>
 
       <form @submit.prevent="addContent" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
@@ -241,7 +246,7 @@ async function removeContent(item) {
       <div v-if="loadingVideos" class="text-slate text-sm">{{ t('supervisorAddResourcesView.loading') }}</div>
       <div v-else-if="videoTrainings.length === 0" class="text-slate text-sm mb-4">{{ t('supervisorAddResourcesView.videoNoEntriesYet') }}</div>
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
-        <div v-for="video in videoTrainings" :key="video.id" class="px-5 py-3 flex items-start justify-between gap-3">
+        <div v-for="video in paginatedVideoTrainings" :key="video.id" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">
               {{ video.title }}
@@ -251,6 +256,7 @@ async function removeContent(item) {
           </div>
           <button @click="removeVideoTraining(video)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
         </div>
+        <Pagination :current-page="videoCurrentPage" :total-pages="videoTotalPages" @prev="videoPrev" @next="videoNext" />
       </div>
 
       <form @submit.prevent="addVideoTraining" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">

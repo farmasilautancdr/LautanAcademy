@@ -9,6 +9,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const auth = useAuthStore()
 const location = auth.manager?.outlet
@@ -33,6 +35,7 @@ const filteredHistory = computed(() => history.value.filter((h) => {
   if (filterTopic.value !== 'ALL' && h.Topic !== filterTopic.value) return false
   return true
 }))
+const { currentPage, totalPages, paginatedItems: paginatedHistory, next, prev } = usePagination(filteredHistory)
 
 onMounted(async () => {
   try {
@@ -71,7 +74,7 @@ function wrongsFor(attemptId) {
         </div>
         <div v-if="filteredHistory.length === 0" class="text-slate text-sm">{{ t('warehouseManagerResultsView.noAttemptsFiltered') }}</div>
         <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <details v-for="h in filteredHistory" :key="h.AttemptID" class="px-5 py-3">
+          <details v-for="h in paginatedHistory" :key="h.AttemptID" class="px-5 py-3">
             <summary class="flex items-center gap-3 cursor-pointer">
               <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
                 <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
@@ -91,6 +94,7 @@ function wrongsFor(attemptId) {
               </div>
             </div>
           </details>
+          <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
         </div>
       </template>
     </main>

@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
+import Pagination from './Pagination.vue'
 
 const { t } = useI18n()
 const masterAuth = useMasterAuthStore()
@@ -26,6 +28,7 @@ const showConfirm = ref(false)
 const deleting = ref(false)
 const status = ref('')
 const statusOk = ref(false)
+const { currentPage, totalPages, paginatedItems: paginatedResults, next, prev } = usePagination(results)
 
 async function search() {
   searchError.value = ''
@@ -144,7 +147,7 @@ async function confirmDelete() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in results" :key="r.id" class="border-b border-seafoam last:border-0">
+          <tr v-for="r in paginatedResults" :key="r.id" class="border-b border-seafoam last:border-0">
             <td class="p-2"><input type="checkbox" :checked="selected.has(r.id)" @change="toggle(r.id)" /></td>
             <template v-if="mode === 'reports'">
               <td class="p-2 text-ink">{{ r.outlet }}</td>
@@ -160,6 +163,7 @@ async function confirmDelete() {
           </tr>
         </tbody>
       </table>
+      <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
     </div>
     <p v-else-if="!searching" class="text-slate text-xs">{{ t('masterPanel.dataPurge.reportsContent.noResults') }}</p>
 

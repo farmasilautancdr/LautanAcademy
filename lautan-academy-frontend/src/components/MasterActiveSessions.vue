@@ -9,7 +9,9 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
 import MasterDeleteConfirmModal from './MasterDeleteConfirmModal.vue'
+import Pagination from './Pagination.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -44,6 +46,7 @@ const showConfirm = ref(false)
 const revoking = ref(false)
 const status = ref('')
 const statusOk = ref(false)
+const { currentPage, totalPages, paginatedItems: paginatedSessions, next, prev } = usePagination(sessions)
 
 async function search() {
   searchError.value = ''
@@ -150,7 +153,7 @@ search()
           </tr>
         </thead>
         <tbody>
-          <tr v-for="s in sessions" :key="s.id" class="border-b border-seafoam last:border-0">
+          <tr v-for="s in paginatedSessions" :key="s.id" class="border-b border-seafoam last:border-0">
             <td class="p-2"><input type="checkbox" :checked="selected.has(s.id)" @change="toggle(s.id)" /></td>
             <td class="p-2 text-ink text-xs whitespace-nowrap">{{ s.scopeType }}</td>
             <td class="p-2 text-ink text-xs whitespace-nowrap">{{ s.scopeKey }}</td>
@@ -172,6 +175,7 @@ search()
           </tr>
         </tbody>
       </table>
+      <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
     </div>
     <p v-else-if="searched && !searching" class="text-slate text-xs">{{ t('masterPanel.sessions.noResults') }}</p>
 

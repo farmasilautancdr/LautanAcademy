@@ -860,5 +860,10 @@
   "impersonationBanner": {
     "viewingAs": "Melihat sebagai {label} — lihat sahaja",
     "exit": "Keluar"
+  },
+  "pagination": {
+    "previous": "Sebelum",
+    "next": "Seterusnya",
+    "pageOf": "Halaman {current} daripada {total}"
   }
 }

@@ -16,6 +16,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
@@ -88,6 +90,7 @@ const filteredReports = computed(() => {
   }
   return list
 })
+const { currentPage: reportsCurrentPage, totalPages: reportsTotalPages, paginatedItems: paginatedReports, next: reportsNext, prev: reportsPrev } = usePagination(filteredReports)
 
 function resetForm() {
   formOutlet.value = ''
@@ -262,13 +265,14 @@ async function submitReport() {
           </div>
           <div v-if="filteredReports.length === 0" class="text-slate text-sm">{{ t('areaManagerReviewsView.noSubmissionsFiltered') }}</div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <div v-for="(r, i) in filteredReports" :key="i" class="px-5 py-3">
+          <div v-for="(r, i) in paginatedReports" :key="i" class="px-5 py-3">
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-ink">{{ r['Staff Name'] }} · {{ r.Outlet }} · {{ r['Training Title'] }}</p>
               <span class="text-xs text-slate">{{ new Date(r.Timestamp).toLocaleDateString() }}</span>
             </div>
             <p class="text-xs text-slate mt-0.5">{{ t('areaManagerReviewsView.filedByCompetency', { manager: r.Manager, competency: r.Fluency ?? '—' }) }}</p>
           </div>
+          <Pagination :current-page="reportsCurrentPage" :total-pages="reportsTotalPages" @prev="reportsPrev" @next="reportsNext" />
           </div>
         </template>
       </section>

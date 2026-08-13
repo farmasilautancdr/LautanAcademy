@@ -12,6 +12,8 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
@@ -111,6 +113,10 @@ const cpdYears = computed(() => {
 // Outlet filter now applies to the CPD summary too — previously this used
 // the unfiltered allResults/allAiResults regardless of the outlet dropdown.
 const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
+const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoResults, next: videoNext, prev: videoPrev } = usePagination(filteredVideoResults)
+const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardResults, next: standardNext, prev: standardPrev } = usePagination(filteredStandardResults)
+const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiResults, next: aiNext, prev: aiPrev } = usePagination(filteredAiResults)
 
 // Matches by AttemptID, same approach as QuizHistoryView.vue and
 // OutletManagerResultsView.vue: rows saved after the attempt_id migration
@@ -143,7 +149,7 @@ function wrongsFor(h) {
             </select>
           </div>
           <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div v-for="s in paginatedCpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
                 <p class="text-xs text-slate">{{ s.outlet }}</p>
@@ -152,6 +158,7 @@ function wrongsFor(h) {
                 {{ t('areaManagerDashboard.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
               </span>
             </div>
+            <Pagination :current-page="cpdCurrentPage" :total-pages="cpdTotalPages" @prev="cpdPrev" @next="cpdNext" />
           </div>
           <div v-else class="bg-white rounded-xl2 px-5 py-4">
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.noResultsFiltered') }}</p>
@@ -186,29 +193,32 @@ function wrongsFor(h) {
               </select>
             </div>
             <div v-if="filteredVideoResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsFiltered') }}</div>
-            <div v-else class="space-y-3">
-              <details v-for="r in filteredVideoResults" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
-                <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
-                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
-                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
-                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+            <template v-else>
+              <div class="space-y-3">
+                <details v-for="r in paginatedVideoResults" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
+                  <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
+                    <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                      <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                      <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+                      <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+                    </div>
+                    <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                      {{ r.Score }}
+                    </span>
+                  </summary>
+                  <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
+                    <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
+                      <p class="text-xs font-medium text-coral">{{ t('areaManagerDashboard.questionPrefix', { text: w['Question Text'] }) }}</p>
+                      <p class="text-xs text-aqua font-semibold mt-1">{{ t('areaManagerDashboard.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                    </div>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
-                    <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
-                  </div>
-                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-                    {{ r.Score }}
-                  </span>
-                </summary>
-                <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
-                  <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
-                    <p class="text-xs font-medium text-coral">{{ t('areaManagerDashboard.questionPrefix', { text: w['Question Text'] }) }}</p>
-                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('areaManagerDashboard.correctLabel', { text: w['Correct Answer'] }) }}</p>
-                  </div>
-                </div>
-              </details>
-            </div>
+                </details>
+              </div>
+              <Pagination :current-page="videoCurrentPage" :total-pages="videoTotalPages" @prev="videoPrev" @next="videoNext" />
+            </template>
           </template>
         </section>
 
@@ -227,29 +237,32 @@ function wrongsFor(h) {
               </select>
             </div>
             <div v-if="filteredStandardResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsFiltered') }}</div>
-            <div v-else class="space-y-3">
-              <details v-for="r in filteredStandardResults" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
-                <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
-                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
-                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
-                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+            <template v-else>
+              <div class="space-y-3">
+                <details v-for="r in paginatedStandardResults" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
+                  <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
+                    <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                      <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                      <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+                      <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+                    </div>
+                    <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                      {{ r.Score }}
+                    </span>
+                  </summary>
+                  <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
+                    <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
+                      <p class="text-xs font-medium text-coral">{{ t('areaManagerDashboard.questionPrefix', { text: w['Question Text'] }) }}</p>
+                      <p class="text-xs text-aqua font-semibold mt-1">{{ t('areaManagerDashboard.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                    </div>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
-                    <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
-                  </div>
-                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-                    {{ r.Score }}
-                  </span>
-                </summary>
-                <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
-                  <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
-                    <p class="text-xs font-medium text-coral">{{ t('areaManagerDashboard.questionPrefix', { text: w['Question Text'] }) }}</p>
-                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('areaManagerDashboard.correctLabel', { text: w['Correct Answer'] }) }}</p>
-                  </div>
-                </div>
-              </details>
-            </div>
+                </details>
+              </div>
+              <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
+            </template>
           </template>
         </section>
 
@@ -268,21 +281,24 @@ function wrongsFor(h) {
               </select>
             </div>
             <div v-if="filteredAiResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsFiltered') }}</div>
-            <div v-else class="space-y-3">
-              <div v-for="r in filteredAiResults" :key="r.AttemptID" class="bg-white rounded-xl2 shadow-sm flex items-center gap-3 px-5 py-3">
-                <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
-                  <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
-                  <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+            <template v-else>
+              <div class="space-y-3">
+                <div v-for="r in paginatedAiResults" :key="r.AttemptID" class="bg-white rounded-xl2 shadow-sm flex items-center gap-3 px-5 py-3">
+                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+                    <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+                  </div>
+                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                    {{ r.Score }}
+                  </span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
-                  <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
-                </div>
-                <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
-                  {{ r.Score }}
-                </span>
               </div>
-            </div>
+              <Pagination :current-page="aiCurrentPage" :total-pages="aiTotalPages" @prev="aiPrev" @next="aiNext" />
+            </template>
           </template>
         </section>
       </template>

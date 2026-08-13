@@ -7,6 +7,8 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 const { areas: AREAS, outletsForArea } = useOutlets()
@@ -68,6 +70,7 @@ const avgPercent = computed(() => {
   if (!all.length) return 0
   return Math.round(all.reduce((sum, r) => sum + (parseInt(r.Percentage) || 0), 0) / all.length)
 })
+const { currentPage, totalPages, paginatedItems: paginatedActivity, next, prev } = usePagination(activity)
 
 </script>
 
@@ -116,8 +119,8 @@ const avgPercent = computed(() => {
 
         <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('supervisorDashboard.activityLog') }}</h2>
         <div v-if="activity.length === 0" class="text-slate text-sm">{{ t('supervisorDashboard.noActivity') }}</div>
-        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam max-h-[32rem] overflow-y-auto">
-          <div v-for="(r, i) in activity.slice(0, 100)" :key="i" class="flex items-center justify-between px-5 py-3">
+        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="(r, i) in paginatedActivity" :key="i" class="flex items-center justify-between px-5 py-3">
             <div>
               <p class="text-sm font-medium text-ink">{{ r.Name }} · {{ r.Outlet }}</p>
               <p class="text-xs text-slate">{{ r.Topic }} · {{ r.kind }} · {{ new Date(r.Timestamp).toLocaleDateString() }}</p>
@@ -126,6 +129,7 @@ const avgPercent = computed(() => {
               {{ r.Score }}
             </span>
           </div>
+          <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
         </div>
       </template>
     </main>

@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useMasterAuthStore } from '../store/masterAuth'
 import { useOutlets } from '../composables/useOutlets'
+import { usePagination } from '../composables/usePagination'
+import Pagination from './Pagination.vue'
 
 const emit = defineEmits(['close'])
 const { t } = useI18n()
@@ -35,6 +37,7 @@ const entries = ref([])
 const searching = ref(false)
 const searchError = ref('')
 const searched = ref(false)
+const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } = usePagination(entries)
 
 async function search() {
   searchError.value = ''
@@ -99,7 +102,7 @@ search()
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in entries" :key="e.id" class="border-b border-seafoam last:border-0">
+          <tr v-for="e in paginatedEntries" :key="e.id" class="border-b border-seafoam last:border-0">
             <td class="p-2 text-slate text-xs whitespace-nowrap">{{ new Date(e.createdAt).toLocaleString() }}</td>
             <td class="p-2 text-ink text-xs whitespace-nowrap">{{ e.actorType }}/{{ e.actorKey }}</td>
             <td class="p-2 text-ink text-xs whitespace-nowrap">{{ e.action }}</td>
@@ -108,6 +111,7 @@ search()
           </tr>
         </tbody>
       </table>
+      <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
     </div>
     <p v-else-if="searched && !searching" class="text-slate text-xs">{{ t('masterPanel.auditLogs.noResults') }}</p>
   </div>

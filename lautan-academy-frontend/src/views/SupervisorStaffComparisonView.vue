@@ -8,6 +8,8 @@ import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { useAuthStore } from '../store/auth'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -157,6 +159,10 @@ const cpdYears = computed(() => {
 // unscoped by windowMonths (see the existing comment above the onMounted
 // fetch) but were never outlet/region-scoped either.
 const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), outletScoped(cpdAiResults.value), videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
+const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoRows, next: videoNext, prev: videoPrev } = usePagination(videoRows)
+const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardRows, next: standardNext, prev: standardPrev } = usePagination(standardRows)
+const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiRows, next: aiNext, prev: aiPrev } = usePagination(aiRows)
 </script>
 
 <template>
@@ -175,7 +181,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
           </select>
         </div>
         <div v-if="cpdSummary.length" class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <div v-for="s in cpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
+          <div v-for="s in paginatedCpdSummary" :key="`${s.name}|${s.outlet}`" class="px-5 py-3 flex items-center justify-between gap-3">
             <div class="min-w-0">
               <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
               <p class="text-xs text-slate">{{ s.outlet }}</p>
@@ -184,6 +190,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
               {{ t('supervisorStaffComparisonView.cpdHoursOfTarget', { hours: s.hours, target: CPD_TARGET_HOURS }) }}
             </span>
           </div>
+          <Pagination :current-page="cpdCurrentPage" :total-pages="cpdTotalPages" @prev="cpdPrev" @next="cpdNext" />
         </div>
         <div v-else class="bg-white rounded-xl2 px-5 py-4">
           <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdNoData') }}</p>
@@ -234,13 +241,14 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
           </div>
           <div v-if="videoRows.length === 0" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.noActivity') }}</div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <div v-for="(r, i) in videoRows" :key="i" class="flex items-center justify-between px-5 py-3">
+            <div v-for="(r, i) in paginatedVideoRows" :key="i" class="flex items-center justify-between px-5 py-3">
               <div>
                 <p class="text-sm font-medium text-ink">{{ r.name }}</p>
                 <p class="text-xs text-slate">{{ r.outlet }} · {{ t('supervisorStaffComparisonView.attemptsCount', r.attempts) }}</p>
               </div>
               <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
             </div>
+            <Pagination :current-page="videoCurrentPage" :total-pages="videoTotalPages" @prev="videoPrev" @next="videoNext" />
           </div>
         </section>
 
@@ -263,13 +271,14 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
           </div>
           <div v-if="standardRows.length === 0" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.noActivity') }}</div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <div v-for="(r, i) in standardRows" :key="i" class="flex items-center justify-between px-5 py-3">
+            <div v-for="(r, i) in paginatedStandardRows" :key="i" class="flex items-center justify-between px-5 py-3">
               <div>
                 <p class="text-sm font-medium text-ink">{{ r.name }}</p>
                 <p class="text-xs text-slate">{{ r.outlet }} · {{ t('supervisorStaffComparisonView.attemptsCount', r.attempts) }}</p>
               </div>
               <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
             </div>
+            <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
           </div>
         </section>
 
@@ -292,13 +301,14 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
           </div>
           <div v-if="aiRows.length === 0" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.noActivity') }}</div>
           <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-            <div v-for="(r, i) in aiRows" :key="i" class="flex items-center justify-between px-5 py-3">
+            <div v-for="(r, i) in paginatedAiRows" :key="i" class="flex items-center justify-between px-5 py-3">
               <div>
                 <p class="text-sm font-medium text-ink">{{ r.name }}</p>
                 <p class="text-xs text-slate">{{ r.outlet }} · {{ t('supervisorStaffComparisonView.attemptsCount', r.attempts) }}</p>
               </div>
               <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
             </div>
+            <Pagination :current-page="aiCurrentPage" :total-pages="aiTotalPages" @prev="aiPrev" @next="aiNext" />
           </div>
         </section>
       </template>

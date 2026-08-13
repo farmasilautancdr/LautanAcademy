@@ -7,6 +7,8 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { usePagination } from '../composables/usePagination'
+import Pagination from './Pagination.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -19,6 +21,7 @@ const props = defineProps({
 
 const staff = ref([])
 const loading = ref(true)
+const { currentPage, totalPages, paginatedItems: paginatedStaff, next, prev } = usePagination(staff)
 
 const addName = ref('')
 const addPin = ref('')
@@ -100,7 +103,7 @@ async function removeStaff(name) {
         {{ division === 'warehouse' ? t('manageStaffPanel.noStaffLocation') : t('manageStaffPanel.noStaffOutlet') }}
       </div>
       <div v-else class="divide-y divide-seafoam">
-        <div v-for="s in staff" :key="s.Name" class="px-5 py-3">
+        <div v-for="s in paginatedStaff" :key="s.Name" class="px-5 py-3">
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0">
               <p class="text-sm font-medium text-ink truncate">{{ s.Name }}</p>
@@ -123,6 +126,7 @@ async function removeStaff(name) {
           </div>
           <p v-if="resettingName === s.Name && resetError" class="text-coral text-xs mt-1">{{ resetError }}</p>
         </div>
+        <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
       </div>
     </div>
 

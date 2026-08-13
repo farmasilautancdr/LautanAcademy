@@ -860,5 +860,10 @@
   "impersonationBanner": {
     "viewingAs": "Viewing as {label} — view-only",
     "exit": "Exit"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {current} of {total}"
   }
 }

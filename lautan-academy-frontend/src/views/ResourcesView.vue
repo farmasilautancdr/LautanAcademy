@@ -20,6 +20,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { usePagination } from '../composables/usePagination'
+import Pagination from '../components/Pagination.vue'
 
 const driveResources = ref([])
 const knowledgeEntries = ref([])
@@ -90,6 +92,7 @@ const filteredEntries = computed(() => {
   if (subcategoryFilter.value !== 'ALL') list = list.filter(e => e.subcategory === subcategoryFilter.value)
   return list
 })
+const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } = usePagination(filteredEntries)
 </script>
 
 <template>
@@ -116,7 +119,7 @@ const filteredEntries = computed(() => {
           </select>
         </div>
         <div class="bg-white rounded-xl2 divide-y divide-seafoam">
-          <template v-for="e in filteredEntries" :key="e.id">
+          <template v-for="e in paginatedEntries" :key="e.id">
             <!-- Drive-backed: opens the file/link directly, same as before. -->
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <a :href="e.previewUrl" target="_blank" rel="noopener" class="flex-1 min-w-0">
@@ -147,6 +150,7 @@ const filteredEntries = computed(() => {
               </div>
             </details>
           </template>
+          <Pagination :current-page="currentPage" :total-pages="totalPages" @prev="prev" @next="next" />
         </div>
       </template>
     </main>
