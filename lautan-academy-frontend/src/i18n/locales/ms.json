@@ -520,7 +520,8 @@
     "videoKindReading": "Bahan bacaan",
     "videoBodyLabel": "Teks bahan bacaan",
     "videoErrorBodyRequired": "Teks bahan bacaan diperlukan.",
-    "videoPharmacistOnlyLabel": "Khas Ahli Farmasi (muncul dalam bahagian Kursus Ahli Farmasi terhad)"
+    "videoPharmacistOnlyLabel": "Khas Ahli Farmasi (muncul dalam bahagian Kursus Ahli Farmasi terhad)",
+    "videoPharmacistOnlyBadge": "Khas Ahli Farmasi"
   },
   "supervisorPharmacistTagView": {
     "title": "Ahli Farmasi",
@@ -528,7 +529,9 @@
     "noStaffYet": "Tiada staf direkodkan lagi.",
     "tag": "Tandakan Ahli Farmasi",
     "untag": "Buang Tanda Ahli Farmasi",
-    "errorUpdateFailed": "Gagal kemas kini."
+    "errorUpdateFailed": "Gagal kemas kini.",
+    "outletFilterLabel": "Tapis mengikut cawangan",
+    "allOutlets": "Semua cawangan"
   },
   "supervisorReportsView": {
     "title": "Laporan Kluster",

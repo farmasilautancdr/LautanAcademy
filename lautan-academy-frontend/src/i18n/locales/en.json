@@ -520,7 +520,8 @@
     "videoKindReading": "Reading material",
     "videoBodyLabel": "Reading material text",
     "videoErrorBodyRequired": "Reading material text is required.",
-    "videoPharmacistOnlyLabel": "Pharmacist only (shows in the gated Pharmacist Courses section)"
+    "videoPharmacistOnlyLabel": "Pharmacist only (shows in the gated Pharmacist Courses section)",
+    "videoPharmacistOnlyBadge": "Pharmacist only"
   },
   "supervisorPharmacistTagView": {
     "title": "Pharmacist",
@@ -528,7 +529,9 @@
     "noStaffYet": "No staff on record yet.",
     "tag": "Mark Pharmacist",
     "untag": "Remove Pharmacist",
-    "errorUpdateFailed": "Could not update."
+    "errorUpdateFailed": "Could not update.",
+    "outletFilterLabel": "Filter by outlet",
+    "allOutlets": "All outlets"
   },
   "supervisorReportsView": {
     "title": "Cluster Reports",

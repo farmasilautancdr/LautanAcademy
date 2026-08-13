@@ -55,11 +55,19 @@ async function loadContent() {
 }
 loadContent()
 
+// Merges the general list with the pharmacist-only one (Supervisor is
+// allowed to read GET /video-trainings/pharmacist for exactly this reason —
+// otherwise courses created with "Pharmacist only" checked would be
+// invisible here after creation, with no way to see or delete them again).
 async function loadVideoTrainings() {
   loadingVideos.value = true
   try {
-    const data = await api.getVideoTrainings()
-    videoTrainings.value = data.videoTrainings || []
+    const [generalData, pharmacistData] = await Promise.allSettled([api.getVideoTrainings(), api.getPharmacistCourses()])
+    const general = generalData.status === 'fulfilled' ? (generalData.value.videoTrainings || []) : []
+    const pharmacistOnly = pharmacistData.status === 'fulfilled'
+      ? (pharmacistData.value.videoTrainings || []).map(v => ({ ...v, pharmacistOnly: true }))
+      : []
+    videoTrainings.value = [...general, ...pharmacistOnly]
   } catch (e) { /* leave empty */ }
   loadingVideos.value = false
 }
@@ -235,7 +243,10 @@ async function removeContent(item) {
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
         <div v-for="video in videoTrainings" :key="video.id" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-sm font-medium text-ink truncate">{{ video.title }}</p>
+            <p class="text-sm font-medium text-ink truncate">
+              {{ video.title }}
+              <span v-if="video.pharmacistOnly" class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-aqua">{{ t('supervisorAddResourcesView.videoPharmacistOnlyBadge') }}</span>
+            </p>
             <p class="text-xs text-slate">{{ video.topic }} · {{ t('supervisorAddResourcesView.videoHoursValue', { hours: video.hours }) }}</p>
           </div>
           <button @click="removeVideoTraining(video)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>

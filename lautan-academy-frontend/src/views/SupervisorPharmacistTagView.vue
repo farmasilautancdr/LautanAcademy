@@ -2,7 +2,7 @@
 // Company-wide staff directory, Supervisor-only — the only place the
 // Pharmacist tag can be set. See
 // docs/superpowers/specs/2026-08-13-pharmacist-tag-design.md.
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 
@@ -12,6 +12,14 @@ const staff = ref([])
 const loading = ref(true)
 const status = ref('')
 const statusOk = ref(true)
+const outletFilter = ref('ALL')
+
+// Derived from the loaded staff list itself, not a separate outlets fetch —
+// guarantees the dropdown only ever offers outlets that actually have staff
+// on record, and needs no extra request (YAGNI, same reasoning useOutlets.js
+// documents for its own scope).
+const outletOptions = computed(() => [...new Set(staff.value.map(s => s.outlet))].sort())
+const filteredStaff = computed(() => outletFilter.value === 'ALL' ? staff.value : staff.value.filter(s => s.outlet === outletFilter.value))
 
 async function load() {
   loading.value = true
@@ -46,22 +54,32 @@ async function toggle(row) {
       <p v-if="status" class="text-sm mb-3" :class="statusOk ? 'text-aqua' : 'text-coral'">{{ status }}</p>
       <div v-if="loading" class="text-slate text-sm">{{ t('supervisorPharmacistTagView.loading') }}</div>
       <div v-else-if="staff.length === 0" class="text-slate text-sm">{{ t('supervisorPharmacistTagView.noStaffYet') }}</div>
-      <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
-        <div v-for="row in staff" :key="row.id" class="px-5 py-3 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-ink truncate">{{ row.name }}<span v-if="row.idNote" class="text-slate font-normal"> ({{ row.idNote }})</span></p>
-            <p class="text-xs text-slate">{{ row.outlet }} · {{ row.division }}</p>
-          </div>
-          <button
-            type="button"
-            @click="toggle(row)"
-            class="text-xs font-medium hover:underline shrink-0"
-            :class="row.isPharmacist ? 'text-coral' : 'text-aqua'"
-          >
-            {{ row.isPharmacist ? t('supervisorPharmacistTagView.untag') : t('supervisorPharmacistTagView.tag') }}
-          </button>
+      <template v-else>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorPharmacistTagView.outletFilterLabel') }}</label>
+          <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3">
+            <option value="ALL">{{ t('supervisorPharmacistTagView.allOutlets') }}</option>
+            <option v-for="o in outletOptions" :key="o" :value="o">{{ o }}</option>
+          </select>
         </div>
-      </div>
+        <div v-if="filteredStaff.length === 0" class="text-slate text-sm">{{ t('supervisorPharmacistTagView.noStaffYet') }}</div>
+        <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+          <div v-for="row in filteredStaff" :key="row.id" class="px-5 py-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">{{ row.name }}<span v-if="row.idNote" class="text-slate font-normal"> ({{ row.idNote }})</span></p>
+              <p class="text-xs text-slate">{{ row.outlet }} · {{ row.division }}</p>
+            </div>
+            <button
+              type="button"
+              @click="toggle(row)"
+              class="text-xs font-medium hover:underline shrink-0"
+              :class="row.isPharmacist ? 'text-coral' : 'text-aqua'"
+            >
+              {{ row.isPharmacist ? t('supervisorPharmacistTagView.untag') : t('supervisorPharmacistTagView.tag') }}
+            </button>
+          </div>
+        </div>
+      </template>
     </main>
   </div>
 </template>
