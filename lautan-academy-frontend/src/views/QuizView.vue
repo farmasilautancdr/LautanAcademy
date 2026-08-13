@@ -66,6 +66,15 @@ const isLastQuestion = computed(() => currentIndex.value === questions.value.len
 const answeredCount = computed(() => Object.keys(answers.value).length)
 const currentAnswer = computed(() => answers.value[currentIndex.value])
 
+// All kinds — Module Quiz/Video Training's Back already locks once answered
+// (see below), so a question a user Next'd past unanswered (e.g. the live
+// check call failed) could never be fixed, leaving Submit permanently
+// disabled with no explanation once the last question was reached. AI
+// Practice has no Back-lock but still requires an answer before advancing
+// for consistency. Doesn't apply to the video timer's own auto-advance on
+// timeout, which calls next()/submitQuiz() directly, bypassing this button.
+const canManuallyAdvance = computed(() => isRevealed.value)
+
 function optionsFor(q) {
   const suffix = locale.value === 'en' ? '_en' : '_ms'
   return [q['opt1' + suffix], q['opt2' + suffix], q['opt3' + suffix], q['opt4' + suffix]]
@@ -261,7 +270,8 @@ async function submitQuiz() {
         <button
           v-if="!isLastQuestion"
           @click="next"
-          class="bg-deepsea text-white text-sm font-medium px-6 py-2.5 rounded-lg"
+          :disabled="!canManuallyAdvance"
+          class="bg-deepsea text-white text-sm font-medium px-6 py-2.5 rounded-lg disabled:opacity-50"
         >
           {{ t('quizView.next') }}
         </button>
