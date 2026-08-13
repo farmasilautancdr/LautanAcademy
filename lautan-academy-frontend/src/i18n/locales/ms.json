@@ -152,6 +152,7 @@
     "clusterReports": "Laporan Kluster",
     "managerAccess": "Akses Pengurus",
     "addResources": "Tambah Sumber",
+    "pharmacistTag": "Ahli Farmasi",
     "logOut": "Log Keluar"
   },
   "dashboardView": {
@@ -499,6 +500,14 @@
     "videoHoursHelper": "Berapa jam video ini dikira ke arah target 120 jam/tahun — anda yang tetapkan, bukan durasi sebenar video.",
     "videoHoursValue": "{hours}j",
     "videoErrorBadHours": "Jam mesti nombor positif."
+  },
+  "supervisorPharmacistTagView": {
+    "title": "Ahli Farmasi",
+    "loading": "Memuatkan...",
+    "noStaffYet": "Tiada staf direkodkan lagi.",
+    "tag": "Tandakan Ahli Farmasi",
+    "untag": "Buang Tanda Ahli Farmasi",
+    "errorUpdateFailed": "Gagal kemas kini."
   },
   "supervisorReportsView": {
     "title": "Laporan Kluster",

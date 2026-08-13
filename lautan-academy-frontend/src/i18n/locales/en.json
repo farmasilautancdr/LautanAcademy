@@ -152,6 +152,7 @@
     "clusterReports": "Cluster Reports",
     "managerAccess": "Manager Access",
     "addResources": "Add Resources",
+    "pharmacistTag": "Pharmacist",
     "logOut": "Log out"
   },
   "dashboardView": {
@@ -499,6 +500,14 @@
     "videoHoursHelper": "How many hours this video counts toward the 120hr/year target — set by you, not the video's real length.",
     "videoHoursValue": "{hours}h",
     "videoErrorBadHours": "Hours must be a positive number."
+  },
+  "supervisorPharmacistTagView": {
+    "title": "Pharmacist",
+    "loading": "Loading...",
+    "noStaffYet": "No staff on record yet.",
+    "tag": "Mark Pharmacist",
+    "untag": "Remove Pharmacist",
+    "errorUpdateFailed": "Could not update."
   },
   "supervisorReportsView": {
     "title": "Cluster Reports",

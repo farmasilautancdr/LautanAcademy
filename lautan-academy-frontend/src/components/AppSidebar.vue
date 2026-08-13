@@ -130,6 +130,7 @@ const sections = computed(() => {
         { label: t('sidebar.staffComparison'), to: '/supervisor/staff-comparison', icon: 'users' },
         { label: t('sidebar.clusterReports'), to: '/supervisor/reports', icon: 'file' },
         { label: t('sidebar.managerAccess'), to: '/supervisor/manager-access', icon: 'key' },
+        { label: t('sidebar.pharmacistTag'), to: '/supervisor/pharmacist', icon: 'users' },
       ],
     })
     groups.push({
