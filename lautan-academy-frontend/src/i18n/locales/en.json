@@ -211,6 +211,13 @@
     "errorPlayerLoad": "Couldn't load the video player — refresh and try again.",
     "errorNoQuestions": "Couldn't load the quiz for this video — refresh and try again."
   },
+  "readingView": {
+    "title": "Pharmacist Course",
+    "markRead": "I've read this — start the quiz",
+    "starting": "Loading quiz...",
+    "errorNotFound": "This course could not be found.",
+    "errorNoQuestions": "Couldn't load the quiz for this course — refresh and try again."
+  },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
     "questionProgress": "Question {current} of {total}",

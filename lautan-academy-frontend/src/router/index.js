@@ -14,6 +14,7 @@ import ResourcesView from '../views/ResourcesView.vue'
 import VideoTrainingListView from '../views/VideoTrainingListView.vue'
 import VideoWatchView from '../views/VideoWatchView.vue'
 import PharmacistCoursesListView from '../views/PharmacistCoursesListView.vue'
+import ReadingView from '../views/ReadingView.vue'
 import QuizView from '../views/QuizView.vue'
 import ResultView from '../views/ResultView.vue'
 import OutletManagerDashboard from '../views/OutletManagerDashboard.vue'
@@ -58,6 +59,7 @@ const router = createRouter({
     { path: '/video-training', name: 'video-training', component: VideoTrainingListView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/video-watch/:id', name: 'video-watch', component: VideoWatchView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/pharmacist-courses', name: 'pharmacist-courses', component: PharmacistCoursesListView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
+    { path: '/reading-view/:id', name: 'reading-view', component: ReadingView, meta: { requiresAuth: true, role: 'staff', division: 'retail' } },
     { path: '/quiz', name: 'quiz', component: QuizView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/result', name: 'result', component: ResultView, meta: { requiresAuth: true, role: 'staff' } },
     { path: '/manager', name: 'manager', component: OutletManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },

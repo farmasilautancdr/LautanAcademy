@@ -211,6 +211,13 @@
     "errorPlayerLoad": "Tidak dapat memuatkan pemain video — muat semula dan cuba lagi.",
     "errorNoQuestions": "Tidak dapat memuatkan kuiz untuk video ini — muat semula dan cuba lagi."
   },
+  "readingView": {
+    "title": "Kursus Ahli Farmasi",
+    "markRead": "Saya telah membaca ini — mula kuiz",
+    "starting": "Memuatkan kuiz...",
+    "errorNotFound": "Kursus ini tidak ditemui.",
+    "errorNoQuestions": "Gagal memuatkan kuiz untuk kursus ini — muat semula dan cuba lagi."
+  },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
     "questionProgress": "Soalan {current} daripada {total}",
