@@ -23,7 +23,15 @@ import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix
 
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Wrong-answer fields come back as separate En/Ms columns (data.js's
+// toResponse) so this re-renders in whichever language is currently
+// active. Falls back to En when Ms is null (rows saved before the
+// wrong_answers bilingual migration).
+function bilingual(w, field) {
+  return (locale.value === 'ms' && w[`${field} Ms`]) || w[`${field} En`]
+}
 
 const standardHistory = ref([])
 const aiHistory = ref([])
@@ -203,8 +211,8 @@ function wrongsForAi(attemptId) {
                 </summary>
                 <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
                   <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
-                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                   </div>
                 </div>
               </details>
@@ -248,8 +256,8 @@ function wrongsForAi(attemptId) {
                 </summary>
                 <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
                   <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
-                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                   </div>
                 </div>
               </details>
@@ -293,8 +301,8 @@ function wrongsForAi(attemptId) {
                 </summary>
                 <div v-if="wrongsForAi(h.AttemptID).length" class="mt-3 space-y-2">
                   <div v-for="(w, j) in wrongsForAi(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
-                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                   </div>
                 </div>
               </details>

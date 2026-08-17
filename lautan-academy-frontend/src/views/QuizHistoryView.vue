@@ -20,7 +20,16 @@ import { usePagination } from '../composables/usePagination'
 import ProgressRing from '../components/ProgressRing.vue'
 import Pagination from '../components/Pagination.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Wrong-answer fields come back as separate En/Ms columns (see
+// data.js's toResponse) so history re-renders in whichever language is
+// currently active, not whatever language was active when the quiz was
+// taken. Falls back to En when Ms is null — true for rows saved before
+// the wrong_answers/ai_wrong_answers bilingual migration.
+function bilingual(w, field) {
+  return (locale.value === 'ms' && w[`${field} Ms`]) || w[`${field} En`]
+}
 const standardHistory = ref([])
 const aiHistory = ref([])
 const wrongAnswers = ref([])
@@ -241,8 +250,8 @@ function wrongsForAi(attemptId) {
               </summary>
               <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
                 <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                 </div>
               </div>
             </details>
@@ -276,8 +285,8 @@ function wrongsForAi(attemptId) {
               </summary>
               <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
                 <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                 </div>
               </div>
             </details>
@@ -311,8 +320,8 @@ function wrongsForAi(attemptId) {
               </summary>
               <div v-if="wrongsForAi(h.AttemptID).length" class="mt-3 space-y-2">
                 <div v-for="(w, j) in wrongsForAi(h.AttemptID)" :key="j" class="bg-seafoam rounded-lg p-3">
-                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: w['Question Text'] }) }}</p>
-                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: w['Correct Answer'] }) }}</p>
+                  <p class="text-xs font-medium text-coral">{{ t('quizHistoryView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                  <p class="text-xs text-aqua font-semibold mt-1">{{ t('quizHistoryView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
                 </div>
               </div>
             </details>
