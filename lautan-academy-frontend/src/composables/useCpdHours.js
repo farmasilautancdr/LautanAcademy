@@ -48,13 +48,17 @@ export function splitByVideoTopic(results, hoursByTopic) {
 // rows (AI Practice, separate table) -> per-staff hours-this-year, both
 // filtered to Timestamp falling in `year` (defaults to the current
 // calendar year). A results row counts at its video's real hours if its
-// Topic is a video-training topic, otherwise the flat Module Quiz rate;
-// every aiResults row counts at the flat AI Practice rate, no topic check
-// needed (ai_results is exclusively AI Practice). Sorted ascending by
-// hours — staff furthest behind the CPD_TARGET_HOURS target surface
-// first, the actual point of a manager-facing view.
+// Topic is a video-training topic (every attempt stacks); otherwise it's
+// Module Quiz, flat rate but capped to the first attempt per topic per
+// year (see MODULE_QUIZ_HOURS/data.js's cpdHoursThisYear() — same rule,
+// kept in sync here since this is the client-side copy of that
+// calculation). Every aiResults row counts at the flat AI Practice rate,
+// no topic check needed (ai_results is exclusively AI Practice). Sorted
+// ascending by hours — staff furthest behind the CPD_TARGET_HOURS target
+// surface first, the actual point of a manager-facing view.
 export function hoursByStaff(results, aiResults, hoursByTopic, year = new Date().getFullYear()) {
   const byStaff = new Map()
+  const countedModuleTopics = new Set()
   function add(name, outlet, hours) {
     const key = `${name}|${outlet}`
     if (!byStaff.has(key)) byStaff.set(key, { name, outlet, hours: 0 })
@@ -62,7 +66,14 @@ export function hoursByStaff(results, aiResults, hoursByTopic, year = new Date()
   }
   for (const r of results) {
     if (new Date(r.Timestamp).getFullYear() !== year) continue
-    add(r.Name, r.Outlet, hoursByTopic.has(r.Topic) ? hoursByTopic.get(r.Topic) : MODULE_QUIZ_HOURS)
+    if (hoursByTopic.has(r.Topic)) {
+      add(r.Name, r.Outlet, hoursByTopic.get(r.Topic))
+      continue
+    }
+    const topicKey = `${r.Name}|${r.Outlet}|${r.Topic}`
+    if (countedModuleTopics.has(topicKey)) continue
+    countedModuleTopics.add(topicKey)
+    add(r.Name, r.Outlet, MODULE_QUIZ_HOURS)
   }
   for (const r of aiResults) {
     if (new Date(r.Timestamp).getFullYear() !== year) continue

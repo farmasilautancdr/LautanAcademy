@@ -66,7 +66,18 @@ watch(formOutlet, async (o) => {
 })
 
 const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value).map(r => r.Topic))])
-const selectedResult = computed(() => results.value.find(r => r.Name === formStaff.value && r.Outlet === formOutlet.value && r.Topic === formTopic.value))
+// Assessment grades off the staff's FIRST attempt at a topic, not their
+// latest retake — `results` is loaded order by created_at desc, so a
+// plain .find() here would silently pick the newest attempt instead.
+// Staff can retake as many times as they like (once/day); only the
+// original attempt feeds the manager's report, everything else stays
+// visible in staff/manager history only. Not year-scoped — matches the
+// `reports` table's own all-time-once-per-topic dedup (see reports.js).
+const selectedResult = computed(() => {
+  const matches = results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value && r.Topic === formTopic.value)
+  if (!matches.length) return undefined
+  return matches.reduce((earliest, r) => new Date(r.Timestamp) < new Date(earliest.Timestamp) ? r : earliest)
+})
 const skillLevel = computed(() => {
   const p = parseInt(selectedResult.value?.Percentage) || 0
   if (p >= 85) return 'HIGH'
