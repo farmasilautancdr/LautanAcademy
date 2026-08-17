@@ -195,28 +195,32 @@
     "title": "Video Training",
     "loading": "Loading...",
     "noVideosYet": "No training videos available yet.",
-    "watch": "Watch →"
+    "watch": "Watch →",
+    "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
   },
   "pharmacistCoursesListView": {
     "title": "Pharmacist Courses",
     "loading": "Loading...",
     "noCoursesYet": "No pharmacist courses available yet.",
     "watch": "Watch →",
-    "read": "Read →"
+    "read": "Read →",
+    "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
   },
   "videoWatchView": {
     "title": "Video Training",
     "watchToContinue": "Finish watching to unlock the quiz.",
     "errorNotFound": "This video could not be found.",
     "errorPlayerLoad": "Couldn't load the video player — refresh and try again.",
-    "errorNoQuestions": "Couldn't load the quiz for this video — refresh and try again."
+    "errorNoQuestions": "Couldn't load the quiz for this video — refresh and try again.",
+    "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
   },
   "readingView": {
     "title": "Pharmacist Course",
     "markRead": "I've read this — start the quiz",
     "starting": "Loading quiz...",
     "errorNotFound": "This course could not be found.",
-    "errorNoQuestions": "Couldn't load the quiz for this course — refresh and try again."
+    "errorNoQuestions": "Couldn't load the quiz for this course — refresh and try again.",
+    "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
   },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
@@ -549,6 +553,7 @@
     "allTime": "All time",
     "allRegions": "All regions",
     "allOutlets": "All outlets",
+    "allTopics": "All topics",
     "downloadCsv": "Download CSV",
     "loading": "Loading...",
     "noReports": "No reports filed in this window.",

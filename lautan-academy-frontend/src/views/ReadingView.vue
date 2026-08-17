@@ -58,6 +58,7 @@ async function markRead() {
     <main class="max-w-3xl mx-auto px-6 py-8">
       <p v-if="loadError" class="text-coral text-sm mb-4">{{ loadError }}</p>
       <div v-if="course" class="bg-white rounded-xl2 p-5 shadow-sm">
+        <p class="text-slate text-xs mb-3">{{ course.topic }} · {{ t('readingView.cpdHourValue', { hours: course.hours }, course.hours) }}</p>
         <p class="text-sm text-ink whitespace-pre-wrap">{{ course.body }}</p>
         <button
           type="button"

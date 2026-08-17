@@ -195,28 +195,32 @@
     "title": "Latihan Video",
     "loading": "Memuatkan...",
     "noVideosYet": "Belum ada video latihan tersedia.",
-    "watch": "Tonton →"
+    "watch": "Tonton →",
+    "cpdHourValue": "{hours} jam CPD"
   },
   "pharmacistCoursesListView": {
     "title": "Kursus Ahli Farmasi",
     "loading": "Memuatkan...",
     "noCoursesYet": "Tiada kursus ahli farmasi lagi.",
     "watch": "Tonton →",
-    "read": "Baca →"
+    "read": "Baca →",
+    "cpdHourValue": "{hours} jam CPD"
   },
   "videoWatchView": {
     "title": "Latihan Video",
     "watchToContinue": "Habiskan tontonan untuk membuka kuiz.",
     "errorNotFound": "Video ini tidak ditemui.",
     "errorPlayerLoad": "Tidak dapat memuatkan pemain video — muat semula dan cuba lagi.",
-    "errorNoQuestions": "Tidak dapat memuatkan kuiz untuk video ini — muat semula dan cuba lagi."
+    "errorNoQuestions": "Tidak dapat memuatkan kuiz untuk video ini — muat semula dan cuba lagi.",
+    "cpdHourValue": "{hours} jam CPD"
   },
   "readingView": {
     "title": "Kursus Ahli Farmasi",
     "markRead": "Saya telah membaca ini — mula kuiz",
     "starting": "Memuatkan kuiz...",
     "errorNotFound": "Kursus ini tidak ditemui.",
-    "errorNoQuestions": "Gagal memuatkan kuiz untuk kursus ini — muat semula dan cuba lagi."
+    "errorNoQuestions": "Gagal memuatkan kuiz untuk kursus ini — muat semula dan cuba lagi.",
+    "cpdHourValue": "{hours} jam CPD"
   },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
@@ -549,6 +553,7 @@
     "allTime": "Sepanjang masa",
     "allRegions": "Semua wilayah",
     "allOutlets": "Semua cawangan",
+    "allTopics": "Semua topik",
     "downloadCsv": "Muat Turun CSV",
     "loading": "Memuatkan...",
     "noReports": "Tiada laporan difailkan dalam tempoh ini.",

@@ -133,7 +133,8 @@ onMounted(async () => {
         <div class="aspect-video w-full">
           <div id="youtube-player" class="w-full h-full" />
         </div>
-        <p class="text-slate text-xs mt-3">{{ t('videoWatchView.watchToContinue') }}</p>
+        <p class="text-slate text-xs mt-3">{{ video.topic }} · {{ t('videoWatchView.cpdHourValue', { hours: video.hours }, video.hours) }}</p>
+        <p class="text-slate text-xs mt-1">{{ t('videoWatchView.watchToContinue') }}</p>
       </div>
     </main>
   </div>

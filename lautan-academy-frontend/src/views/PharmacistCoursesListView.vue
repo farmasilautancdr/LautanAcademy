@@ -51,7 +51,7 @@ function open(course) {
         >
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">{{ c.title }}</p>
-            <p class="text-xs text-slate">{{ c.topic }}</p>
+            <p class="text-xs text-slate">{{ c.topic }} · {{ t('pharmacistCoursesListView.cpdHourValue', { hours: c.hours }, c.hours) }}</p>
           </div>
           <span class="text-aqua text-sm font-medium shrink-0">
             {{ c.kind === 'reading' ? t('pharmacistCoursesListView.read') : t('pharmacistCoursesListView.watch') }}

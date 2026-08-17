@@ -16,8 +16,10 @@ const loading = ref(true)
 const reports = ref([])
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
+const topicFilter = ref('ALL')
 
-function onRegionChange() { outletFilter.value = 'ALL' }
+function onRegionChange() { outletFilter.value = 'ALL'; topicFilter.value = 'ALL' }
+function onOutletChange() { topicFilter.value = 'ALL' }
 
 async function load() {
   loading.value = true
@@ -34,13 +36,19 @@ const outlets = computed(() => {
   if (regionFilter.value !== 'ALL') return outletsForArea(regionFilter.value)
   return [...new Set(reports.value.map(r => r.Outlet))].filter(Boolean).sort()
 })
-const filtered = computed(() => {
+const regionOutletFiltered = computed(() => {
   let list = reports.value
   if (regionFilter.value !== 'ALL') {
     const regionOutlets = new Set(outletsForArea(regionFilter.value))
     list = list.filter(r => regionOutlets.has(r.Outlet))
   }
   if (outletFilter.value !== 'ALL') list = list.filter(r => r.Outlet === outletFilter.value)
+  return list
+})
+const topics = computed(() => [...new Set(regionOutletFiltered.value.map(r => r['Training Title']))].filter(Boolean).sort())
+const filtered = computed(() => {
+  let list = regionOutletFiltered.value
+  if (topicFilter.value !== 'ALL') list = list.filter(r => r['Training Title'] === topicFilter.value)
   return list
 })
 const { currentPage, totalPages, paginatedItems: paginatedReports, next, prev } = usePagination(filtered)
@@ -101,9 +109,13 @@ function downloadCsv() {
           <option value="ALL">{{ t('supervisorReportsView.allRegions') }}</option>
           <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
         </select>
-        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+        <select v-model="outletFilter" @change="onOutletChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">{{ t('supervisorReportsView.allOutlets') }}</option>
           <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
+        </select>
+        <select v-model="topicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">{{ t('supervisorReportsView.allTopics') }}</option>
+          <option v-for="tp in topics" :key="tp" :value="tp">{{ tp }}</option>
         </select>
         <button type="button" @click="downloadCsv" :disabled="filtered.length === 0"
           class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">

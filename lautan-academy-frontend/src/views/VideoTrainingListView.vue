@@ -52,7 +52,7 @@ function watch(video) {
         >
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">{{ v.title }}</p>
-            <p class="text-xs text-slate">{{ v.topic }}</p>
+            <p class="text-xs text-slate">{{ v.topic }} · {{ t('videoTrainingListView.cpdHourValue', { hours: v.hours }, v.hours) }}</p>
           </div>
           <span class="text-aqua text-sm font-medium shrink-0">{{ t('videoTrainingListView.watch') }}</span>
         </button>
