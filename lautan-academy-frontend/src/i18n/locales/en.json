@@ -243,7 +243,8 @@
     "submitQuiz": "Submit quiz",
     "errorSubmitFailed": "Could not submit your answers. Check your connection and try again.",
     "confirmLeaveAutoSubmit": "Leaving now will submit your quiz with the answers you've given so far — unanswered questions count as wrong. This can't be undone. Leave and submit?",
-    "timeRemaining": "{seconds}s left"
+    "timeRemaining": "{seconds}s left",
+    "timeRemainingLabel": "Time remaining"
   },
   "resultView": {
     "noResult": "No result found.",
@@ -458,7 +459,8 @@
     "performanceGapsLabel": "Performance Gaps",
     "recommendationsLabel": "Recommendations",
     "errorPickFields": "Pick an outlet, staff member, and a topic they have a quiz result for.",
-    "errorCompetencyRange": "Competency must be a mark between 0 and 10.",
+    "errorCompetencyRange": "Competency is required and must be a mark between 0 and 10.",
+    "errorAllFieldsRequired": "Fill in Product Knowledge, Performance Gaps, and Recommendations before submitting.",
     "duplicateNotice": "A report already exists for this person and topic — filed by {who}.",
     "duplicateNoticeWithDate": "A report already exists for this person and topic — filed by {who} on {when}.",
     "anotherManager": "another manager",
@@ -470,6 +472,7 @@
     "submissionsHeading": "Submissions",
     "noSubmissionsYet": "No submissions filed yet.",
     "allOutlets": "All outlets",
+    "allTopics": "All topics",
     "allTime": "All time",
     "last3Months": "Last 3 months",
     "last6Months": "Last 6 months",

@@ -56,6 +56,8 @@ function startQuestionTimer() {
     }
   }, 1000)
 }
+const timerPercent = computed(() => Math.max(0, (timeRemaining.value / QUESTION_TIMER_SECONDS) * 100))
+const timerLow = computed(() => timeRemaining.value <= 10)
 const checkError = ref('')
 const submitting = ref(false)
 const errorMsg = ref('')
@@ -101,6 +103,7 @@ async function selectAnswer(optIndex) {
     else if (kind === 'content') result = await api.checkContentAnswer(currentQuestion.value.id, optIndex)
     else result = await api.checkAiAnswer(auth.staff.outlet, passcode, answeredIndex, optIndex)
     answers.value[answeredIndex] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
+    clearInterval(timerInterval)
   } catch (err) {
     checkError.value = t('quizView.errorCheckFailed')
   } finally {
@@ -235,8 +238,19 @@ async function submitQuiz() {
     <div v-else class="max-w-lg mx-auto px-6 py-8">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate text-xs">{{ t('quizView.questionProgress', { current: currentIndex + 1, total: questions.length }) }}</span>
-        <span class="text-coral text-xs font-medium">{{ t('quizView.timeRemaining', { seconds: timeRemaining }) }}</span>
         <LanguageSwitcher />
+      </div>
+
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-slate text-xs">{{ t('quizView.timeRemainingLabel') }}</span>
+        <span class="text-xs font-semibold" :class="timerLow ? 'text-coral' : 'text-deepsea'">{{ t('quizView.timeRemaining', { seconds: timeRemaining }) }}</span>
+      </div>
+      <div class="w-full bg-white/60 rounded-full h-2.5 mb-6 overflow-hidden">
+        <div
+          class="h-2.5 rounded-full transition-all duration-1000 ease-linear"
+          :class="timerLow ? 'bg-coral' : 'bg-aqua'"
+          :style="{ width: timerPercent + '%' }"
+        />
       </div>
 
       <div class="w-full bg-white/60 rounded-full h-1.5 mb-6">

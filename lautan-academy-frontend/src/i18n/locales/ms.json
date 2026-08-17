@@ -243,7 +243,8 @@
     "submitQuiz": "Hantar kuiz",
     "errorSubmitFailed": "Tidak dapat menghantar jawapan anda. Semak sambungan anda dan cuba lagi.",
     "confirmLeaveAutoSubmit": "Keluar sekarang akan menghantar kuiz anda dengan jawapan yang telah diberikan setakat ini — soalan yang tidak dijawab akan dikira salah. Ini tidak boleh dibuat asal. Keluar dan hantar?",
-    "timeRemaining": "{seconds}s berbaki"
+    "timeRemaining": "{seconds}s berbaki",
+    "timeRemainingLabel": "Masa berbaki"
   },
   "resultView": {
     "noResult": "Tiada keputusan dijumpai.",
@@ -458,7 +459,8 @@
     "performanceGapsLabel": "Jurang Prestasi",
     "recommendationsLabel": "Cadangan",
     "errorPickFields": "Pilih cawangan, staf, dan topik yang mempunyai keputusan kuiz.",
-    "errorCompetencyRange": "Kecekapan mesti markah antara 0 dan 10.",
+    "errorCompetencyRange": "Kecekapan wajib diisi dan mesti markah antara 0 dan 10.",
+    "errorAllFieldsRequired": "Isi Pengetahuan Produk, Jurang Prestasi, dan Cadangan sebelum menghantar.",
     "duplicateNotice": "Laporan untuk orang dan topik ini sudah wujud — difailkan oleh {who}.",
     "duplicateNoticeWithDate": "Laporan untuk orang dan topik ini sudah wujud — difailkan oleh {who} pada {when}.",
     "anotherManager": "pengurus lain",
@@ -470,6 +472,7 @@
     "submissionsHeading": "Penyerahan",
     "noSubmissionsYet": "Belum ada penyerahan difailkan.",
     "allOutlets": "Semua cawangan",
+    "allTopics": "Semua topik",
     "allTime": "Sepanjang masa",
     "last3Months": "3 bulan lepas",
     "last6Months": "6 bulan lepas",

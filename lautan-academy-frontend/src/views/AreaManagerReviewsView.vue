@@ -86,14 +86,27 @@ const skillLevel = computed(() => {
 })
 const existingReport = computed(() => reports.value.find(r => r['Staff Name'] === formStaff.value && r.Outlet === formOutlet.value && r['Training Title'] === formTopic.value))
 
+// All fields required before submit — competency, product knowledge,
+// performance gaps, and recommendations all block Submit until filled
+// (previously only outlet/staff/topic were enforced).
+const canSubmit = computed(() => {
+  return !!(formOutlet.value && formStaff.value && formTopic.value && selectedResult.value &&
+    competency.value !== '' && competency.value !== null && !isNaN(competency.value) && competency.value >= 0 && competency.value <= 10 &&
+    productKnowledgeComments.value.trim() && gaps.value.trim() && rec.value.trim())
+})
+
 // Submissions filters — separate from the form's own outlet field above.
 // All the region's reports are already loaded via loadAll(), so this
 // filters client-side rather than adding a new backend param.
 const submissionsOutlet = ref('ALL')
 const submissionsWindow = ref('ALL') // 'ALL' | 3 | 6 | 12 (months)
+const submissionsTopic = ref('ALL')
+function onSubmissionsOutletChange() { submissionsTopic.value = 'ALL' }
+const outletFilteredReports = computed(() => submissionsOutlet.value === 'ALL' ? reports.value : reports.value.filter(r => r.Outlet === submissionsOutlet.value))
+const submissionsTopics = computed(() => [...new Set(outletFilteredReports.value.map(r => r['Training Title']))].filter(Boolean).sort())
 const filteredReports = computed(() => {
-  let list = reports.value
-  if (submissionsOutlet.value !== 'ALL') list = list.filter(r => r.Outlet === submissionsOutlet.value)
+  let list = outletFilteredReports.value
+  if (submissionsTopic.value !== 'ALL') list = list.filter(r => r['Training Title'] === submissionsTopic.value)
   if (submissionsWindow.value !== 'ALL') {
     const cutoff = new Date()
     cutoff.setMonth(cutoff.getMonth() - Number(submissionsWindow.value))
@@ -133,8 +146,12 @@ async function submitReport() {
     formError.value = t('areaManagerReviewsView.errorPickFields')
     return
   }
-  if (competency.value !== '' && (isNaN(competency.value) || competency.value < 0 || competency.value > 10)) {
+  if (competency.value === '' || competency.value === null || isNaN(competency.value) || competency.value < 0 || competency.value > 10) {
     formError.value = t('areaManagerReviewsView.errorCompetencyRange')
+    return
+  }
+  if (!productKnowledgeComments.value.trim() || !gaps.value.trim() || !rec.value.trim()) {
+    formError.value = t('areaManagerReviewsView.errorAllFieldsRequired')
     return
   }
   submitting.value = true
@@ -250,7 +267,7 @@ async function submitReport() {
           <p v-if="formError" class="text-coral text-sm">{{ formError }}</p>
           <p v-if="formNotice" class="text-slate text-sm">{{ formNotice }}</p>
 
-          <button type="submit" :disabled="submitting" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
+          <button type="submit" :disabled="submitting || !canSubmit" class="w-full bg-aqua text-white font-medium py-3 rounded-lg disabled:opacity-60">
             {{ submitting ? t('areaManagerReviewsView.saving') : (isEdit ? t('areaManagerReviewsView.updateAssessment') : t('areaManagerReviewsView.submitAssessment')) }}
           </button>
         </form>
@@ -263,9 +280,13 @@ async function submitReport() {
         <div v-else-if="reports.length === 0" class="text-slate text-sm">{{ t('areaManagerReviewsView.noSubmissionsYet') }}</div>
         <template v-else>
           <div class="flex flex-wrap gap-2 mb-3">
-            <select v-model="submissionsOutlet" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+            <select v-model="submissionsOutlet" @change="onSubmissionsOutletChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
               <option value="ALL">{{ t('areaManagerReviewsView.allOutlets') }}</option>
               <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
+            </select>
+            <select v-model="submissionsTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+              <option value="ALL">{{ t('areaManagerReviewsView.allTopics') }}</option>
+              <option v-for="tp in submissionsTopics" :key="tp" :value="tp">{{ tp }}</option>
             </select>
             <select v-model="submissionsWindow" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
               <option value="ALL">{{ t('areaManagerReviewsView.allTime') }}</option>
