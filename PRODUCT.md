@@ -39,7 +39,7 @@ structure or support the auditable, role-scoped tracking the business
 actually needs.
 
 Training here is **mandatory, compliance-driven, not voluntary
-upskilling** — staff are expected to hit a fixed 120-hour/calendar-year
+upskilling** — staff are expected to hit a fixed 60-hour/calendar-year
 training target, and pharmacist staff carry additional mandatory clinical
 courses on top of that. Success for the product means: every staff member
 can be shown, at any time, exactly how much of their required training
@@ -87,7 +87,7 @@ staff communication at this chain happens primarily in Bahasa Malaysia.
   bank per topic), AI Practice (ephemeral AI-generated practice quizzes,
   explicitly not assessed/tracked toward compliance), and Video Training
   (in development as of this record — watch a video, then a timed quiz;
-  contributes toward the 120hr target).
+  contributes toward the 60hr target).
 - No configurable/tenant-specific behavior — this is a single-tenant
   internal system built for this one chain's real structure, not a
   product sold to other businesses.
