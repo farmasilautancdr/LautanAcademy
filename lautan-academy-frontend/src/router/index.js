@@ -32,6 +32,7 @@ import SupervisorReportsView from '../views/SupervisorReportsView.vue'
 import SupervisorAddResourcesView from '../views/SupervisorAddResourcesView.vue'
 import SupervisorManagerAccessView from '../views/SupervisorManagerAccessView.vue'
 import SupervisorPharmacistTagView from '../views/SupervisorPharmacistTagView.vue'
+import SupervisorManageQuizQuestionsView from '../views/SupervisorManageQuizQuestionsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -81,6 +82,7 @@ const router = createRouter({
     { path: '/supervisor/add-resources', name: 'supervisor-add-resources', component: SupervisorAddResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/manager-access', name: 'supervisor-manager-access', component: SupervisorManagerAccessView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/pharmacist', name: 'supervisor-pharmacist', component: SupervisorPharmacistTagView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
+    { path: '/supervisor/manage-quiz-questions', name: 'supervisor-manage-quiz-questions', component: SupervisorManageQuizQuestionsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
   ],
 })
 
