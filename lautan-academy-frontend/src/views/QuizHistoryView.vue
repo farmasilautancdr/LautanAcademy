@@ -196,7 +196,7 @@ function wrongsForAi(attemptId) {
       <div v-if="loading" class="text-slate text-sm">{{ t('quizHistoryView.loading') }}</div>
 
       <template v-else>
-        <section v-if="auth.impersonating" class="mb-8">
+        <section class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 class="font-display text-base font-semibold text-ink">{{ t('quizHistoryView.cpdHeading') }}</h2>
             <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
@@ -216,12 +216,6 @@ function wrongsForAi(attemptId) {
           >
             {{ t('quizHistoryView.downloadTrainingRecord') }}
           </button>
-        </section>
-        <section v-else class="mb-8">
-          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('quizHistoryView.cpdHeading') }}</h2>
-          <div class="bg-white rounded-xl2 px-5 py-4">
-            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('quizHistoryView.cpdComingSoon') }}</p>
-          </div>
         </section>
 
         <section>

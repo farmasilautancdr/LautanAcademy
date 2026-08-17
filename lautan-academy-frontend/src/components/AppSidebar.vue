@@ -64,22 +64,10 @@ const sections = computed(() => {
     const quizItems = []
     if (auth.staff?.division === 'retail') quizItems.push({ label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' })
     if (auth.staff?.division === 'retail') {
-      quizItems.push(
-        auth.impersonating
-          ? { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' }
-          : { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video', disabled: true }
-      )
+      quizItems.push({ label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' })
     }
-    // Same not-yet-flipped-live gate as Video Training above (this section
-    // reuses its watch/quiz infrastructure) — remove both together when
-    // ready, not just this one. See
-    // docs/superpowers/specs/2026-08-13-pharmacist-tag-design.md.
     if (auth.staff?.division === 'retail' && auth.staff?.isPharmacist) {
-      quizItems.push(
-        auth.impersonating
-          ? { label: t('sidebar.pharmacistCourses'), to: '/pharmacist-courses', icon: 'clipboard' }
-          : { label: t('sidebar.pharmacistCourses'), to: '/pharmacist-courses', icon: 'clipboard', disabled: true }
-      )
+      quizItems.push({ label: t('sidebar.pharmacistCourses'), to: '/pharmacist-courses', icon: 'clipboard' })
     }
     quizItems.push({ label: t('sidebar.quizHistory'), to: '/history', icon: 'history' })
     groups.push({ label: t('sidebar.groupQuizzes'), items: quizItems })

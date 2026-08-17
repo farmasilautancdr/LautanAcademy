@@ -149,7 +149,7 @@ function wrongsFor(h) {
       <div v-if="loading" class="text-slate text-sm">{{ t('areaManagerDashboard.loading') }}</div>
       <div v-else-if="allResults.length === 0 && allAiResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
       <template v-else>
-        <section v-if="auth.impersonating" class="mb-8">
+        <section class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 class="font-display text-base font-semibold text-ink">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
             <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
@@ -170,12 +170,6 @@ function wrongsFor(h) {
           </div>
           <div v-else class="bg-white rounded-xl2 px-5 py-4">
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.noResultsFiltered') }}</p>
-          </div>
-        </section>
-        <section v-else class="mb-8">
-          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
-          <div class="bg-white rounded-xl2 px-5 py-4">
-            <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.cpdComingSoon') }}</p>
           </div>
         </section>
 
