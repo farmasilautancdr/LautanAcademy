@@ -15,7 +15,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, MODULE_QUIZ_HOURS, AI_PRACTICE_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, MODULE_QUIZ_HOURS, AI_PRACTICE_HOURS, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import ProgressRing from '../components/ProgressRing.vue'
 import Pagination from '../components/Pagination.vue'
@@ -29,7 +29,6 @@ const reports = ref([])
 const videoTrainings = ref([])
 const loading = ref(true)
 const auth = useAuthStore()
-const CPD_TARGET_HOURS = 120
 
 const reportYear = ref('ALL')
 const reportTopic = ref('ALL')

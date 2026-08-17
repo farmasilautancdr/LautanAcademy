@@ -14,6 +14,11 @@
 export const MODULE_QUIZ_HOURS = 1
 export const AI_PRACTICE_HOURS = 0.25
 
+// Global CPD target, hours/calendar-year. Was 120, lowered to 60 — single
+// source of truth so a future change only touches this file. See
+// docs/superpowers/specs/2026-08-17-cpd-compliance-report-design.md.
+export const CPD_TARGET_HOURS = 60
+
 // video_trainings entries -> a topic -> hours lookup, the shape
 // hoursByStaff() needs to tell a Video Training results row apart from a
 // Module Quiz one (same results table, only topic membership here
@@ -46,8 +51,8 @@ export function splitByVideoTopic(results, hoursByTopic) {
 // Topic is a video-training topic, otherwise the flat Module Quiz rate;
 // every aiResults row counts at the flat AI Practice rate, no topic check
 // needed (ai_results is exclusively AI Practice). Sorted ascending by
-// hours — staff furthest behind the 120hr target surface first, the
-// actual point of a manager-facing view.
+// hours — staff furthest behind the CPD_TARGET_HOURS target surface
+// first, the actual point of a manager-facing view.
 export function hoursByStaff(results, aiResults, hoursByTopic, year = new Date().getFullYear()) {
   const byStaff = new Map()
   function add(name, outlet, hours) {

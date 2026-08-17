@@ -16,7 +16,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -31,7 +31,6 @@ const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
 const videoTrainings = ref([])
 const loading = ref(true)
-const CPD_TARGET_HOURS = 120
 
 const videoYear = ref('ALL')
 const videoTopic = ref('ALL')

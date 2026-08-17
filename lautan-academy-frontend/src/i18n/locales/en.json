@@ -512,7 +512,7 @@
     "videoConfirmRemove": "Remove \"{title}\"?",
     "videoAddEntry": "Add video training",
     "videoHoursLabel": "CPD hours",
-    "videoHoursHelper": "How many hours this video counts toward the 120hr/year target — set by you, not the video's real length.",
+    "videoHoursHelper": "How many hours this video counts toward the 60hr/year target — set by you, not the video's real length.",
     "videoHoursValue": "{hours}h",
     "videoErrorBadHours": "Hours must be a positive number.",
     "videoKindLabel": "Type",

@@ -19,6 +19,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import ProgressRing from '../components/ProgressRing.vue'
 import DigitCode from '../components/DigitCode.vue'
 
@@ -29,7 +30,6 @@ const joinError = ref('')
 const history = ref([])
 const loadingHistory = ref(true)
 const cpdHoursThisYear = ref(0)
-const CPD_TARGET_HOURS = 120
 const resources = ref([])
 const loadingResources = ref(true)
 const router = useRouter()
