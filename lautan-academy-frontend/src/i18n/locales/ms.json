@@ -269,7 +269,8 @@
     "recommendations": "Cadangan",
     "today": "Hari ini",
     "yesterday": "Semalam",
-    "daysAgo": "{days} hari lalu"
+    "daysAgo": "{days} hari lalu",
+    "downloadTrainingRecord": "Muat Turun Rekod Latihan Saya"
   },
   "resourcesView": {
     "title": "Semak Kursus",
@@ -578,8 +579,7 @@
     "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang",
-    "cpdNoData": "Tiada jam CPD direkodkan untuk tahun ini.",
-    "downloadTrainingRecord": "Muat Turun Rekod Latihan Saya"
+    "cpdNoData": "Tiada jam CPD direkodkan untuk tahun ini."
   },
   "supervisorManagerAccessView": {
     "title": "Akses Pengurus",

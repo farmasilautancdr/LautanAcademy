@@ -269,7 +269,8 @@
     "recommendations": "Recommendations",
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{days} days ago"
+    "daysAgo": "{days} days ago",
+    "downloadTrainingRecord": "Download My Training Record"
   },
   "resourcesView": {
     "title": "Browse Courses",
@@ -578,8 +579,7 @@
     "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
     "cpdComingSoon": "Coming soon",
-    "cpdNoData": "No CPD hours recorded for this year.",
-    "downloadTrainingRecord": "Download My Training Record"
+    "cpdNoData": "No CPD hours recorded for this year."
   },
   "supervisorManagerAccessView": {
     "title": "Manager Access",
