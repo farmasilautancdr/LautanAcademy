@@ -29,7 +29,7 @@ const { t, locale } = useI18n()
 const stored = JSON.parse(sessionStorage.getItem('lautan_active_quiz') || 'null')
 const topic = stored?.topic || 'Practice'
 const passcode = stored?.passcode || ''
-const kind = stored?.kind || 'ai' // 'standard' (Module Quiz, ModuleQuizView) | 'ai' (Practice, DashboardView)
+const kind = stored?.kind || 'ai' // 'standard' (Module Quiz) | 'video' (Video Training/Pharmacist Courses) | 'content' (Browse Courses reading quiz) | 'ai' (Practice)
 const questions = ref(stored?.questions || [])
 
 const currentIndex = ref(0)
@@ -98,6 +98,7 @@ async function selectAnswer(optIndex) {
     let result
     if (kind === 'standard') result = await api.checkStandardAnswer(currentQuestion.value.id, optIndex)
     else if (kind === 'video') result = await api.checkVideoAnswer(currentQuestion.value.id, optIndex)
+    else if (kind === 'content') result = await api.checkContentAnswer(currentQuestion.value.id, optIndex)
     else result = await api.checkAiAnswer(auth.staff.outlet, passcode, answeredIndex, optIndex)
     answers.value[answeredIndex] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
   } catch (err) {
@@ -134,7 +135,7 @@ function back() {
 // abandoning can't be used to retry for a better score. AI Practice is
 // explicitly excluded (kind !== 'standard' check).
 onBeforeRouteLeave(async (to, from, next) => {
-  if (!['standard', 'video'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) {
+  if (!['standard', 'video', 'content'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) {
     next()
     return
   }
@@ -160,7 +161,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 // before pagehide fires still won't be recorded — accepted limitation, no
 // fully reliable client-side alternative exists.
 function handlePageHide() {
-  if (!['standard', 'video'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) return
+  if (!['standard', 'video', 'content'].includes(kind) || answeredCount.value === 0 || hasSubmitted.value) return
   hasSubmitted.value = true
   const payloadAnswers = questions.value.map((q, i) => ({ id: q.id, chosen: answers.value[i]?.chosen }))
   api.saveResultKeepalive({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
@@ -187,6 +188,7 @@ async function gradeAndSave() {
 
   if (kind === 'standard') return api.saveResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
   if (kind === 'video') return api.saveVideoResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
+  if (kind === 'content') return api.saveContentResult({ name: auth.staff.name, outlet: auth.staff.outlet, topic, answers: payloadAnswers })
   return api.saveAiResult({ attemptId: 'AI' + Date.now(), name: auth.staff.name, outlet: auth.staff.outlet, topic, passcode, answers: payloadAnswers })
 }
 
@@ -269,7 +271,7 @@ async function submitQuiz() {
       <div class="flex items-center justify-between mt-6">
         <button
           @click="back"
-          :disabled="currentIndex === 0 || (['standard', 'video'].includes(kind) && answeredCount >= 1)"
+          :disabled="currentIndex === 0 || (['standard', 'video', 'content'].includes(kind) && answeredCount >= 1)"
           class="text-slate text-sm disabled:opacity-30"
         >
           {{ t('quizView.back') }}

@@ -223,6 +223,14 @@
     "errorNoQuestions": "Gagal memuatkan kuiz untuk kursus ini — muat semula dan cuba lagi.",
     "cpdHourValue": "{hours} jam CPD"
   },
+  "contentReadingView": {
+    "title": "Bahan Kursus",
+    "markRead": "Saya sudah baca — mula kuiz",
+    "starting": "Memuatkan kuiz...",
+    "errorNotFound": "Bahan ini tidak dijumpai.",
+    "errorNoQuestions": "Gagal memuatkan kuiz untuk bahan ini — muat semula dan cuba lagi.",
+    "cpdHourValue": "{hours} jam CPD"
+  },
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
     "questionProgress": "Soalan {current} daripada {total}",

@@ -223,6 +223,14 @@
     "errorNoQuestions": "Couldn't load the quiz for this course — refresh and try again.",
     "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
   },
+  "contentReadingView": {
+    "title": "Course Material",
+    "markRead": "I've read this — start the quiz",
+    "starting": "Loading quiz...",
+    "errorNotFound": "This material could not be found.",
+    "errorNoQuestions": "Couldn't load the quiz for this material — refresh and try again.",
+    "cpdHourValue": "{hours} CPD hour | {hours} CPD hours"
+  },
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
     "questionProgress": "Question {current} of {total}",
