@@ -48,6 +48,12 @@ const subcategoryFilter = ref('ALL')
 const createQuizPath = computed(() => auth.manager?.role === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
 const canCreateQuiz = computed(() => ['outlet_manager', 'warehouse_manager'].includes(auth.manager?.role))
 
+// Retail-only, matches Module Quiz/Video Training's existing gate —
+// warehouse staff and every manager tier see quiz_required entries
+// exactly as any other Content entry (see
+// docs/superpowers/specs/2026-08-17-content-reading-quiz-design.md).
+const canTakeContentQuiz = computed(() => auth.isStaff && auth.staff?.division === 'retail')
+
 // Reuses Phase 1's sidebar role labels (src/i18n/locales/{en,ms}.json ->
 // sidebar.roleOutletManager etc.) instead of a second copy of the same 4
 // strings under a new resourcesView key.
@@ -71,6 +77,7 @@ const allEntries = computed(() => [
   ...knowledgeEntries.value.map(c => ({
     id: 'content-' + c.ID, name: c.Title, category: c.Category, subcategory: c.Topic,
     kind: 'Article', link: c.Link, body: c.Body, isContent: true,
+    quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID,
   })),
 ])
 
@@ -146,6 +153,9 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
                 <a v-if="e.link" :href="e.link" target="_blank" rel="noopener" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</a>
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
                   {{ t('resourcesView.createQuizFromThis') }}
+                </RouterLink>
+                <RouterLink v-if="canTakeContentQuiz && e.quizRequired && e.quizReady" :to="`/content-reading/${e.contentId}`" class="text-xs text-white font-medium bg-coral rounded-full px-3 py-1">
+                  {{ t('resourcesView.takeQuiz') }}
                 </RouterLink>
               </div>
             </details>

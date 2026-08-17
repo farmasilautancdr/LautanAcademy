@@ -293,7 +293,8 @@
     "allTopics": "Semua topik",
     "createQuiz": "Cipta Kuiz",
     "createQuizFromThis": "Cipta Kuiz daripada ini",
-    "openAttachedLink": "Buka pautan lampiran"
+    "openAttachedLink": "Buka pautan lampiran",
+    "takeQuiz": "Ambil Kuiz"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "Kuiz Latihan AI",

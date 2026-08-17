@@ -293,7 +293,8 @@
     "allTopics": "All topics",
     "createQuiz": "Create Quiz",
     "createQuizFromThis": "Create Quiz from this",
-    "openAttachedLink": "Open attached link"
+    "openAttachedLink": "Open attached link",
+    "takeQuiz": "Take Quiz"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "AI Practice Quiz",
