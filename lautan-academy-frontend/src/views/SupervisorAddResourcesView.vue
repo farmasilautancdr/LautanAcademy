@@ -42,6 +42,8 @@ const cCategory = ref('')
 const cTitle = ref('')
 const cBody = ref('')
 const cLink = ref('')
+const cQuizRequired = ref(false)
+const cHours = ref('1')
 const cError = ref('')
 const cSaving = ref(false)
 const cUploading = ref(false)
@@ -155,14 +157,23 @@ async function addContent() {
     cError.value = t('supervisorAddResourcesView.errorRequiredFields')
     return
   }
+  if (cQuizRequired.value && (!Number.isFinite(Number(cHours.value)) || Number(cHours.value) <= 0)) {
+    cError.value = t('supervisorAddResourcesView.errorHoursInvalid')
+    return
+  }
   cSaving.value = true
   try {
-    await api.addContent({ topic: cTopic.value.trim(), category: cCategory.value, title: cTitle.value.trim(), body: cBody.value.trim(), link: cLink.value.trim() })
+    await api.addContent({
+      topic: cTopic.value.trim(), category: cCategory.value, title: cTitle.value.trim(), body: cBody.value.trim(), link: cLink.value.trim(),
+      quizRequired: cQuizRequired.value, hours: cQuizRequired.value ? Number(cHours.value) : undefined,
+    })
     cTopic.value = ''
     cTitle.value = ''
     cBody.value = ''
     cLink.value = ''
     cUploadedName.value = ''
+    cQuizRequired.value = false
+    cHours.value = '1'
     if (cFileInput.value) cFileInput.value.value = ''
     await loadContent()
   } catch (err) {
@@ -194,8 +205,11 @@ async function removeContent(item) {
       <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam mb-4">
         <div v-for="item in paginatedContent" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-sm font-medium text-ink truncate">{{ item.Title }}</p>
-            <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}</p>
+            <p class="text-sm font-medium text-ink truncate">
+              {{ item.Title }}
+              <span v-if="item.QuizRequired" class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-aqua">{{ t('supervisorAddResourcesView.quizRequiredBadge') }}</span>
+            </p>
+            <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
           </div>
           <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
         </div>
@@ -225,6 +239,16 @@ async function removeContent(item) {
         <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.bodyLabel') }}</label>
           <textarea v-model="cBody" rows="3" class="w-full border border-slate/30 rounded-lg py-2 px-3"></textarea>
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm text-ink">
+            <input type="checkbox" v-model="cQuizRequired" />
+            {{ t('supervisorAddResourcesView.quizRequiredLabel') }}
+          </label>
+          <div v-if="cQuizRequired" class="mt-2">
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.hoursLabel') }}</label>
+            <input v-model="cHours" type="number" min="0.5" step="0.5" class="w-32 border border-slate/30 rounded-lg py-2 px-3" />
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.fileLabel') }}</label>
