@@ -138,6 +138,7 @@ const sections = computed(() => {
         { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' },
         { label: t('sidebar.addResources'), to: '/supervisor/add-resources', icon: 'plus' },
         { label: t('sidebar.manageQuizQuestions'), to: '/supervisor/manage-quiz-questions', icon: 'clipboard' },
+        { label: t('sidebar.manageContentQuiz'), to: '/supervisor/manage-content-quiz', icon: 'clipboard' },
       ],
     })
   }
