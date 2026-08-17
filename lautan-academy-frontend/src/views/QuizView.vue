@@ -39,11 +39,11 @@ const QUESTION_TIMER_SECONDS = 30
 const timeRemaining = ref(QUESTION_TIMER_SECONDS)
 let timerInterval = null
 
-// kind === 'video' only. Counts down from 30s each time the question
-// changes; reaching 0 with the question still unanswered behaves exactly
-// like clicking Next (or Submit, if it's the last question) with it blank
-// — no separate grading path, it flows through the same unanswered-
-// question handling 'standard' already has in gradeAndSave().
+// All kinds. Counts down from 30s each time the question changes; reaching
+// 0 with the question still unanswered behaves exactly like clicking Next
+// (or Submit, if it's the last question) with it blank — no separate
+// grading path, it flows through the same unanswered-question handling
+// gradeAndSave() already has for a?.chosen === undefined.
 function startQuestionTimer() {
   clearInterval(timerInterval)
   timeRemaining.value = QUESTION_TIMER_SECONDS
@@ -89,12 +89,17 @@ async function selectAnswer(optIndex) {
   if (isRevealed.value || checking.value) return
   checkError.value = ''
   checking.value = true
+  // Captured before the await: currentIndex can move (e.g. AI Practice's
+  // unlocked Back button) while the check request is in flight, and the
+  // result must land on the question it was actually requested for, not
+  // whatever question happens to be showing when the response arrives.
+  const answeredIndex = currentIndex.value
   try {
     let result
     if (kind === 'standard') result = await api.checkStandardAnswer(currentQuestion.value.id, optIndex)
     else if (kind === 'video') result = await api.checkVideoAnswer(currentQuestion.value.id, optIndex)
-    else result = await api.checkAiAnswer(auth.staff.outlet, passcode, currentIndex.value, optIndex)
-    answers.value[currentIndex.value] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
+    else result = await api.checkAiAnswer(auth.staff.outlet, passcode, answeredIndex, optIndex)
+    answers.value[answeredIndex] = { chosen: optIndex, correct: result.correct, correctIndex: result.correctIndex }
   } catch (err) {
     checkError.value = t('quizView.errorCheckFailed')
   } finally {
@@ -114,11 +119,14 @@ function optionClass(i) {
 function next() {
   if (!isLastQuestion.value) {
     currentIndex.value++
-    if (kind === 'video') startQuestionTimer()
+    startQuestionTimer()
   }
 }
 function back() {
-  if (currentIndex.value > 0) currentIndex.value--
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    startQuestionTimer()
+  }
 }
 
 // Module Quiz only — once >=1 question is answered, leaving via in-app
@@ -160,7 +168,7 @@ function handlePageHide() {
 
 onMounted(() => {
   window.addEventListener('pagehide', handlePageHide)
-  if (kind === 'video') startQuestionTimer()
+  startQuestionTimer()
 })
 onUnmounted(() => {
   window.removeEventListener('pagehide', handlePageHide)
@@ -225,7 +233,7 @@ async function submitQuiz() {
     <div v-else class="max-w-lg mx-auto px-6 py-8">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate text-xs">{{ t('quizView.questionProgress', { current: currentIndex + 1, total: questions.length }) }}</span>
-        <span v-if="kind === 'video'" class="text-coral text-xs font-medium">{{ t('quizView.timeRemaining', { seconds: timeRemaining }) }}</span>
+        <span class="text-coral text-xs font-medium">{{ t('quizView.timeRemaining', { seconds: timeRemaining }) }}</span>
         <LanguageSwitcher />
       </div>
 
