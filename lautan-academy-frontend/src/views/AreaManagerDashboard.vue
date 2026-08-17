@@ -14,6 +14,7 @@ import { api } from '../api/client'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
 
 const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
@@ -170,6 +171,8 @@ function wrongsFor(h) {
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaManagerDashboard.cpdComingSoon') }}</p>
           </div>
         </section>
+
+        <PharmacistComplianceMatrix />
 
         <div class="mb-6">
           <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">

@@ -11,6 +11,7 @@ import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
 
 const auth = useAuthStore()
 const location = auth.manager?.outlet
@@ -59,6 +60,7 @@ function wrongsFor(attemptId) {
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
+      <PharmacistComplianceMatrix />
       <div v-if="loading" class="text-slate text-sm">{{ t('warehouseManagerResultsView.loading') }}</div>
       <div v-else-if="history.length === 0" class="text-slate text-sm">{{ t('warehouseManagerResultsView.noAttemptsYet') }}</div>
       <template v-else>

@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/auth'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -202,6 +203,8 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
           <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('supervisorStaffComparisonView.cpdComingSoon') }}</p>
         </div>
       </section>
+
+      <PharmacistComplianceMatrix />
 
       <div class="flex flex-wrap items-center gap-3 mb-6">
         <select v-model.number="windowMonths" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">

@@ -19,6 +19,7 @@ import { useAuthStore } from '../store/auth'
 import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
 
 const auth = useAuthStore()
 const outlet = auth.manager?.outlet
@@ -165,6 +166,8 @@ function wrongsForAi(attemptId) {
             <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('outletManagerResultsView.cpdComingSoon') }}</p>
           </div>
         </section>
+
+        <PharmacistComplianceMatrix />
 
         <section>
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.videoTrainingHeading') }}</h2>
