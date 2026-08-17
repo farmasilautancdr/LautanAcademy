@@ -578,7 +578,8 @@
     "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
     "cpdComingSoon": "Coming soon",
-    "cpdNoData": "No CPD hours recorded for this year."
+    "cpdNoData": "No CPD hours recorded for this year.",
+    "downloadTrainingRecord": "Download My Training Record"
   },
   "supervisorManagerAccessView": {
     "title": "Manager Access",

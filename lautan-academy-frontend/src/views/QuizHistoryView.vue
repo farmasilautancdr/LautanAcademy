@@ -15,7 +15,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic } from '../composables/useCpdHours'
+import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, MODULE_QUIZ_HOURS, AI_PRACTICE_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import ProgressRing from '../components/ProgressRing.vue'
 import Pagination from '../components/Pagination.vue'
@@ -88,6 +88,44 @@ const cpdYears = computed(() => {
 // the underlying rate logic (hoursByStaff/videoHoursByTopic) in sync with
 // the backend's cpdHoursThisYear() helper in data.js if either ever changes.
 const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value).reduce((sum, e) => sum + e.hours, 0))
+
+// Pharmacist self-export — a permanent personal record that survives
+// Annual Data Reset purging old `results` rows. All-time, not scoped to
+// cpdYear (the point is an archive, not a snapshot of one year). See
+// docs/superpowers/specs/2026-08-17-cpd-compliance-report-design.md.
+function csvEscape(value) {
+  const str = String(value ?? '')
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+}
+
+function downloadTrainingRecordCsv() {
+  const hoursByTopic = videoHoursByTopic(videoTrainings.value)
+  const rows = [
+    ...standardHistory.value.map((h) => ({
+      topic: h.Topic,
+      date: h.Timestamp,
+      hours: hoursByTopic.has(h.Topic) ? hoursByTopic.get(h.Topic) : MODULE_QUIZ_HOURS,
+    })),
+    ...aiHistory.value.map((h) => ({
+      topic: h.Topic,
+      date: h.Timestamp,
+      hours: AI_PRACTICE_HOURS,
+    })),
+  ].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  const header = ['Topic', 'Date', 'Hours'].map(csvEscape).join(',')
+  const body = rows.map((r) => [r.topic, new Date(r.date).toISOString().slice(0, 10), r.hours].map(csvEscape).join(','))
+  const total = rows.reduce((sum, r) => sum + r.hours, 0)
+  const footer = ['Total', '', total].map(csvEscape).join(',')
+
+  const blob = new Blob(['﻿' + [header, ...body, footer].join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `cpd-record-${auth.staff?.name}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 // Same thresholds AreaManagerReviewsView uses to compute the badge when
 // filing — reports store the label already, this just picks its color.
@@ -162,6 +200,14 @@ function wrongsForAi(attemptId) {
               {{ t('quizHistoryView.cpdHoursOfTarget', { hours: cpdHoursThisYear, target: CPD_TARGET_HOURS }) }}
             </span>
           </div>
+          <button
+            v-if="auth.staff?.isPharmacist"
+            type="button"
+            @click="downloadTrainingRecordCsv"
+            class="mt-3 text-sm font-medium text-aqua hover:underline"
+          >
+            {{ t('quizHistoryView.downloadTrainingRecord') }}
+          </button>
         </section>
         <section v-else class="mb-8">
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('quizHistoryView.cpdHeading') }}</h2>

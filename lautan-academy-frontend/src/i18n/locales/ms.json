@@ -578,7 +578,8 @@
     "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
     "cpdComingSoon": "Akan datang",
-    "cpdNoData": "Tiada jam CPD direkodkan untuk tahun ini."
+    "cpdNoData": "Tiada jam CPD direkodkan untuk tahun ini.",
+    "downloadTrainingRecord": "Muat Turun Rekod Latihan Saya"
   },
   "supervisorManagerAccessView": {
     "title": "Akses Pengurus",
