@@ -675,7 +675,7 @@ content_questions. Writes into the shared results table, retail-only."
 Replace the function (added in the Module Quiz CPD cap fix, commit `36c07a8`) with:
 
 ```js
-// CPD hours this calendar year, summed across three sources:
+// CPD hours this calendar year, summed across four sources:
 // - Video Training: real per-video hours, every attempt stacks.
 // - Content quiz (Browse Courses reading quiz): real per-entry hours,
 //   capped to the first attempt per topic per year (distinct on r.topic,
@@ -689,10 +689,12 @@ Replace the function (added in the Module Quiz CPD cap fix, commit `36c07a8`) wi
 //   Content-quiz topics so a topic is never double-counted across
 //   sources (on top of the existing "topic namespaces don't collide by
 //   design" convention).
+// - ai_results rows (always AI Practice, no topic check needed): flat
+//   0.25hr each, uncapped.
 // See docs/superpowers/specs/2026-08-13-cpd-hours-revision-design.md and
 // docs/superpowers/specs/2026-08-17-content-reading-quiz-design.md.
 async function cpdHoursThisYear(outlet, name) {
-  const [video, contentQuiz, moduleQuiz] = await Promise.all([
+  const [video, contentQuiz, moduleQuiz, aiPractice] = await Promise.all([
     pool.query(
       `select coalesce(sum(coalesce(vt.hours, 1)), 0) as hours
        from results r
@@ -722,10 +724,19 @@ async function cpdHoursThisYear(outlet, name) {
          and not exists (select 1 from content c where c.topic = r.topic and c.quiz_required)`,
       [outlet, name]
     ),
+    pool.query(
+      `select count(*) * 0.25 as hours
+       from ai_results
+       where outlet = $1 and name = $2
+         and extract(year from created_at) = extract(year from now())`,
+      [outlet, name]
+    ),
   ]);
-  return Number(video.rows[0].hours) + Number(contentQuiz.rows[0].hours) + Number(moduleQuiz.rows[0].topics);
+  return Number(video.rows[0].hours) + Number(contentQuiz.rows[0].hours) + Number(moduleQuiz.rows[0].topics) + Number(aiPractice.rows[0].hours);
 }
 ```
+
+**Executor note (caught during execution, not in the original plan text):** the first draft of this task's code accidentally dropped the pre-existing AI Practice source entirely (3-way instead of 4-way) — caught by re-reading the function against the version it was replacing before verifying. If implementing fresh from this plan, don't drop it; the AI Practice query above must survive unchanged from the version this task replaces.
 
 - [ ] **Step 2: Verify live end-to-end against real prod DB**
 
