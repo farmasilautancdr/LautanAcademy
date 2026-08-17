@@ -1068,9 +1068,9 @@ onMounted(async () => {
 
 ```js
 // line 124 — was:
-const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
 // becomes:
-const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
+const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
 ```
 
 **`AreaManagerDashboard.vue`:**
