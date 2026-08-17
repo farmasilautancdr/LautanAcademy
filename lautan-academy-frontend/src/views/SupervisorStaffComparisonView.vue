@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -24,6 +24,7 @@ const outletFilter = ref('ALL')
 const cpdResults = ref([])
 const cpdAiResults = ref([])
 const videoTrainings = ref([])
+const contentEntries = ref([])
 const videoYear = ref('ALL')
 const videoTopic = ref('ALL')
 const videoSort = ref('avg')
@@ -80,10 +81,11 @@ load()
 const videoTrainingsLoaded = ref(false)
 onMounted(async () => {
   try {
-    const [scoped, videos] = await Promise.all([api.getScopedData(0), api.getVideoTrainings()])
+    const [scoped, videos, content] = await Promise.all([api.getScopedData(0), api.getVideoTrainings(), api.getContent()])
     cpdResults.value = scoped.results || []
     cpdAiResults.value = scoped.aiResults || []
     videoTrainings.value = videos.videoTrainings || []
+    contentEntries.value = content.content || []
   } catch (e) { /* leave empty */ }
   videoTrainingsLoaded.value = true
 })
@@ -158,7 +160,7 @@ const cpdYears = computed(() => {
 // ignored them entirely, since cpdResults/cpdAiResults are deliberately
 // unscoped by windowMonths (see the existing comment above the onMounted
 // fetch) but were never outlet/region-scoped either.
-const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), outletScoped(cpdAiResults.value), videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), outletScoped(cpdAiResults.value), videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoRows, next: videoNext, prev: videoPrev } = usePagination(videoRows)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardRows, next: standardNext, prev: standardPrev } = usePagination(standardRows)

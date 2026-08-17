@@ -11,7 +11,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -34,6 +34,7 @@ const allResults = ref([])
 const wrongAnswers = ref([])
 const allAiResults = ref([])
 const videoTrainings = ref([])
+const contentEntries = ref([])
 const loading = ref(true)
 const outletFilter = ref('ALL')
 const videoYear = ref('ALL')
@@ -66,13 +67,14 @@ function dateBadge(iso) {
 
 onMounted(async () => {
   try {
-    const [scoped, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
+    const [scoped, videos, content] = await Promise.all([api.getScopedData(), api.getVideoTrainings(), api.getContent()])
     allResults.value = (scoped.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = scoped.wrongAnswers || []
     // Real data as of Task 4's backend fix — this branch used to hardcode
     // aiResults to [].
     allAiResults.value = scoped.aiResults || []
     videoTrainings.value = videos.videoTrainings || []
+    contentEntries.value = content.content || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 })
@@ -120,7 +122,7 @@ const cpdYears = computed(() => {
 })
 // Outlet filter now applies to the CPD summary too — previously this used
 // the unfiltered allResults/allAiResults regardless of the outlet dropdown.
-const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoResults, next: videoNext, prev: videoPrev } = usePagination(filteredVideoResults)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardResults, next: standardNext, prev: standardPrev } = usePagination(filteredStandardResults)

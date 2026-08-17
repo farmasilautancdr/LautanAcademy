@@ -15,7 +15,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, MODULE_QUIZ_HOURS, AI_PRACTICE_HOURS, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, MODULE_QUIZ_HOURS, AI_PRACTICE_HOURS, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import ProgressRing from '../components/ProgressRing.vue'
 import Pagination from '../components/Pagination.vue'
@@ -36,6 +36,7 @@ const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
 const reports = ref([])
 const videoTrainings = ref([])
+const contentEntries = ref([])
 const loading = ref(true)
 const auth = useAuthStore()
 
@@ -48,9 +49,10 @@ const cpdYear = ref(new Date().getFullYear())
 
 onMounted(async () => {
   try {
-    const [data, videos] = await Promise.all([
+    const [data, videos, content] = await Promise.all([
       api.getScopedData(),
       api.getVideoTrainings().catch(() => ({ videoTrainings: [] })),
+      api.getContent().catch(() => ({ content: [] })),
     ])
     standardHistory.value = (data.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
@@ -58,6 +60,7 @@ onMounted(async () => {
     aiWrongAnswers.value = data.aiWrongAnswers || []
     reports.value = (data.reports || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     videoTrainings.value = videos.videoTrainings || []
+    contentEntries.value = content.content || []
   } catch (e) { /* leave empty — not fatal */ }
   loading.value = false
 })
@@ -95,7 +98,7 @@ const cpdYears = computed(() => {
 // past years via cpdYear, which the backend field doesn't provide. Keep
 // the underlying rate logic (hoursByStaff/videoHoursByTopic) in sync with
 // the backend's cpdHoursThisYear() helper in data.js if either ever changes.
-const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value).reduce((sum, e) => sum + e.hours, 0))
+const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value).reduce((sum, e) => sum + e.hours, 0))
 
 // Pharmacist self-export — a permanent personal record that survives
 // Annual Data Reset purging old `results` rows. All-time, not scoped to

@@ -16,7 +16,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -38,6 +38,7 @@ const aiHistory = ref([])
 const wrongAnswers = ref([])
 const aiWrongAnswers = ref([])
 const videoTrainings = ref([])
+const contentEntries = ref([])
 const loading = ref(true)
 
 const videoYear = ref('ALL')
@@ -106,12 +107,13 @@ const cpdYears = computed(() => {
 
 onMounted(async () => {
   try {
-    const [data, videos] = await Promise.all([api.getScopedData(), api.getVideoTrainings()])
+    const [data, videos, content] = await Promise.all([api.getScopedData(), api.getVideoTrainings(), api.getContent()])
     standardHistory.value = (data.results || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     aiHistory.value = (data.aiResults || []).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
     wrongAnswers.value = data.wrongAnswers || []
     aiWrongAnswers.value = data.aiWrongAnswers || []
     videoTrainings.value = videos.videoTrainings || []
+    contentEntries.value = content.content || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 })
@@ -121,7 +123,7 @@ onMounted(async () => {
 // distinguished only by which topic namespace they belong to); aiHistory
 // carries every AI Practice result. hoursByStaff() handles the
 // video-vs-module split internally via hoursByTopic.
-const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), cpdYear.value))
+const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoHistory, next: videoNext, prev: videoPrev } = usePagination(filteredVideoHistory)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardHistory, next: standardNext, prev: standardPrev } = usePagination(filteredStandardHistory)

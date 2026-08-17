@@ -1,16 +1,17 @@
 // Pure calculation, no reactive state of its own — every call site already
-// owns its own `results`/`aiResults`/`video_trainings` refs from the API
-// calls it was already making. Reused identically by the Dashboard and all
-// three manager-facing Staff Results pages instead of quadruplicating the
-// same join+group logic. See
-// docs/superpowers/specs/2026-08-12-cpd-hours-design.md and
-// docs/superpowers/specs/2026-08-13-cpd-hours-revision-design.md.
+// owns its own `results`/`aiResults`/`video_trainings`/`content` refs from
+// the API calls it was already making. Reused identically by the Dashboard
+// and all three manager-facing Staff Results pages instead of
+// quadruplicating the same join+group logic. See
+// docs/superpowers/specs/2026-08-12-cpd-hours-design.md,
+// docs/superpowers/specs/2026-08-13-cpd-hours-revision-design.md, and
+// docs/superpowers/specs/2026-08-17-content-reading-quiz-design.md.
 
-// Flat rates for the two sources with no fixed per-entry hours value to
-// attach to (Module Quiz's standard_questions bank has no hours field; AI
-// Practice quizzes are generated on the fly per passcode, no catalog at
-// all). Video Training's real per-video rate comes from hoursByTopic
-// instead.
+// Flat rate for the one source with no fixed per-entry hours value to
+// attach to (Module Quiz's standard_questions bank has no hours field).
+// AI Practice quizzes are generated on the fly per passcode, no catalog at
+// all. Video Training's and Content quiz's real per-topic rates come from
+// hoursByTopic/contentHoursByTopic instead.
 export const MODULE_QUIZ_HOURS = 1
 export const AI_PRACTICE_HOURS = 0.25
 
@@ -30,6 +31,19 @@ export function videoHoursByTopic(videoTrainings) {
   return map
 }
 
+// content entries (quiz_required only) -> a topic -> hours lookup, same
+// shape as videoHoursByTopic. Only quiz_required entries are included —
+// a plain reading-only Content entry never appears in `results` at all,
+// so it wouldn't matter either way, but filtering here keeps the map's
+// contents self-documenting.
+export function contentHoursByTopic(contentEntries) {
+  const map = new Map()
+  for (const c of contentEntries) {
+    if (c.QuizRequired) map.set(c.Topic, c.Hours)
+  }
+  return map
+}
+
 // Splits a `results` array (Video Training + Module Quiz share one table)
 // into the two sources by topic membership — the same check hoursByStaff()
 // already does internally, exposed standalone so views can render them as
@@ -44,21 +58,21 @@ export function splitByVideoTopic(results, hoursByTopic) {
   return { video, moduleQuiz }
 }
 
-// results rows (Video Training + Module Quiz, shared table) + aiResults
-// rows (AI Practice, separate table) -> per-staff hours-this-year, both
-// filtered to Timestamp falling in `year` (defaults to the current
-// calendar year). A results row counts at its video's real hours if its
-// Topic is a video-training topic (every attempt stacks); otherwise it's
-// Module Quiz, flat rate but capped to the first attempt per topic per
-// year (see MODULE_QUIZ_HOURS/data.js's cpdHoursThisYear() — same rule,
-// kept in sync here since this is the client-side copy of that
-// calculation). Every aiResults row counts at the flat AI Practice rate,
-// no topic check needed (ai_results is exclusively AI Practice). Sorted
-// ascending by hours — staff furthest behind the CPD_TARGET_HOURS target
-// surface first, the actual point of a manager-facing view.
-export function hoursByStaff(results, aiResults, hoursByTopic, year = new Date().getFullYear()) {
+// results rows (Video Training + Module Quiz + Content quiz, shared
+// table) + aiResults rows (AI Practice, separate table) -> per-staff
+// hours-this-year, both filtered to Timestamp falling in `year` (defaults
+// to the current calendar year). Precedence per results row: Video
+// Training first (real hours, every attempt stacks), then Content quiz
+// (real hours, capped to first attempt per topic per year), then Module
+// Quiz fallback (flat rate, same cap) — matches the backend's
+// not-exists/not-exists layering in data.js's cpdHoursThisYear() exactly.
+// Every aiResults row counts at the flat AI Practice rate, no topic check
+// needed (ai_results is exclusively AI Practice). Sorted ascending by
+// hours — staff furthest behind the CPD_TARGET_HOURS target surface
+// first, the actual point of a manager-facing view.
+export function hoursByStaff(results, aiResults, hoursByTopic, contentHoursByTopicMap = new Map(), year = new Date().getFullYear()) {
   const byStaff = new Map()
-  const countedModuleTopics = new Set()
+  const countedCappedTopics = new Set() // `${name}|${outlet}|${topic}`, Content-quiz and Module-Quiz topics share this cap
   function add(name, outlet, hours) {
     const key = `${name}|${outlet}`
     if (!byStaff.has(key)) byStaff.set(key, { name, outlet, hours: 0 })
@@ -71,9 +85,13 @@ export function hoursByStaff(results, aiResults, hoursByTopic, year = new Date()
       continue
     }
     const topicKey = `${r.Name}|${r.Outlet}|${r.Topic}`
-    if (countedModuleTopics.has(topicKey)) continue
-    countedModuleTopics.add(topicKey)
-    add(r.Name, r.Outlet, MODULE_QUIZ_HOURS)
+    if (countedCappedTopics.has(topicKey)) continue
+    countedCappedTopics.add(topicKey)
+    if (contentHoursByTopicMap.has(r.Topic)) {
+      add(r.Name, r.Outlet, contentHoursByTopicMap.get(r.Topic))
+    } else {
+      add(r.Name, r.Outlet, MODULE_QUIZ_HOURS)
+    }
   }
   for (const r of aiResults) {
     if (new Date(r.Timestamp).getFullYear() !== year) continue
