@@ -130,6 +130,12 @@ export const api = {
   saveVideoResult: (payload) => request('/data/video-results', { method: 'POST', body: JSON.stringify(payload) }),
   addVideoTraining: (payload) => request('/video-trainings', { method: 'POST', body: JSON.stringify(payload) }),
   deleteVideoTraining: (id) => request(`/video-trainings/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  getContentQuestions: (topic) => request(`/content-questions?topic=${encodeURIComponent(topic)}`),
+  checkContentAnswer: (id, chosen) => request(`/content-questions/${id}/check`, { method: 'POST', body: JSON.stringify({ chosen }) }),
+  addContentQuestion: (payload) => request('/content-questions', { method: 'POST', body: JSON.stringify(payload) }),
+  updateContentQuestion: (id, payload) => request(`/content-questions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteContentQuestion: (id) => request(`/content-questions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  saveContentResult: (payload) => request('/data/content-results', { method: 'POST', body: JSON.stringify(payload) }),
   getAllStaffPharmacistTags: () => request('/staff-roster-manage/all'),
   setStaffPharmacistTag: (id, isPharmacist) =>
     request(`/staff-roster-manage/${id}/pharmacist`, { method: 'PATCH', body: JSON.stringify({ isPharmacist }) }),
