@@ -19,7 +19,7 @@ const emit = defineEmits(['close'])
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-[60] flex items-center justify-center bg-ink/50 p-4" @click.self="emit('close')">
-      <div class="w-full max-w-4xl h-[85vh] bg-white rounded-xl2 shadow-lg flex flex-col overflow-hidden">
+      <div class="w-full max-w-6xl h-[94vh] bg-white rounded-xl2 shadow-lg flex flex-col overflow-hidden">
         <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-seafoam shrink-0">
           <p class="text-sm font-medium text-ink truncate">{{ title }}</p>
           <div class="flex items-center gap-3 shrink-0">
