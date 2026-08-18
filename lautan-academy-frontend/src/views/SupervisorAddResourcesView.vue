@@ -37,6 +37,23 @@ const vError = ref('')
 const vSaving = ref(false)
 const driveCategories = ref([])
 const categoryOptions = computed(() => [...new Set([...driveCategories.value, ...content.value.map(c => c.Category)])].filter(Boolean).sort())
+// Native <input list> + <datalist> renders as a tiny OS-level autofill strip
+// above the mobile keyboard (barely legible, easy to miss) instead of an
+// in-page popup like the topic pickers elsewhere (e.g. Manage Content Quiz's
+// <select>) — but Category must stay free-text (new categories are valid,
+// unlike those locked topic pickers), so a plain <select> would break that.
+// This is a small custom combobox instead: text input + an in-page filtered
+// suggestion list, still fully free-typeable.
+const categoryDropdownOpen = ref(false)
+const filteredCategoryOptions = computed(() => {
+  const q = cCategory.value.trim().toLowerCase()
+  if (!q) return categoryOptions.value
+  return categoryOptions.value.filter(c => c.toLowerCase().includes(q))
+})
+function selectCategory(c) {
+  cCategory.value = c
+  categoryDropdownOpen.value = false
+}
 const cTopic = ref('')
 const cCategory = ref('')
 const cTitle = ref('')
@@ -287,13 +304,18 @@ async function removeContent(item) {
             <input v-model="cTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
         </div>
-        <div>
+        <div class="relative">
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.categoryLabel') }}</label>
-          <input v-model="cCategory" list="category-options" type="text" :placeholder="t('supervisorAddResourcesView.categoryPlaceholder')"
+          <input v-model="cCategory" type="text" autocomplete="off" :placeholder="t('supervisorAddResourcesView.categoryPlaceholder')"
+            @focus="categoryDropdownOpen = true" @input="categoryDropdownOpen = true" @blur="categoryDropdownOpen = false"
             class="w-full border border-slate/30 rounded-lg py-2 px-3" />
-          <datalist id="category-options">
-            <option v-for="c in categoryOptions" :key="c" :value="c" />
-          </datalist>
+          <div v-if="categoryDropdownOpen && filteredCategoryOptions.length"
+            class="absolute z-10 mt-1 w-full bg-white border border-slate/20 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <button v-for="c in filteredCategoryOptions" :key="c" type="button" @mousedown.prevent="selectCategory(c)"
+              class="w-full text-left px-3 py-2 text-sm text-ink hover:bg-seafoam">
+              {{ c }}
+            </button>
+          </div>
           <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.categoryHelper') }}</p>
         </div>
         <div>
