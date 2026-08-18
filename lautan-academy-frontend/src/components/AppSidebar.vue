@@ -11,7 +11,7 @@
 // scoped to one outlet per login in the real system (Area Manager) or
 // already covers everything on one page (Supervisor), so those routes
 // don't have real pages built yet. Commented at their definition below.
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
@@ -157,6 +157,25 @@ function toggle(label) { collapsed.value[label] = isOpen(label) }
 // needs to be reachable from this flat icon row instead.
 const flatItems = computed(() => sections.value.flatMap(g => g.items))
 
+// Item count in flatItems varies by role (Supervisor has 11 vs. Staff's
+// handful), so the fixed-column grid wraps to a different number of rows per
+// role — a hardcoded padding-bottom on the page content (old: pb-20) falls
+// short once the nav grows past 2 rows and the last row covers real buttons
+// (e.g. the Add Question submit button on Supervisor's manage-quiz pages).
+// Measuring the actual rendered nav height keeps content padding correct
+// for any future item count instead of re-guessing a pixel value.
+const mobileNavRef = ref(null)
+let mobileNavObserver = null
+onMounted(() => {
+  if (!mobileNavRef.value || typeof ResizeObserver === 'undefined') return
+  mobileNavObserver = new ResizeObserver((entries) => {
+    const height = entries[0]?.contentRect?.height
+    if (height) document.documentElement.style.setProperty('--mobile-nav-height', `${height}px`)
+  })
+  mobileNavObserver.observe(mobileNavRef.value)
+})
+onUnmounted(() => mobileNavObserver?.disconnect())
+
 async function handleLogout() {
   auth.logout()
   if (isAreaManager.value) router.push('/area-manager-login')
@@ -256,7 +275,7 @@ const ICONS = {
     </div>
   </aside>
 
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam grid grid-cols-4 pb-[env(safe-area-inset-bottom)] max-h-[30vh] overflow-y-auto" aria-label="Primary">
+  <nav ref="mobileNavRef" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam grid grid-cols-4 pb-[env(safe-area-inset-bottom)] max-h-[30vh] overflow-y-auto" aria-label="Primary">
     <RouterLink
       v-for="item in flatItems"
       :key="item.label"

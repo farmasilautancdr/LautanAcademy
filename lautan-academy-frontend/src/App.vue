@@ -28,7 +28,7 @@ onMounted(() => {
     <ImpersonationBanner v-if="auth.impersonating" />
     <div class="flex">
       <AppSidebar />
-      <div class="flex-1 min-w-0 pb-20 md:pb-0">
+      <div class="flex-1 min-w-0 pb-[var(--mobile-nav-height,5rem)] md:pb-0">
         <router-view />
       </div>
     </div>

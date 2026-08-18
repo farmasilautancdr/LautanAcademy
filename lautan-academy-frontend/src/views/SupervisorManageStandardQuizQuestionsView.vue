@@ -2,10 +2,14 @@
 // Supervisor-only CRUD over standard_questions (the quiz bank behind
 // Module Quiz). Mirrors SupervisorManageQuizQuestionsView.vue (video
 // quiz admin) field-for-field, with one difference: standard_questions has
-// no parent "course" table, so topic is a text input backed by a <datalist>
-// of existing topics rather than a closed <select> — typing an unrecognized
-// name creates a brand-new module the moment its first question is saved,
-// same as how ModuleQuizView.vue itself derives its topic list.
+// no parent "course" table, so there's no closed list of valid topics to
+// pick from — a brand-new module is created the moment its first question
+// is saved under a topic name that doesn't exist yet, same as how
+// ModuleQuizView.vue itself derives its topic list. The dropdown below
+// carries a synthetic "__new__" option so that capability survives while
+// still matching the plain <select> look used on the other two admin pages
+// (was a free-text input + <datalist>, which rendered inconsistently
+// across mobile browsers and looked out of place next to those pages).
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
@@ -17,6 +21,8 @@ const { t } = useI18n()
 const allQuestions = ref([])
 const loadingTopics = ref(true)
 const selectedTopic = ref('')
+const newTopicName = ref('')
+const effectiveTopic = computed(() => selectedTopic.value === '__new__' ? newTopicName.value.trim() : selectedTopic.value)
 
 async function loadAll() {
   loadingTopics.value = true
@@ -31,7 +37,7 @@ async function loadAll() {
 loadAll()
 
 const topics = computed(() => [...new Set(allQuestions.value.map(q => q.topic))].filter(Boolean).sort())
-const questions = computed(() => allQuestions.value.filter(q => q.topic === selectedTopic.value))
+const questions = computed(() => allQuestions.value.filter(q => q.topic === effectiveTopic.value))
 const { currentPage, totalPages, paginatedItems: paginatedQuestions, next, prev } = usePagination(questions)
 
 const editingId = ref(null) // null = add mode, otherwise the id being edited
@@ -87,7 +93,7 @@ function startEdit(q) {
 function buildPayload() {
   return {
     type: qType.value,
-    topic: selectedTopic.value,
+    topic: effectiveTopic.value,
     question_en: qQuestionEn.value.trim(),
     question_ms: qQuestionMs.value.trim(),
     opt1_en: qOpt1En.value.trim(),
@@ -147,21 +153,23 @@ async function removeQuestion(q) {
         <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorManageStandardQuizQuestionsView.topicLabel') }}</label>
         <div v-if="loadingTopics" class="text-slate text-sm">{{ t('supervisorManageStandardQuizQuestionsView.loading') }}</div>
         <template v-else>
+          <select v-model="selectedTopic" class="w-full border border-slate/30 rounded-lg py-2 px-3 bg-white">
+            <option value="">{{ t('supervisorManageStandardQuizQuestionsView.topicPlaceholder') }}</option>
+            <option v-for="topic in topics" :key="topic" :value="topic">{{ topic }}</option>
+            <option value="__new__">{{ t('supervisorManageStandardQuizQuestionsView.newTopicOption') }}</option>
+          </select>
           <input
-            v-model="selectedTopic"
-            list="standard-topics-datalist"
+            v-if="selectedTopic === '__new__'"
+            v-model="newTopicName"
             type="text"
-            :placeholder="t('supervisorManageStandardQuizQuestionsView.topicPlaceholder')"
-            class="w-full border border-slate/30 rounded-lg py-2 px-3 bg-white"
+            :placeholder="t('supervisorManageStandardQuizQuestionsView.newTopicPlaceholder')"
+            class="w-full border border-slate/30 rounded-lg py-2 px-3 bg-white mt-2"
           />
-          <datalist id="standard-topics-datalist">
-            <option v-for="topic in topics" :key="topic" :value="topic" />
-          </datalist>
           <p v-if="topics.length === 0" class="text-xs text-slate mt-1">{{ t('supervisorManageStandardQuizQuestionsView.noTopicsYet') }}</p>
         </template>
       </div>
 
-      <template v-if="selectedTopic">
+      <template v-if="effectiveTopic">
         <p v-if="deleteError" class="text-coral text-sm mb-2">{{ deleteError }}</p>
 
         <div v-if="questions.length === 0" class="text-slate text-sm mb-4">{{ t('supervisorManageStandardQuizQuestionsView.noQuestionsYet') }}</div>
