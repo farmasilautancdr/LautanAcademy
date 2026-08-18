@@ -38,6 +38,16 @@ import SupervisorManageContentQuizQuestionsView from '../views/SupervisorManageC
 
 const router = createRouter({
   history: createWebHistory(),
+  // Without this, switching bottom-nav/sidebar tabs keeps the previous
+  // page's scroll offset — the whole window is the scroll container (no
+  // overflow-y-auto wrapper around <router-view> in App.vue), so a new
+  // page can mount already scrolled deep down, then jump as its real
+  // height resolves. Reset to top on fresh navigation, restore on
+  // browser back/forward.
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    return { top: 0 }
+  },
   routes: [
     { path: '/login', name: 'login', component: LoginView },
     // manager-login covers both outlet_manager and warehouse_manager — a
