@@ -123,7 +123,7 @@ const allEntries = computed(() => [
     kind: r.Kind, previewUrl: r.PreviewURL, isContent: false,
   })),
   ...knowledgeEntries.value.map(c => ({
-    id: 'content-' + c.ID, name: c.Title, category: c.Category, subcategory: c.Topic,
+    id: 'content-' + c.ID, name: c.Title || c.Topic, category: c.Category, subcategory: c.Topic,
     kind: 'Article', link: c.Link, body: c.Body, isContent: true,
     quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID, hours: c.Hours,
   })),
@@ -193,7 +193,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                   <p class="text-xs text-slate">
-                    {{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ e.quizRequired && e.hours ? ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours) : '' }}
+                    {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ e.quizRequired && e.hours ? ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours) : '' }}
                   </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">

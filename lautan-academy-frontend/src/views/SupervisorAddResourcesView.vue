@@ -250,10 +250,10 @@ async function removeContent(item) {
         <div v-for="item in paginatedContent" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">
-              {{ item.Title }}
+              {{ item.Title || item.Topic }}
               <span v-if="item.QuizRequired" class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-aqua">{{ t('supervisorAddResourcesView.quizRequiredBadge') }}</span>
             </p>
-            <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
+            <p class="text-xs text-slate">{{ item.Topic !== item.Title ? item.Topic + ' · ' : '' }}{{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
           </div>
           <div class="flex items-center gap-3 shrink-0">
             <button @click="startEdit(item)" class="text-aqua text-xs font-medium underline">{{ t('supervisorAddResourcesView.edit') }}</button>
@@ -274,18 +274,18 @@ async function removeContent(item) {
             <input v-model="cTopic" type="text" :placeholder="t('supervisorAddResourcesView.topicPlaceholder')" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.categoryLabel') }}</label>
-            <input v-model="cCategory" list="category-options" type="text" :placeholder="t('supervisorAddResourcesView.categoryPlaceholder')"
-              class="w-full border border-slate/30 rounded-lg py-2 px-3" />
-            <datalist id="category-options">
-              <option v-for="c in categoryOptions" :key="c" :value="c" />
-            </datalist>
-            <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.categoryHelper') }}</p>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.titleLabel') }}</label>
+            <input v-model="cTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.titleLabel') }}</label>
-          <input v-model="cTitle" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.categoryLabel') }}</label>
+          <input v-model="cCategory" list="category-options" type="text" :placeholder="t('supervisorAddResourcesView.categoryPlaceholder')"
+            class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          <datalist id="category-options">
+            <option v-for="c in categoryOptions" :key="c" :value="c" />
+          </datalist>
+          <p class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.categoryHelper') }}</p>
         </div>
         <div>
           <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.bodyLabel') }}</label>

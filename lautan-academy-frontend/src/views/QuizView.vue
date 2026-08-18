@@ -79,7 +79,11 @@ const canManuallyAdvance = computed(() => isRevealed.value)
 
 function optionsFor(q) {
   const suffix = locale.value === 'en' ? '_en' : '_ms'
-  return [q['opt1' + suffix], q['opt2' + suffix], q['opt3' + suffix], q['opt4' + suffix]]
+  const opts = [q['opt1' + suffix], q['opt2' + suffix], q['opt3' + suffix], q['opt4' + suffix]]
+  // Trim trailing empty options (3-option questions leave opt4 blank) so no
+  // extra clickable/empty button renders past the real choices.
+  while (opts.length && !opts[opts.length - 1]) opts.pop()
+  return opts
 }
 
 // Once an answer is picked for a question it's locked in — matches the
@@ -257,8 +261,8 @@ async function submitQuiz() {
         <div class="bg-aqua h-1.5 rounded-full transition-all duration-300" :style="{ width: ((currentIndex + 1) / questions.length * 100) + '%' }" />
       </div>
 
-      <div class="bg-white rounded-xl2 p-6 shadow-sm">
-        <p class="font-display font-semibold text-ink text-lg mb-5">
+      <div class="bg-white rounded-xl2 p-5 shadow-sm">
+        <p class="font-display font-semibold text-ink text-base mb-4">
           {{ locale === 'en' ? currentQuestion.question_en : currentQuestion.question_ms }}
         </p>
 
