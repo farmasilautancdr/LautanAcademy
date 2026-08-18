@@ -33,6 +33,11 @@ const resetPin = ref('')
 const resetError = ref('')
 const resetting = ref(false)
 
+const editingName = ref('') // which row's edit-name form is open
+const editNewName = ref('')
+const editError = ref('')
+const editing = ref(false)
+
 async function load() {
   loading.value = true
   try {
@@ -67,6 +72,35 @@ function startReset(name) {
   resettingName.value = name
   resetPin.value = ''
   resetError.value = ''
+}
+
+function startEdit(name) {
+  editingName.value = name
+  editNewName.value = name
+  editError.value = ''
+}
+
+async function submitEdit() {
+  editError.value = ''
+  const newName = editNewName.value.trim().toUpperCase()
+  if (!newName) {
+    editError.value = t('manageStaffPanel.errorEditName')
+    return
+  }
+  if (newName === editingName.value) {
+    editingName.value = ''
+    return
+  }
+  editing.value = true
+  try {
+    await api.renameStaff({ division: props.division, outlet: props.outlet, oldName: editingName.value, newName })
+    editingName.value = ''
+    await load()
+  } catch (err) {
+    editError.value = err.message || t('manageStaffPanel.errorEditFailed')
+  } finally {
+    editing.value = false
+  }
 }
 
 async function submitReset() {
@@ -112,10 +146,20 @@ async function removeStaff(name) {
               </p>
             </div>
             <div v-if="!auth.impersonating" class="flex items-center gap-3 shrink-0">
+              <button @click="startEdit(s.Name)" class="text-aqua text-xs font-medium underline">{{ t('manageStaffPanel.editName') }}</button>
               <button @click="startReset(s.Name)" class="text-aqua text-xs font-medium underline">{{ t('manageStaffPanel.resetPin') }}</button>
               <button @click="removeStaff(s.Name)" class="text-coral text-xs font-medium underline">{{ t('manageStaffPanel.remove') }}</button>
             </div>
           </div>
+          <div v-if="editingName === s.Name" class="mt-3 flex items-center gap-2">
+            <input v-model="editNewName" type="text" :placeholder="t('manageStaffPanel.namePlaceholder')"
+              class="flex-1 min-w-0 border border-slate/30 rounded-lg py-1.5 px-3 text-sm" />
+            <button @click="submitEdit" :disabled="editing" class="bg-aqua text-white text-xs font-medium px-3 py-1.5 rounded-lg disabled:opacity-60">
+              {{ editing ? t('manageStaffPanel.saving') : t('manageStaffPanel.save') }}
+            </button>
+            <button @click="editingName = ''" class="text-slate text-xs">{{ t('manageStaffPanel.cancel') }}</button>
+          </div>
+          <p v-if="editingName === s.Name && editError" class="text-coral text-xs mt-1">{{ editError }}</p>
           <div v-if="resettingName === s.Name" class="mt-3 flex items-center gap-2">
             <input v-model="resetPin" type="password" inputmode="numeric" maxlength="4" :placeholder="t('manageStaffPanel.newPinPlaceholder')"
               class="flex-1 min-w-0 border border-slate/30 rounded-lg py-1.5 px-3 text-sm" />

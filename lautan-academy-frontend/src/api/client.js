@@ -111,6 +111,7 @@ export const api = {
     request(`/staff-roster-manage/full?division=${encodeURIComponent(division)}&outlet=${encodeURIComponent(outlet)}`),
   addStaff: (payload) => request('/staff-roster-manage', { method: 'POST', body: JSON.stringify(payload) }),
   resetStaffPin: (payload) => request('/staff-roster-manage/reset-pin', { method: 'POST', body: JSON.stringify(payload) }),
+  renameStaff: (payload) => request('/staff-roster-manage/rename', { method: 'PATCH', body: JSON.stringify(payload) }),
   removeStaff: (payload) => request('/staff-roster-manage', { method: 'DELETE', body: JSON.stringify(payload) }),
   addContent: (payload) => request('/content', { method: 'POST', body: JSON.stringify(payload) }),
   deleteContent: (id) => request(`/content/${encodeURIComponent(id)}`, { method: 'DELETE' }),
