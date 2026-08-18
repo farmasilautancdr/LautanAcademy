@@ -22,6 +22,7 @@ import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import ResourcePreviewModal from '../components/ResourcePreviewModal.vue'
 
 const driveResources = ref([])
 const knowledgeEntries = ref([])
@@ -59,6 +60,32 @@ const canTakeContentQuiz = computed(() => auth.isStaff && auth.staff?.division =
 // strings under a new resourcesView key.
 const ROLE_KEYS = { outlet_manager: 'sidebar.roleOutletManager', warehouse_manager: 'sidebar.roleWarehouseManager', area_manager: 'sidebar.roleAreaManager', supervisor: 'sidebar.roleSupervisor' }
 const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_KEYS[auth.manager?.role] ? t(ROLE_KEYS[auth.manager?.role]) : ''))
+
+// In-app preview instead of navigating away — Drive's /preview URL already
+// renders pdf/pptx/docx natively in an iframe (no conversion needed).
+// Supabase-hosted files have no stored file-type, so it's inferred from the
+// link's extension: images render as <img>, pdf goes straight into the
+// iframe, anything else (pptx/docx/etc) goes through Office Online Viewer's
+// embed endpoint, which also needs no login.
+const previewEntry = ref(null)
+
+const IMAGE_EXT = /\.(png|jpe?g|gif|webp)(\?|$)/i
+const PDF_EXT = /\.pdf(\?|$)/i
+
+function openDrivePreview(e) {
+  previewEntry.value = { title: e.name, src: e.previewUrl, rawUrl: e.previewUrl, isImage: false }
+}
+
+function openLinkPreview(e) {
+  const url = e.link
+  if (IMAGE_EXT.test(url)) {
+    previewEntry.value = { title: e.name, src: url, rawUrl: url, isImage: true }
+  } else if (PDF_EXT.test(url)) {
+    previewEntry.value = { title: e.name, src: url, rawUrl: url, isImage: false }
+  } else {
+    previewEntry.value = { title: e.name, src: `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`, rawUrl: url, isImage: false }
+  }
+}
 
 onMounted(async () => {
   const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
@@ -127,12 +154,12 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
         </div>
         <div class="bg-white rounded-xl2 divide-y divide-seafoam">
           <template v-for="e in paginatedEntries" :key="e.id">
-            <!-- Drive-backed: opens the file/link directly, same as before. -->
+            <!-- Drive-backed: previews in-app via Drive's iframe-embeddable /preview URL. -->
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
-              <a :href="e.previewUrl" target="_blank" rel="noopener" class="flex-1 min-w-0">
+              <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left">
                 <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                 <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}</p>
-              </a>
+              </button>
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
               <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { sourceType: 'resource', sourceValue: e.driveId, topicLabel: e.name } }"
                 class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1 shrink-0">
@@ -150,7 +177,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
               </summary>
               <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
               <div class="flex items-center gap-4 mt-2">
-                <a v-if="e.link" :href="e.link" target="_blank" rel="noopener" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</a>
+                <button v-if="e.link" type="button" @click="openLinkPreview(e)" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</button>
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
                   {{ t('resourcesView.createQuizFromThis') }}
                 </RouterLink>
@@ -164,5 +191,14 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
         </div>
       </template>
     </main>
+
+    <ResourcePreviewModal
+      v-if="previewEntry"
+      :title="previewEntry.title"
+      :src="previewEntry.src"
+      :raw-url="previewEntry.rawUrl"
+      :is-image="previewEntry.isImage"
+      @close="previewEntry = null"
+    />
   </div>
 </template>

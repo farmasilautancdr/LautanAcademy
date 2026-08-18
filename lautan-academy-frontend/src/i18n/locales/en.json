@@ -296,7 +296,9 @@
     "createQuiz": "Create Quiz",
     "createQuizFromThis": "Create Quiz from this",
     "openAttachedLink": "Open attached link",
-    "takeQuiz": "Take Quiz"
+    "takeQuiz": "Take Quiz",
+    "openInNewTab": "Open in new tab",
+    "close": "Close"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "AI Practice Quiz",

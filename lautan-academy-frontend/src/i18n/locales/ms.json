@@ -296,7 +296,9 @@
     "createQuiz": "Cipta Kuiz",
     "createQuizFromThis": "Cipta Kuiz daripada ini",
     "openAttachedLink": "Buka pautan lampiran",
-    "takeQuiz": "Ambil Kuiz"
+    "takeQuiz": "Ambil Kuiz",
+    "openInNewTab": "Buka dalam tab baharu",
+    "close": "Tutup"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "Kuiz Latihan AI",
