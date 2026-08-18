@@ -49,6 +49,18 @@ const cSaving = ref(false)
 const cUploading = ref(false)
 const cUploadedName = ref('')
 const cFileInput = ref(null)
+const cEditingId = ref(null)
+
+// Upload path names files "<timestamp>-<originalname>" (see backend
+// content.js) — strip the timestamp prefix back off to show the real
+// filename when re-entering edit mode on an entry that already has a file.
+function extractFileName(url) {
+  if (!url) return ''
+  try {
+    const last = decodeURIComponent(url.split('/').pop() || '')
+    return last.replace(/^\d+-/, '')
+  } catch { return '' }
+}
 const { currentPage: contentCurrentPage, totalPages: contentTotalPages, paginatedItems: paginatedContent, next: contentNext, prev: contentPrev } = usePagination(content)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoTrainings, next: videoNext, prev: videoPrev } = usePagination(videoTrainings)
 
@@ -151,9 +163,45 @@ async function handleFileSelect(e) {
   }
 }
 
-async function addContent() {
+function resetContentForm() {
+  cEditingId.value = null
+  cTopic.value = ''
+  cCategory.value = ''
+  cTitle.value = ''
+  cBody.value = ''
+  cLink.value = ''
+  cUploadedName.value = ''
+  cQuizRequired.value = false
+  cHours.value = '1'
+  if (cFileInput.value) cFileInput.value.value = ''
+}
+
+// Loads an existing entry into the form for editing in place — same
+// content.id and topic are kept unless deliberately changed, so
+// content_questions (topic-text-keyed, no FK) never gets orphaned the way
+// deleting the entry and re-adding it (risking a topic typo) would.
+function startEdit(item) {
+  cEditingId.value = item.ID
+  cTopic.value = item.Topic || ''
+  cCategory.value = item.Category || ''
+  cTitle.value = item.Title || ''
+  cBody.value = item.Body || ''
+  cLink.value = item.Link || ''
+  cUploadedName.value = extractFileName(item.Link)
+  cQuizRequired.value = !!item.QuizRequired
+  cHours.value = String(item.Hours || 1)
   cError.value = ''
-  if (!cTopic.value.trim() || !cCategory.value.trim() || !cTitle.value.trim() || !cBody.value.trim()) {
+  if (cFileInput.value) cFileInput.value.value = ''
+}
+
+function cancelEdit() {
+  resetContentForm()
+  cError.value = ''
+}
+
+async function saveContent() {
+  cError.value = ''
+  if (!cTopic.value.trim() || !cCategory.value.trim()) {
     cError.value = t('supervisorAddResourcesView.errorRequiredFields')
     return
   }
@@ -163,18 +211,13 @@ async function addContent() {
   }
   cSaving.value = true
   try {
-    await api.addContent({
+    const payload = {
       topic: cTopic.value.trim(), category: cCategory.value, title: cTitle.value.trim(), body: cBody.value.trim(), link: cLink.value.trim(),
       quizRequired: cQuizRequired.value, hours: cQuizRequired.value ? Number(cHours.value) : undefined,
-    })
-    cTopic.value = ''
-    cTitle.value = ''
-    cBody.value = ''
-    cLink.value = ''
-    cUploadedName.value = ''
-    cQuizRequired.value = false
-    cHours.value = '1'
-    if (cFileInput.value) cFileInput.value.value = ''
+    }
+    if (cEditingId.value) await api.updateContent(cEditingId.value, payload)
+    else await api.addContent(payload)
+    resetContentForm()
     await loadContent()
   } catch (err) {
     cError.value = err.message || t('supervisorAddResourcesView.errorSaveFailed')
@@ -187,6 +230,7 @@ async function removeContent(item) {
   if (!confirm(t('supervisorAddResourcesView.confirmRemove', { title: item.Title }))) return
   try {
     await api.deleteContent(item.ID)
+    if (cEditingId.value === item.ID) cancelEdit()
     await loadContent()
   } catch (e) { /* best-effort */ }
 }
@@ -211,12 +255,19 @@ async function removeContent(item) {
             </p>
             <p class="text-xs text-slate">{{ item.Topic }} · {{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
           </div>
-          <button @click="removeContent(item)" class="text-coral text-xs font-medium underline shrink-0">{{ t('supervisorAddResourcesView.remove') }}</button>
+          <div class="flex items-center gap-3 shrink-0">
+            <button @click="startEdit(item)" class="text-aqua text-xs font-medium underline">{{ t('supervisorAddResourcesView.edit') }}</button>
+            <button @click="removeContent(item)" class="text-coral text-xs font-medium underline">{{ t('supervisorAddResourcesView.remove') }}</button>
+          </div>
         </div>
         <Pagination :current-page="contentCurrentPage" :total-pages="contentTotalPages" @prev="contentPrev" @next="contentNext" />
       </div>
 
-      <form @submit.prevent="addContent" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
+      <form @submit.prevent="saveContent" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
+        <div v-if="cEditingId" class="flex items-center justify-between gap-3 bg-aqualight rounded-lg px-3 py-2">
+          <p class="text-xs font-medium text-deepsea">{{ t('supervisorAddResourcesView.editingBanner') }}</p>
+          <button type="button" @click="cancelEdit" class="text-xs text-deepsea underline shrink-0">{{ t('supervisorAddResourcesView.cancelEdit') }}</button>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.topicLabel') }}</label>
@@ -251,7 +302,7 @@ async function removeContent(item) {
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorAddResourcesView.fileLabel') }}</label>
+          <label class="block text-sm font-medium text-ink mb-1">{{ cEditingId ? t('supervisorAddResourcesView.replaceFileLabel') : t('supervisorAddResourcesView.fileLabel') }}</label>
           <input ref="cFileInput" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" @change="handleFileSelect"
             class="w-full text-sm text-slate file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-aqualight file:text-deepsea file:font-medium" />
           <p v-if="cUploading" class="text-xs text-slate mt-1">{{ t('supervisorAddResourcesView.uploading') }}</p>
@@ -261,7 +312,7 @@ async function removeContent(item) {
         </div>
         <p v-if="cError" class="text-coral text-sm">{{ cError }}</p>
         <button type="submit" :disabled="cSaving" class="bg-aqua text-white font-medium px-5 py-2.5 rounded-lg disabled:opacity-60">
-          {{ cSaving ? t('supervisorAddResourcesView.saving') : t('supervisorAddResourcesView.addEntry') }}
+          {{ cSaving ? t('supervisorAddResourcesView.saving') : (cEditingId ? t('supervisorAddResourcesView.saveChanges') : t('supervisorAddResourcesView.addEntry')) }}
         </button>
       </form>
 

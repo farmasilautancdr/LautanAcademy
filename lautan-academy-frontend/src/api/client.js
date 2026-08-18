@@ -114,6 +114,7 @@ export const api = {
   renameStaff: (payload) => request('/staff-roster-manage/rename', { method: 'PATCH', body: JSON.stringify(payload) }),
   removeStaff: (payload) => request('/staff-roster-manage', { method: 'DELETE', body: JSON.stringify(payload) }),
   addContent: (payload) => request('/content', { method: 'POST', body: JSON.stringify(payload) }),
+  updateContent: (id, payload) => request(`/content/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteContent: (id) => request(`/content/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   uploadContentFile: (file) => {
     const form = new FormData()

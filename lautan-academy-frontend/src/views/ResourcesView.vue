@@ -16,7 +16,7 @@
 // grouping under Category), so they share one category/subcategory filter
 // instead of two disconnected taxonomies.
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
@@ -28,6 +28,7 @@ const driveResources = ref([])
 const knowledgeEntries = ref([])
 const loading = ref(true)
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const { t } = useI18n()
 // Dashboard's Browse Courses cards link here with ?category=... so the
@@ -87,6 +88,26 @@ function openLinkPreview(e) {
   }
 }
 
+// Right-side badge on a Content entry's row (kind badge already covers
+// Drive entries via their real Kind field) — no file attached shows
+// "Article" (it's just the body text), otherwise the link's own extension,
+// same signal a staff member would get from a filename in Explorer/Finder.
+function docTypeLabel(e) {
+  if (!e.link) return t('resourcesView.docTypeArticle')
+  const match = e.link.match(/\.([a-zA-Z0-9]+)(\?|$)/)
+  return match ? match[1].toUpperCase() : t('resourcesView.docTypeArticle')
+}
+
+// Take Quiz needs to work from the collapsed row (no expand-first) — can't
+// just be a RouterLink inside <summary>, since a native <details> toggles
+// open on any click within its <summary> regardless of stopPropagation on a
+// child, so it's a real navigation call gated behind stopping that click.
+function goToContentQuiz(e, event) {
+  event.stopPropagation()
+  event.preventDefault()
+  router.push(`/content-reading/${e.contentId}`)
+}
+
 onMounted(async () => {
   const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
   if (resourcesResult.status === 'fulfilled') driveResources.value = resourcesResult.value.referenceDocs || []
@@ -104,7 +125,7 @@ const allEntries = computed(() => [
   ...knowledgeEntries.value.map(c => ({
     id: 'content-' + c.ID, name: c.Title, category: c.Category, subcategory: c.Topic,
     kind: 'Article', link: c.Link, body: c.Body, isContent: true,
-    quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID,
+    quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID, hours: c.Hours,
   })),
 ])
 
@@ -171,18 +192,23 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
               <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
-                  <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}</p>
+                  <p class="text-xs text-slate">
+                    {{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ e.quizRequired && e.hours ? ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours) : '' }}
+                  </p>
                 </div>
-                <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1">{{ docTypeLabel(e) }}</span>
+                  <button v-if="canTakeContentQuiz && e.quizRequired && e.quizReady" type="button" @click="goToContentQuiz(e, $event)"
+                    class="text-xs text-white font-medium bg-coral rounded-full px-3 py-1">
+                    {{ t('resourcesView.takeQuiz') }}
+                  </button>
+                </div>
               </summary>
               <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
               <div class="flex items-center gap-4 mt-2">
                 <button v-if="e.link" type="button" @click="openLinkPreview(e)" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</button>
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
                   {{ t('resourcesView.createQuizFromThis') }}
-                </RouterLink>
-                <RouterLink v-if="canTakeContentQuiz && e.quizRequired && e.quizReady" :to="`/content-reading/${e.contentId}`" class="text-xs text-white font-medium bg-coral rounded-full px-3 py-1">
-                  {{ t('resourcesView.takeQuiz') }}
                 </RouterLink>
               </div>
             </details>
