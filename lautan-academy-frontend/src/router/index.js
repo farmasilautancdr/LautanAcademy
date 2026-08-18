@@ -34,6 +34,7 @@ import SupervisorAddResourcesView from '../views/SupervisorAddResourcesView.vue'
 import SupervisorManagerAccessView from '../views/SupervisorManagerAccessView.vue'
 import SupervisorPharmacistTagView from '../views/SupervisorPharmacistTagView.vue'
 import SupervisorManageQuizQuestionsView from '../views/SupervisorManageQuizQuestionsView.vue'
+import SupervisorManageStandardQuizQuestionsView from '../views/SupervisorManageStandardQuizQuestionsView.vue'
 import SupervisorManageContentQuizQuestionsView from '../views/SupervisorManageContentQuizQuestionsView.vue'
 
 const router = createRouter({
@@ -96,6 +97,7 @@ const router = createRouter({
     { path: '/supervisor/manager-access', name: 'supervisor-manager-access', component: SupervisorManagerAccessView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/pharmacist', name: 'supervisor-pharmacist', component: SupervisorPharmacistTagView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/manage-quiz-questions', name: 'supervisor-manage-quiz-questions', component: SupervisorManageQuizQuestionsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
+    { path: '/supervisor/manage-module-quiz-questions', name: 'supervisor-manage-module-quiz-questions', component: SupervisorManageStandardQuizQuestionsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/manage-content-quiz', name: 'supervisor-manage-content-quiz', component: SupervisorManageContentQuizQuestionsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
   ],
 })
