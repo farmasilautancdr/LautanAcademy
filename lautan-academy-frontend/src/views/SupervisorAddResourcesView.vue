@@ -54,6 +54,15 @@ const cEditingId = ref(null)
 // Upload path names files "<timestamp>-<originalname>" (see backend
 // content.js) — strip the timestamp prefix back off to show the real
 // filename when re-entering edit mode on an entry that already has a file.
+// Title is optional (Topic is the required field) — falls back to Topic as
+// the display name when left blank. The subtitle line must compare against
+// this same resolved value, not the raw Title, or a blank-Title entry shows
+// its Topic as both the heading (via this fallback) and the subtitle,
+// printing the same word twice.
+function contentHeading(item) {
+  return item.Title || item.Topic
+}
+
 function extractFileName(url) {
   if (!url) return ''
   try {
@@ -250,10 +259,10 @@ async function removeContent(item) {
         <div v-for="item in paginatedContent" :key="item.ID" class="px-5 py-3 flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-ink truncate">
-              {{ item.Title || item.Topic }}
+              {{ contentHeading(item) }}
               <span v-if="item.QuizRequired" class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-aqua">{{ t('supervisorAddResourcesView.quizRequiredBadge') }}</span>
             </p>
-            <p class="text-xs text-slate">{{ item.Topic !== item.Title ? item.Topic + ' · ' : '' }}{{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
+            <p class="text-xs text-slate">{{ item.Topic !== contentHeading(item) ? item.Topic + ' · ' : '' }}{{ item.Category }}{{ item.QuizRequired ? ' · ' + t('supervisorAddResourcesView.contentHoursValue', { hours: item.Hours }) : '' }}</p>
           </div>
           <div class="flex items-center gap-3 shrink-0">
             <button @click="startEdit(item)" class="text-aqua text-xs font-medium underline">{{ t('supervisorAddResourcesView.edit') }}</button>
