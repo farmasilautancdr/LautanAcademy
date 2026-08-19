@@ -300,6 +300,7 @@
     "takeQuiz": "Take Quiz",
     "openInNewTab": "Open in new tab",
     "close": "Close",
+    "backToCourses": "Back to Courses",
     "cpdHourValue": "{hours} CPD hour | {hours} CPD hours",
     "docTypeArticle": "Article"
   },
