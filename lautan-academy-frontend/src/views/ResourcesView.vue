@@ -212,7 +212,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
                 {{ t('resourcesView.takeQuiz') }}
               </button>
               <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1 shrink-0">
-                {{ t('resourcesView.createQuizFromThis') }}
+                {{ t('resourcesView.createQuiz') }}
               </RouterLink>
             </div>
             <!-- Knowledge entry with no file — pure body text, nothing to preview, so expands in place instead. -->
@@ -235,7 +235,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
               <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
               <div class="flex items-center gap-4 mt-2">
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
-                  {{ t('resourcesView.createQuizFromThis') }}
+                  {{ t('resourcesView.createQuiz') }}
                 </RouterLink>
               </div>
             </details>
