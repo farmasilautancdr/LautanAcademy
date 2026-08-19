@@ -29,11 +29,21 @@ const results = ref([])
 const reports = ref([])
 const loading = ref(true)
 
+// `results` (from getScopedData) mixes Module Quiz, Video Training, and
+// Content-quiz attempts under one table/Topic field with no type column —
+// see backend's data.js POST /results, /video-results, /content-results,
+// all three insert into the same `results` row shape. Area Manager
+// Assessment is scoped to Housebrand Modules (= Module Quiz / standard_
+// questions) only, so topicsForStaff below cross-references this set,
+// same convention ModuleQuizView.vue uses to list quiz topics.
+const standardTopics = ref(new Set())
+
 async function loadAll() {
   try {
-    const scoped = await api.getScopedData()
+    const [scoped, q] = await Promise.all([api.getScopedData(), api.getQuestions()])
     results.value = scoped.results || []
     reports.value = scoped.reports || []
+    standardTopics.value = new Set((q.questions || []).filter((x) => x.status === 'active').map((x) => x.topic))
   } catch (e) { /* leave empty */ }
   loading.value = false
 }
@@ -65,7 +75,7 @@ watch(formOutlet, async (o) => {
   loadingStaff.value = false
 })
 
-const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value).map(r => r.Topic))])
+const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value && standardTopics.value.has(r.Topic)).map(r => r.Topic))])
 // Assessment grades off the staff's FIRST attempt at a topic, not their
 // latest retake — `results` is loaded order by created_at desc, so a
 // plain .find() here would silently pick the newest attempt instead.
