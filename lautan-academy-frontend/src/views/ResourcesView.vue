@@ -65,13 +65,14 @@ const headerLabel = computed(() => auth.isStaff ? auth.staff?.outlet : (ROLE_KEY
 // In-app preview instead of navigating away — Drive's /preview URL already
 // renders pdf/pptx/docx natively in an iframe (no conversion needed).
 // Supabase-hosted files have no stored file-type, so it's inferred from the
-// link's extension: images render as <img>, pdf goes straight into the
-// iframe, anything else (pptx/docx/etc) goes through Office Online Viewer's
-// embed endpoint, which also needs no login.
+// link's extension: images render as <img>, everything else (pdf included)
+// goes through Google Docs Viewer's embed — raw pdf URLs direct in an
+// iframe hit the same double-open as pptx/docx did (mobile browsers often
+// show their own "click to open" placeholder instead of rendering inline,
+// reported live 2026-08-19 for pdf too, not just pptx/docx).
 const previewEntry = ref(null)
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp)(\?|$)/i
-const PDF_EXT = /\.pdf(\?|$)/i
 
 function openDrivePreview(e) {
   previewEntry.value = { title: e.name, src: e.previewUrl, rawUrl: e.previewUrl, isImage: false }
@@ -81,14 +82,11 @@ function openLinkPreview(e) {
   const url = e.link
   if (IMAGE_EXT.test(url)) {
     previewEntry.value = { title: e.name, src: url, rawUrl: url, isImage: true }
-  } else if (PDF_EXT.test(url)) {
-    previewEntry.value = { title: e.name, src: url, rawUrl: url, isImage: false }
   } else {
     // Google Docs Viewer, not Office Online Viewer — same rendering tech
     // Drive's own /preview already uses, renders straight into the iframe.
     // Office Online Viewer's embed showed its own "click to open" prompt
-    // on first load instead of rendering direct, the "double open" reported
-    // for app-uploaded pptx/docx (video 2026-08-19) — Drive-backed entries
+    // on first load instead of rendering direct — Drive-backed entries
     // never hit this since they use Drive's real preview URL, not this path.
     previewEntry.value = { title: e.name, src: `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`, rawUrl: url, isImage: false }
   }
