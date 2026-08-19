@@ -98,6 +98,17 @@ function docTypeLabel(e) {
   return match ? match[1].toUpperCase() : t('resourcesView.docTypeArticle')
 }
 
+// Drive entries have no hours field at all, so Housebrand Modules under
+// Drive hardcodes "1 CPD hour". Content entries (added via Add Resources)
+// have a real Hours field the supervisor sets — those follow it as-is, no
+// override.
+const HOUSEBRAND_CATEGORY = 'Housebrand Modules'
+function cpdSuffix(e) {
+  if (!e.isContent && e.category === HOUSEBRAND_CATEGORY) return ' · ' + t('resourcesView.cpdHourValue', { hours: 1 }, 1)
+  if (e.quizRequired && e.hours) return ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours)
+  return ''
+}
+
 // Take Quiz needs to work from the collapsed row (no expand-first) — can't
 // just be a RouterLink inside <summary>, since a native <details> toggles
 // open on any click within its <summary> regardless of stopPropagation on a
@@ -179,7 +190,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left">
                 <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
-                <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}</p>
+                <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}</p>
               </button>
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
               <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { sourceType: 'resource', sourceValue: e.driveId, topicLabel: e.name } }"
@@ -187,13 +198,30 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
                 {{ t('resourcesView.createQuiz') }}
               </RouterLink>
             </div>
-            <!-- Knowledge entry: no file to link to (unless a link was added) — expands to read the body in place. -->
+            <!-- Knowledge entry with a file attached: flat row same as Drive entries — click opens the link preview direct, no expand needed. -->
+            <div v-else-if="e.link" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
+              <button type="button" @click="openLinkPreview(e)" class="flex-1 min-w-0 text-left">
+                <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                <p class="text-xs text-slate">
+                  {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
+                </p>
+              </button>
+              <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ docTypeLabel(e) }}</span>
+              <button v-if="canTakeContentQuiz && e.quizRequired && e.quizReady" type="button" @click="goToContentQuiz(e, $event)"
+                class="text-xs text-white font-medium bg-coral rounded-full px-3 py-1 shrink-0">
+                {{ t('resourcesView.takeQuiz') }}
+              </button>
+              <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1 shrink-0">
+                {{ t('resourcesView.createQuizFromThis') }}
+              </RouterLink>
+            </div>
+            <!-- Knowledge entry with no file — pure body text, nothing to preview, so expands in place instead. -->
             <details v-else class="px-5 py-3 group">
               <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                   <p class="text-xs text-slate">
-                    {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ e.quizRequired && e.hours ? ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours) : '' }}
+                    {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
                   </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -206,7 +234,6 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
               </summary>
               <p class="text-sm text-ink mt-2 whitespace-pre-wrap">{{ e.body }}</p>
               <div class="flex items-center gap-4 mt-2">
-                <button v-if="e.link" type="button" @click="openLinkPreview(e)" class="text-xs text-aqua font-medium underline">{{ t('resourcesView.openAttachedLink') }}</button>
                 <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { topic: e.subcategory } }" class="text-xs text-white font-medium bg-aqua rounded-full px-3 py-1">
                   {{ t('resourcesView.createQuizFromThis') }}
                 </RouterLink>
