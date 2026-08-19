@@ -84,7 +84,13 @@ function openLinkPreview(e) {
   } else if (PDF_EXT.test(url)) {
     previewEntry.value = { title: e.name, src: url, rawUrl: url, isImage: false }
   } else {
-    previewEntry.value = { title: e.name, src: `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`, rawUrl: url, isImage: false }
+    // Google Docs Viewer, not Office Online Viewer — same rendering tech
+    // Drive's own /preview already uses, renders straight into the iframe.
+    // Office Online Viewer's embed showed its own "click to open" prompt
+    // on first load instead of rendering direct, the "double open" reported
+    // for app-uploaded pptx/docx (video 2026-08-19) — Drive-backed entries
+    // never hit this since they use Drive's real preview URL, not this path.
+    previewEntry.value = { title: e.name, src: `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`, rawUrl: url, isImage: false }
   }
 }
 

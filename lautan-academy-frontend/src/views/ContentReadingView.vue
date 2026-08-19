@@ -53,6 +53,9 @@ async function markRead() {
 <template>
   <div class="min-h-screen bg-seafoam">
     <header class="bg-deepsea px-6 py-5">
+      <RouterLink to="/resources" class="flex items-center gap-1 text-aqualight text-sm font-medium mb-2">
+        <span aria-hidden="true">&larr;</span> {{ t('resourcesView.backToCourses') }}
+      </RouterLink>
       <h1 class="font-display text-xl font-semibold text-white">{{ entry?.Title || t('contentReadingView.title') }}</h1>
     </header>
 
