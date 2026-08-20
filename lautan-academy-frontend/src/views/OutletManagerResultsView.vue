@@ -16,7 +16,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, splitByContentTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -47,6 +47,9 @@ const videoStaff = ref('ALL')
 const standardYear = ref('ALL')
 const standardTopic = ref('ALL')
 const standardStaff = ref('ALL')
+const eLearningYear = ref('ALL')
+const eLearningTopic = ref('ALL')
+const eLearningStaff = ref('ALL')
 const aiYear = ref('ALL')
 const aiTopic = ref('ALL')
 const aiStaff = ref('ALL')
@@ -64,7 +67,13 @@ function dateBadge(iso) {
 // sections below read from this.
 const splitStandard = computed(() => splitByVideoTopic(standardHistory.value, videoHoursByTopic(videoTrainings.value)))
 const videoTrainingHistory = computed(() => splitStandard.value.video)
-const moduleQuizHistory = computed(() => splitStandard.value.moduleQuiz)
+// splitStandard.moduleQuiz still mixes true Module Quiz with Content quiz
+// (eLearning) attempts — same topic namespace, only contentHoursByTopic
+// tells them apart. Second pass here pulls eLearning out into its own
+// section instead of leaving it mislabeled as Module Quiz.
+const splitNonVideo = computed(() => splitByContentTopic(splitStandard.value.moduleQuiz, contentHoursByTopic(contentEntries.value)))
+const moduleQuizHistory = computed(() => splitNonVideo.value.moduleQuiz)
+const eLearningHistory = computed(() => splitNonVideo.value.content)
 
 const videoYears = computed(() => [...new Set(videoTrainingHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
 const videoTopics = computed(() => [...new Set(videoTrainingHistory.value.map((h) => h.Topic))].sort())
@@ -83,6 +92,16 @@ const filteredStandardHistory = computed(() => moduleQuizHistory.value.filter((h
   if (standardYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== standardYear.value) return false
   if (standardTopic.value !== 'ALL' && h.Topic !== standardTopic.value) return false
   if (standardStaff.value !== 'ALL' && h.Name !== standardStaff.value) return false
+  return true
+}))
+
+const eLearningYears = computed(() => [...new Set(eLearningHistory.value.map((h) => new Date(h.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const eLearningTopics = computed(() => [...new Set(eLearningHistory.value.map((h) => h.Topic))].sort())
+const eLearningStaffNames = computed(() => [...new Set(eLearningHistory.value.map((h) => h.Name))].sort())
+const filteredELearningHistory = computed(() => eLearningHistory.value.filter((h) => {
+  if (eLearningYear.value !== 'ALL' && new Date(h.Timestamp).getFullYear() !== eLearningYear.value) return false
+  if (eLearningTopic.value !== 'ALL' && h.Topic !== eLearningTopic.value) return false
+  if (eLearningStaff.value !== 'ALL' && h.Name !== eLearningStaff.value) return false
   return true
 }))
 
@@ -127,6 +146,7 @@ const cpdSummary = computed(() => hoursByStaff(standardHistory.value, aiHistory.
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoHistory, next: videoNext, prev: videoPrev } = usePagination(filteredVideoHistory)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardHistory, next: standardNext, prev: standardPrev } = usePagination(filteredStandardHistory)
+const { currentPage: eLearningCurrentPage, totalPages: eLearningTotalPages, paginatedItems: paginatedELearningHistory, next: eLearningNext, prev: eLearningPrev } = usePagination(filteredELearningHistory)
 const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiHistory, next: aiNext, prev: aiPrev } = usePagination(filteredAiHistory)
 
 function wrongsForStandard(h) {
@@ -258,6 +278,51 @@ function wrongsForAi(attemptId) {
                 </div>
               </details>
               <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
+            </div>
+          </template>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('outletManagerResultsView.eLearningHeading') }}</h2>
+          <div v-if="eLearningHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsYet') }}</div>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="eLearningYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allYears') }}</option>
+                <option v-for="y in eLearningYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="eLearningTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allTopics') }}</option>
+                <option v-for="t2 in eLearningTopics" :key="t2" :value="t2">{{ t2 }}</option>
+              </select>
+              <select v-model="eLearningStaff" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('outletManagerResultsView.allStaff') }}</option>
+                <option v-for="n in eLearningStaffNames" :key="n" :value="n">{{ n }}</option>
+              </select>
+            </div>
+            <div v-if="filteredELearningHistory.length === 0" class="text-slate text-sm">{{ t('outletManagerResultsView.noAttemptsFiltered') }}</div>
+            <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+              <details v-for="h in paginatedELearningHistory" :key="h.AttemptID || `${h.Name}|${h.Topic}|${h.Timestamp}`" class="px-5 py-3">
+                <summary class="flex items-center gap-3 cursor-pointer">
+                  <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                    <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(h.Timestamp).month }}</p>
+                    <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(h.Timestamp).day }}</p>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ h.Name }} · {{ h.Topic }}</p>
+                  </div>
+                  <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(h.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                    {{ h.Score }}
+                  </span>
+                </summary>
+                <div v-if="wrongsForStandard(h).length" class="mt-3 space-y-2">
+                  <div v-for="(w, j) in wrongsForStandard(h)" :key="j" class="bg-seafoam rounded-lg p-3">
+                    <p class="text-xs font-medium text-coral">{{ t('outletManagerResultsView.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                    <p class="text-xs text-aqua font-semibold mt-1">{{ t('outletManagerResultsView.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
+                  </div>
+                </div>
+              </details>
+              <Pagination :current-page="eLearningCurrentPage" :total-pages="eLearningTotalPages" @prev="eLearningPrev" @next="eLearningNext" />
             </div>
           </template>
         </section>

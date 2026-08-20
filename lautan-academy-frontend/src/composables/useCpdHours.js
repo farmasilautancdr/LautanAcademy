@@ -58,6 +58,23 @@ export function splitByVideoTopic(results, hoursByTopic) {
   return { video, moduleQuiz }
 }
 
+// Second-pass split of a splitByVideoTopic() 'moduleQuiz' bucket — pulls out
+// Content quiz (eLearning, quiz_required Content entries) attempts by the
+// same topic-membership check, so what's left is the true Module Quiz
+// (standard_questions bank) bucket. Was previously not split out at all —
+// every call site's "Module Quiz" section silently included eLearning
+// attempts too, mislabeled. Kept as its own named export (not a reuse of
+// splitByVideoTopic under misleading video/moduleQuiz field names) since
+// call sites need a third, clearly-named bucket.
+export function splitByContentTopic(results, contentHoursByTopicMap) {
+  const content = []
+  const moduleQuiz = []
+  for (const r of results) {
+    (contentHoursByTopicMap.has(r.Topic) ? content : moduleQuiz).push(r)
+  }
+  return { content, moduleQuiz }
+}
+
 // results rows (Video Training + Module Quiz + Content quiz, shared
 // table) + aiResults rows (AI Practice, separate table) -> per-staff
 // hours-this-year, both filtered to Timestamp falling in `year` (defaults

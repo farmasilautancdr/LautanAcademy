@@ -35,7 +35,7 @@ const questions = ref(stored?.questions || [])
 const currentIndex = ref(0)
 const answers = ref({}) // { questionIndex: { chosen, correct, correctIndex } }
 const checking = ref(false)
-const QUESTION_TIMER_SECONDS = 30
+const QUESTION_TIMER_SECONDS = 60
 const timeRemaining = ref(QUESTION_TIMER_SECONDS)
 let timerInterval = null
 

@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { useAuthStore } from '../store/auth'
-import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, splitByContentTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -31,6 +31,9 @@ const videoSort = ref('avg')
 const standardYear = ref('ALL')
 const standardTopic = ref('ALL')
 const standardSort = ref('avg')
+const eLearningYear = ref('ALL')
+const eLearningTopic = ref('ALL')
+const eLearningSort = ref('avg')
 const aiYear = ref('ALL')
 const aiTopic = ref('ALL')
 const aiSort = ref('avg')
@@ -49,6 +52,8 @@ watch([windowMonths, regionFilter, outletFilter], () => {
   videoTopic.value = 'ALL'
   standardYear.value = 'ALL'
   standardTopic.value = 'ALL'
+  eLearningYear.value = 'ALL'
+  eLearningTopic.value = 'ALL'
   aiYear.value = 'ALL'
   aiTopic.value = 'ALL'
 })
@@ -136,14 +141,23 @@ function buildLeaderboard(list, year, topic, sort) {
 // only by topic membership) — split once here, both leaderboards below
 // read from this.
 const splitResults = computed(() => splitByVideoTopic(results.value, videoHoursByTopic(videoTrainings.value)))
+// splitResults.moduleQuiz still mixes true Module Quiz with Content quiz
+// (eLearning) attempts — same topic namespace, only contentHoursByTopic
+// tells them apart. Second pass here pulls eLearning out into its own
+// leaderboard instead of leaving it mislabeled as Module Quiz.
+const splitNonVideo = computed(() => splitByContentTopic(splitResults.value.moduleQuiz, contentHoursByTopic(contentEntries.value)))
 
 const videoYears = computed(() => [...new Set(outletScoped(splitResults.value.video).map(r => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
 const videoTopics = computed(() => [...new Set(outletScoped(splitResults.value.video).map(r => r.Topic))].sort())
 const videoRows = computed(() => buildLeaderboard(splitResults.value.video, videoYear.value, videoTopic.value, videoSort.value))
 
-const standardYears = computed(() => [...new Set(outletScoped(splitResults.value.moduleQuiz).map(r => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
-const standardTopics = computed(() => [...new Set(outletScoped(splitResults.value.moduleQuiz).map(r => r.Topic))].sort())
-const standardRows = computed(() => buildLeaderboard(splitResults.value.moduleQuiz, standardYear.value, standardTopic.value, standardSort.value))
+const standardYears = computed(() => [...new Set(outletScoped(splitNonVideo.value.moduleQuiz).map(r => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const standardTopics = computed(() => [...new Set(outletScoped(splitNonVideo.value.moduleQuiz).map(r => r.Topic))].sort())
+const standardRows = computed(() => buildLeaderboard(splitNonVideo.value.moduleQuiz, standardYear.value, standardTopic.value, standardSort.value))
+
+const eLearningYears = computed(() => [...new Set(outletScoped(splitNonVideo.value.content).map(r => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const eLearningTopics = computed(() => [...new Set(outletScoped(splitNonVideo.value.content).map(r => r.Topic))].sort())
+const eLearningRows = computed(() => buildLeaderboard(splitNonVideo.value.content, eLearningYear.value, eLearningTopic.value, eLearningSort.value))
 
 const aiYears = computed(() => [...new Set(outletScoped(aiResults.value).map(r => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
 const aiTopics = computed(() => [...new Set(outletScoped(aiResults.value).map(r => r.Topic))].sort())
@@ -164,6 +178,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScoped(cpdResults.value), o
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoRows, next: videoNext, prev: videoPrev } = usePagination(videoRows)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardRows, next: standardNext, prev: standardPrev } = usePagination(standardRows)
+const { currentPage: eLearningCurrentPage, totalPages: eLearningTotalPages, paginatedItems: paginatedELearningRows, next: eLearningNext, prev: eLearningPrev } = usePagination(eLearningRows)
 const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiRows, next: aiNext, prev: aiPrev } = usePagination(aiRows)
 </script>
 
@@ -277,6 +292,36 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
               <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
             </div>
             <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.eLearningHeading') }}</h2>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <select v-model="eLearningYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+              <option value="ALL">{{ t('supervisorStaffComparisonView.allYears') }}</option>
+              <option v-for="y in eLearningYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+            <select v-model="eLearningTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+              <option value="ALL">{{ t('supervisorStaffComparisonView.allTopics') }}</option>
+              <option v-for="t2 in eLearningTopics" :key="t2" :value="t2">{{ t2 }}</option>
+            </select>
+            <select v-model="eLearningSort" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+              <option value="avg">{{ t('supervisorStaffComparisonView.sortAvg') }}</option>
+              <option value="attempts">{{ t('supervisorStaffComparisonView.sortAttempts') }}</option>
+              <option value="name">{{ t('supervisorStaffComparisonView.sortName') }}</option>
+            </select>
+          </div>
+          <div v-if="eLearningRows.length === 0" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.noActivity') }}</div>
+          <div v-else class="bg-white rounded-xl2 divide-y divide-seafoam">
+            <div v-for="(r, i) in paginatedELearningRows" :key="i" class="flex items-center justify-between px-5 py-3">
+              <div>
+                <p class="text-sm font-medium text-ink">{{ r.name }}</p>
+                <p class="text-xs text-slate">{{ r.outlet }} · {{ t('supervisorStaffComparisonView.attemptsCount', r.attempts) }}</p>
+              </div>
+              <span class="text-sm font-display font-semibold" :class="r.avg >= 70 ? 'text-aqua' : 'text-coral'">{{ r.avg }}%</span>
+            </div>
+            <Pagination :current-page="eLearningCurrentPage" :total-pages="eLearningTotalPages" @prev="eLearningPrev" @next="eLearningNext" />
           </div>
         </section>
 

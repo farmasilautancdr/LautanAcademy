@@ -11,7 +11,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../store/auth'
 import { api } from '../api/client'
-import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
+import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic, splitByContentTopic, CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
@@ -41,13 +41,15 @@ const videoYear = ref('ALL')
 const videoTopic = ref('ALL')
 const standardYear = ref('ALL')
 const standardTopic = ref('ALL')
+const eLearningYear = ref('ALL')
+const eLearningTopic = ref('ALL')
 const aiYear = ref('ALL')
 const aiTopic = ref('ALL')
 const cpdYear = ref(new Date().getFullYear())
 
 // Every year/topic filter's option list is derived from outlet-scoped
 // data, so a value picked under one outlet can be meaningless under
-// another (renders blank, list goes empty) — reset all six back to ALL
+// another (renders blank, list goes empty) — reset all eight back to ALL
 // whenever the outlet scope changes. cpdYear is left alone — the current
 // year is always a valid, always-present option regardless of outlet.
 watch(outletFilter, () => {
@@ -55,6 +57,8 @@ watch(outletFilter, () => {
   videoTopic.value = 'ALL'
   standardYear.value = 'ALL'
   standardTopic.value = 'ALL'
+  eLearningYear.value = 'ALL'
+  eLearningTopic.value = 'ALL'
   aiYear.value = 'ALL'
   aiTopic.value = 'ALL'
 })
@@ -87,7 +91,13 @@ const outletScopedAiResults = computed(() => outletFilter.value === 'ALL' ? allA
 // topic membership) — split once here, both sections below read from this.
 const splitStandard = computed(() => splitByVideoTopic(outletScopedResults.value, videoHoursByTopic(videoTrainings.value)))
 const videoTrainingResults = computed(() => splitStandard.value.video)
-const moduleQuizResults = computed(() => splitStandard.value.moduleQuiz)
+// splitStandard.moduleQuiz still mixes true Module Quiz with Content quiz
+// (eLearning) attempts — same topic namespace, only contentHoursByTopic
+// tells them apart. Second pass here pulls eLearning out into its own
+// section instead of leaving it mislabeled as Module Quiz.
+const splitNonVideo = computed(() => splitByContentTopic(splitStandard.value.moduleQuiz, contentHoursByTopic(contentEntries.value)))
+const moduleQuizResults = computed(() => splitNonVideo.value.moduleQuiz)
+const eLearningResults = computed(() => splitNonVideo.value.content)
 
 const videoYears = computed(() => [...new Set(videoTrainingResults.value.map((r) => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
 const videoTopics = computed(() => [...new Set(videoTrainingResults.value.map((r) => r.Topic))].sort())
@@ -102,6 +112,14 @@ const standardTopics = computed(() => [...new Set(moduleQuizResults.value.map((r
 const filteredStandardResults = computed(() => moduleQuizResults.value.filter((r) => {
   if (standardYear.value !== 'ALL' && new Date(r.Timestamp).getFullYear() !== standardYear.value) return false
   if (standardTopic.value !== 'ALL' && r.Topic !== standardTopic.value) return false
+  return true
+}))
+
+const eLearningYears = computed(() => [...new Set(eLearningResults.value.map((r) => new Date(r.Timestamp).getFullYear()))].sort((a, b) => b - a))
+const eLearningTopics = computed(() => [...new Set(eLearningResults.value.map((r) => r.Topic))].sort())
+const filteredELearningResults = computed(() => eLearningResults.value.filter((r) => {
+  if (eLearningYear.value !== 'ALL' && new Date(r.Timestamp).getFullYear() !== eLearningYear.value) return false
+  if (eLearningTopic.value !== 'ALL' && r.Topic !== eLearningTopic.value) return false
   return true
 }))
 
@@ -126,6 +144,7 @@ const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outlet
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoResults, next: videoNext, prev: videoPrev } = usePagination(filteredVideoResults)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardResults, next: standardNext, prev: standardPrev } = usePagination(filteredStandardResults)
+const { currentPage: eLearningCurrentPage, totalPages: eLearningTotalPages, paginatedItems: paginatedELearningResults, next: eLearningNext, prev: eLearningPrev } = usePagination(filteredELearningResults)
 const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: paginatedAiResults, next: aiNext, prev: aiPrev } = usePagination(filteredAiResults)
 
 // Matches by AttemptID, same approach as QuizHistoryView.vue and
@@ -268,6 +287,50 @@ function wrongsFor(h) {
                 </details>
               </div>
               <Pagination :current-page="standardCurrentPage" :total-pages="standardTotalPages" @prev="standardPrev" @next="standardNext" />
+            </template>
+          </template>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.eLearningHeading') }}</h2>
+          <div v-if="eLearningResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
+          <template v-else>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <select v-model="eLearningYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('areaManagerDashboard.allYears') }}</option>
+                <option v-for="y in eLearningYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <select v-model="eLearningTopic" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+                <option value="ALL">{{ t('areaManagerDashboard.allTopics') }}</option>
+                <option v-for="t2 in eLearningTopics" :key="t2" :value="t2">{{ t2 }}</option>
+              </select>
+            </div>
+            <div v-if="filteredELearningResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsFiltered') }}</div>
+            <template v-else>
+              <div class="space-y-3">
+                <details v-for="r in paginatedELearningResults" :key="`${r.Name}|${r.Outlet}|${r.Topic}|${r.Timestamp}`" class="bg-white rounded-xl2 shadow-sm">
+                  <summary class="flex items-center gap-3 px-5 py-3 cursor-pointer">
+                    <div class="w-11 shrink-0 rounded-lg bg-aqualight text-center py-1">
+                      <p class="text-[10px] font-medium text-aqua leading-none">{{ dateBadge(r.Timestamp).month }}</p>
+                      <p class="text-base font-display font-bold text-deepsea leading-tight">{{ dateBadge(r.Timestamp).day }}</p>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-ink truncate">{{ r.Name }} · {{ r.Topic }}</p>
+                      <p class="text-xs text-slate truncate">{{ r.Outlet }}</p>
+                    </div>
+                    <span class="text-sm font-display font-semibold shrink-0" :class="parseInt(r.Percentage) >= 70 ? 'text-aqua' : 'text-coral'">
+                      {{ r.Score }}
+                    </span>
+                  </summary>
+                  <div v-if="wrongsFor(r).length" class="px-5 pb-4 space-y-2">
+                    <div v-for="(w, j) in wrongsFor(r)" :key="j" class="bg-seafoam rounded-lg p-3">
+                      <p class="text-xs font-medium text-coral">{{ t('areaManagerDashboard.questionPrefix', { text: bilingual(w, 'Question Text') }) }}</p>
+                      <p class="text-xs text-aqua font-semibold mt-1">{{ t('areaManagerDashboard.correctLabel', { text: bilingual(w, 'Correct Answer') }) }}</p>
+                    </div>
+                  </div>
+                </details>
+              </div>
+              <Pagination :current-page="eLearningCurrentPage" :total-pages="eLearningTotalPages" @prev="eLearningPrev" @next="eLearningNext" />
             </template>
           </template>
         </section>
