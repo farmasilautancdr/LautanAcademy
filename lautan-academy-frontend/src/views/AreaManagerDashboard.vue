@@ -170,6 +170,13 @@ function wrongsFor(h) {
       <div v-if="loading" class="text-slate text-sm">{{ t('areaManagerDashboard.loading') }}</div>
       <div v-else-if="allResults.length === 0 && allAiResults.length === 0" class="text-slate text-sm">{{ t('areaManagerDashboard.noResultsYet') }}</div>
       <template v-else>
+        <div class="mb-6">
+          <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
+            <option value="ALL">{{ t('areaManagerDashboard.allOutletsInRegion') }}</option>
+            <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
+          </select>
+        </div>
+
         <section class="mb-8">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 class="font-display text-base font-semibold text-ink">{{ t('areaManagerDashboard.cpdHeading') }}</h2>
@@ -195,13 +202,6 @@ function wrongsFor(h) {
         </section>
 
         <PharmacistComplianceMatrix />
-
-        <div class="mb-6">
-          <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
-            <option value="ALL">{{ t('areaManagerDashboard.allOutletsInRegion') }}</option>
-            <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
-          </select>
-        </div>
 
         <section>
           <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('areaManagerDashboard.videoTrainingHeading') }}</h2>

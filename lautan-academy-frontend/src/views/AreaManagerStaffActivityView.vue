@@ -23,16 +23,28 @@ const { loading, outletActivity, activeOutletCount, totalOutletCount, ACTIVE_WIN
         <p class="text-slate text-xs font-semibold uppercase tracking-wide">{{ t('areaStaffActivityView.noOutlets') }}</p>
       </div>
       <div v-else class="space-y-3">
-        <div v-for="o in outletActivity" :key="o.outlet" class="bg-white rounded-xl2 px-5 py-4">
-          <div class="flex items-center justify-between gap-3 mb-1">
+        <details v-for="o in outletActivity" :key="o.outlet" class="bg-white rounded-xl2 shadow-sm">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer">
             <p class="text-sm font-display font-semibold text-ink">{{ o.outlet }}</p>
             <span class="text-xs font-display font-semibold shrink-0 px-2 py-1 rounded-full" :class="o.activeCount > 0 ? 'bg-aqualight text-deepsea' : 'bg-coral/10 text-coral'">
-              {{ o.activeCount > 0 ? t('areaStaffActivityView.activeStaffCount', o.activeCount) : t('areaStaffActivityView.needsAttention') }}
+              {{ t('areaStaffActivityView.staffCountRatio', { active: o.activeCount, total: o.totalCount }) }}
             </span>
+          </summary>
+          <div v-if="!o.staff.length" class="px-5 pb-4">
+            <p class="text-slate text-xs">{{ t('areaStaffActivityView.noStaffInOutlet') }}</p>
           </div>
-          <p v-if="o.activeCount > 0" class="text-xs text-slate truncate">{{ o.activeStaff.join(', ') }}</p>
-          <p v-else class="text-xs text-slate">{{ t('areaStaffActivityView.noActivity', { days: ACTIVE_WINDOW_DAYS }) }}</p>
-        </div>
+          <div v-else class="border-t border-seafoam divide-y divide-seafoam">
+            <div v-for="s in o.staff" :key="s.name" class="px-5 py-3 flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-ink truncate">{{ s.name }}</p>
+                <p class="text-xs text-slate">{{ s.lastAttempt ? t('staffActivityView.lastActive', { date: new Date(s.lastAttempt).toLocaleDateString() }) : t('staffActivityView.noActivityYet') }}</p>
+              </div>
+              <span class="text-xs font-display font-semibold shrink-0 px-2 py-1 rounded-full" :class="s.active ? 'bg-aqualight text-deepsea' : 'bg-coral/10 text-coral'">
+                {{ s.active ? t('staffActivityView.active') : t('staffActivityView.inactive') }}
+              </span>
+            </div>
+          </div>
+        </details>
       </div>
     </main>
   </div>

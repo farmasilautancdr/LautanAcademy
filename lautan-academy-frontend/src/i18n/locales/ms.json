@@ -1050,8 +1050,7 @@
     "summary": "{active} daripada {total} cawangan mempunyai staf aktif dalam {days} hari terakhir",
     "loading": "Memuatkan...",
     "noOutlets": "Belum ada cawangan dalam kawasan anda.",
-    "activeStaffCount": "{count} staf aktif",
-    "noActivity": "Tiada aktiviti dalam {days} hari terakhir",
-    "needsAttention": "Perlu perhatian"
+    "staffCountRatio": "{active}/{total} aktif",
+    "noStaffInOutlet": "Tiada staf dalam senarai untuk cawangan ini."
   }
 }

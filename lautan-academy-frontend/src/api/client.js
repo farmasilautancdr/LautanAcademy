@@ -109,6 +109,7 @@ export const api = {
   saveReport: (payload) => request('/reports', { method: 'POST', body: JSON.stringify(payload) }),
   getStaffRosterFull: (division, outlet) =>
     request(`/staff-roster-manage/full?division=${encodeURIComponent(division)}&outlet=${encodeURIComponent(outlet)}`),
+  getRegionStaffRoster: () => request('/staff-roster-manage/region'),
   addStaff: (payload) => request('/staff-roster-manage', { method: 'POST', body: JSON.stringify(payload) }),
   resetStaffPin: (payload) => request('/staff-roster-manage/reset-pin', { method: 'POST', body: JSON.stringify(payload) }),
   renameStaff: (payload) => request('/staff-roster-manage/rename', { method: 'PATCH', body: JSON.stringify(payload) }),

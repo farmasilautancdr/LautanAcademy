@@ -1050,8 +1050,7 @@
     "summary": "{active} of {total} outlets have active staff in the last {days} days",
     "loading": "Loading...",
     "noOutlets": "No outlets in your region yet.",
-    "activeStaffCount": "{count} staff active | {count} staff active",
-    "noActivity": "No activity in the last {days} days",
-    "needsAttention": "Needs attention"
+    "staffCountRatio": "{active}/{total} active",
+    "noStaffInOutlet": "No staff on the roster for this outlet."
   }
 }
