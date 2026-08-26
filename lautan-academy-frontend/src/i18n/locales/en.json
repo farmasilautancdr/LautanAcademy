@@ -157,7 +157,9 @@
     "manageModuleQuizQuestions": "Manage Module Quiz Questions",
     "manageContentQuiz": "Manage Content Quiz",
     "pharmacistTag": "Pharmacist",
-    "logOut": "Log out"
+    "logOut": "Log out",
+    "more": "More",
+    "moreSheetTitle": "More"
   },
   "dashboardView": {
     "greeting": "Hi {name}",

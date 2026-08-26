@@ -154,16 +154,85 @@ function toggle(label) { collapsed.value[label] = isOpen(label) }
 
 // Mobile bottom nav: the whole <aside> (including its footer logout
 // button) hides below md, so every real destination — logout included —
-// needs to be reachable from this flat icon row instead.
-const flatItems = computed(() => sections.value.flatMap(g => g.items))
+// needs to be reachable from here instead. Unlike the desktop sidebar
+// (which lists every item from `sections`), the bar only has room for a
+// handful of icons — each role gets a hand-picked set of its most-used
+// destinations (see role branches below) plus a trailing "More" button
+// that opens a sheet with everything else. A role with one obvious
+// single "create" action (Create Quiz, Add Resources, File a Report)
+// gets it as a raised center FAB item (`fab: true`); Logout always
+// lives in the More sheet, never in the bar itself.
+const mobileNav = computed(() => {
+  const logoutItem = { label: t('sidebar.logOut'), icon: 'logout', action: 'logout' }
 
-// Item count in flatItems varies by role (Supervisor has 11 vs. Staff's
-// handful), so the fixed-column grid wraps to a different number of rows per
-// role — a hardcoded padding-bottom on the page content (old: pb-20) falls
-// short once the nav grows past 2 rows and the last row covers real buttons
-// (e.g. the Add Question submit button on Supervisor's manage-quiz pages).
-// Measuring the actual rendered nav height keeps content padding correct
-// for any future item count instead of re-guessing a pixel value.
+  if (auth.isStaff) {
+    const dashboardItem = { label: t('sidebar.dashboard'), to: '/', icon: 'home' }
+    const quizHistoryItem = { label: t('sidebar.quizHistory'), to: '/history', icon: 'history' }
+    const browseCoursesItem = { label: t('sidebar.browseCourses'), to: '/resources', icon: 'book' }
+    if (auth.staff?.division !== 'retail') {
+      return { items: [dashboardItem, quizHistoryItem, browseCoursesItem], more: [logoutItem] }
+    }
+    const moduleQuizItem = { label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' }
+    const videoTrainingItem = { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' }
+    const more = []
+    if (auth.staff?.isPharmacist) more.push({ label: t('sidebar.pharmacistCourses'), to: '/pharmacist-courses', icon: 'clipboard' })
+    more.push(quizHistoryItem, logoutItem)
+    return { items: [dashboardItem, moduleQuizItem, videoTrainingItem, browseCoursesItem], more }
+  }
+
+  if (isOutletOrWarehouseManager.value) {
+    const createQuizItem = { label: t('sidebar.createQuiz'), to: managerHomePath.value, icon: 'plus', fab: true }
+    const staffRosterItem = { label: t('sidebar.staffRoster'), to: managerStaffPath.value, icon: 'send' }
+    const staffResultsItem = { label: t('sidebar.staffResults'), to: managerResultsPath.value, icon: 'chart' }
+    const browseCoursesItem = { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }
+    const more = []
+    if (managerRole.value === 'outlet_manager') more.push({ label: t('sidebar.staffReview'), to: '/manager/staff-review', icon: 'clipboard' })
+    more.push(logoutItem)
+    return { items: [staffRosterItem, staffResultsItem, createQuizItem, browseCoursesItem], more }
+  }
+
+  if (isAreaManager.value) {
+    const staffResultsItem = { label: t('sidebar.staffResults'), to: '/area-manager', icon: 'chart' }
+    // File a Report lives on this page (see `sections` above) — same
+    // "create" shape as Create Quiz / Add Resources, so it gets the FAB.
+    const assessmentItem = { label: t('sidebar.assessment'), to: '/area-manager/reviews', icon: 'clipboard', fab: true }
+    const browseCoursesItem = { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }
+    return { items: [staffResultsItem, assessmentItem, browseCoursesItem], more: [logoutItem] }
+  }
+
+  if (isSupervisor.value) {
+    const allOutletsItem = { label: t('sidebar.allOutlets'), to: '/supervisor', icon: 'grid' }
+    const staffComparisonItem = { label: t('sidebar.staffComparison'), to: '/supervisor/staff-comparison', icon: 'users' }
+    const addResourcesItem = { label: t('sidebar.addResources'), to: '/supervisor/add-resources', icon: 'plus', fab: true }
+    const clusterReportsItem = { label: t('sidebar.clusterReports'), to: '/supervisor/reports', icon: 'file' }
+    const more = [
+      { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' },
+      { label: t('sidebar.managerAccess'), to: '/supervisor/manager-access', icon: 'key' },
+      { label: t('sidebar.pharmacistTag'), to: '/supervisor/pharmacist', icon: 'users' },
+      { label: t('sidebar.manageQuizQuestions'), to: '/supervisor/manage-quiz-questions', icon: 'clipboard' },
+      { label: t('sidebar.manageModuleQuizQuestions'), to: '/supervisor/manage-module-quiz-questions', icon: 'clipboard' },
+      { label: t('sidebar.manageContentQuiz'), to: '/supervisor/manage-content-quiz', icon: 'clipboard' },
+      logoutItem,
+    ]
+    return { items: [allOutletsItem, staffComparisonItem, addResourcesItem, clusterReportsItem], more }
+  }
+
+  return { items: [], more: [logoutItem] }
+})
+
+const moreOpen = ref(false)
+function closeMore() { moreOpen.value = false }
+function navigateFromSheet(to) { closeMore(); router.push(to) }
+async function logoutFromSheet() { closeMore(); await handleLogout() }
+
+// Item count varies by role (Supervisor's More sheet has 7 vs. Staff's
+// 1-2), so a hardcoded padding-bottom on the page content (old: pb-20)
+// falls short once the bar's own height changes and the last row covers
+// real buttons (e.g. the Add Question submit button on Supervisor's
+// manage-quiz pages). Measuring the actual rendered bar height keeps
+// content padding correct without re-guessing a pixel value. Only the
+// bar itself is measured — the More sheet is a separate overlay, not
+// part of layout flow.
 const mobileNavRef = ref(null)
 let mobileNavObserver = null
 onMounted(() => {
@@ -199,6 +268,8 @@ const ICONS = {
   key: 'M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4',
   chevron: 'm6 9 6 6 6-6',
   logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  close: 'M18 6 6 18M6 6l12 12',
+  dots: 'M5 12h.01M12 12h.01M19 12h.01',
 }
 </script>
 
@@ -275,32 +346,76 @@ const ICONS = {
     </div>
   </aside>
 
-  <nav ref="mobileNavRef" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam grid grid-cols-4 pb-[env(safe-area-inset-bottom)] max-h-[30vh] overflow-y-auto" aria-label="Primary">
-    <RouterLink
-      v-for="item in flatItems"
-      :key="item.label"
-      :to="item.to"
-      custom
-      v-slot="{ isActive, navigate }"
-    >
-      <button
-        type="button"
-        @click="item.disabled ? null : navigate()"
-        :disabled="item.disabled"
-        class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0"
-        :class="item.disabled ? 'text-slate/40 cursor-not-allowed' : (isActive ? 'text-aqua' : 'text-slate')"
-      >
-        <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path :d="ICONS[item.icon]" />
-        </svg>
-        <span class="text-[10px] font-medium text-center leading-tight px-0.5">{{ item.disabled ? t('sidebar.comingSoon') : item.label }}</span>
-      </button>
-    </RouterLink>
-    <button type="button" @click="handleLogout" class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate" :aria-label="t('sidebar.logOut')">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path :d="ICONS.logout" />
+  <nav
+    ref="mobileNavRef"
+    class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-seafoam grid pb-[env(safe-area-inset-bottom)]"
+    :style="{ gridTemplateColumns: `repeat(${mobileNav.items.length + 1}, minmax(0, 1fr))` }"
+    aria-label="Primary"
+  >
+    <template v-for="item in mobileNav.items" :key="item.label">
+      <RouterLink v-if="item.fab" :to="item.to" custom v-slot="{ navigate }">
+        <button type="button" @click="navigate()" class="flex flex-col items-center gap-0.5 -mt-4">
+          <span class="w-12 h-12 rounded-full bg-aqua text-white flex items-center justify-center shadow-lg shadow-aqua/30">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path :d="ICONS[item.icon]" />
+            </svg>
+          </span>
+          <span class="text-[10px] font-medium text-center leading-tight px-0.5 text-slate">{{ item.label }}</span>
+        </button>
+      </RouterLink>
+      <RouterLink v-else :to="item.to" custom v-slot="{ isActive, navigate }">
+        <button type="button" @click="navigate()" class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0" :class="isActive ? 'text-aqua' : 'text-slate'">
+          <span class="relative">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path :d="ICONS[item.icon]" />
+            </svg>
+            <span v-if="item.badge" class="absolute -top-1 -right-1.5 text-[9px] font-bold text-white bg-coral rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5">{{ item.badge }}</span>
+          </span>
+          <span class="text-[10px] font-medium text-center leading-tight px-0.5">{{ item.label }}</span>
+        </button>
+      </RouterLink>
+    </template>
+
+    <button type="button" @click="moreOpen = true" class="flex flex-col items-center justify-center gap-0.5 py-2 min-w-0 text-slate">
+      <svg viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path :d="ICONS.dots" />
       </svg>
-      <span class="text-[10px] font-medium">{{ t('sidebar.logOut') }}</span>
+      <span class="text-[10px] font-medium text-center leading-tight px-0.5">{{ t('sidebar.more') }}</span>
     </button>
   </nav>
+
+  <Teleport to="body">
+    <div v-if="moreOpen" class="md:hidden fixed inset-0 z-40 flex items-end">
+      <div class="absolute inset-0 bg-ink/40" @click="closeMore"></div>
+      <div class="relative w-full bg-white rounded-t-2xl pb-[env(safe-area-inset-bottom)] max-h-[75vh] overflow-y-auto">
+        <div class="flex items-center justify-center pt-3">
+          <span class="w-10 h-1.5 rounded-full bg-seafoam"></span>
+        </div>
+        <div class="flex items-center justify-between px-5 py-3">
+          <h2 class="font-display text-base font-semibold text-ink">{{ t('sidebar.moreSheetTitle') }}</h2>
+          <button type="button" @click="closeMore" class="text-slate hover:text-ink">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path :d="ICONS.close" />
+            </svg>
+          </button>
+        </div>
+        <div class="px-3 pb-4 space-y-0.5">
+          <button
+            v-for="item in mobileNav.more"
+            :key="item.label"
+            type="button"
+            @click="item.action === 'logout' ? logoutFromSheet() : navigateFromSheet(item.to)"
+            class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm"
+            :class="item.action === 'logout' ? 'text-coral' : 'text-ink hover:bg-seafoam'"
+          >
+            <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path :d="ICONS[item.icon]" />
+            </svg>
+            <span class="flex-1 text-left truncate">{{ item.label }}</span>
+            <span v-if="item.badge" class="text-[10px] font-bold text-white bg-coral rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shrink-0">{{ item.badge }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>

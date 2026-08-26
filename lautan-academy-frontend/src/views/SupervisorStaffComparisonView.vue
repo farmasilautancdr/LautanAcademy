@@ -190,6 +190,23 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8">
+      <div class="flex flex-wrap items-center gap-3 mb-8">
+        <select v-model.number="windowMonths" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option :value="3">{{ t('supervisorStaffComparisonView.last3Months') }}</option>
+          <option :value="6">{{ t('supervisorStaffComparisonView.last6Months') }}</option>
+          <option :value="12">{{ t('supervisorStaffComparisonView.last12Months') }}</option>
+          <option :value="0">{{ t('supervisorStaffComparisonView.allTime') }}</option>
+        </select>
+        <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">{{ t('supervisorStaffComparisonView.allRegions') }}</option>
+          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
+        </select>
+        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">{{ t('supervisorStaffComparisonView.allOutlets') }}</option>
+          <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
+        </select>
+      </div>
+
       <section class="mb-8">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h2 class="font-display text-base font-semibold text-ink">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
@@ -215,23 +232,6 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
       </section>
 
       <PharmacistComplianceMatrix />
-
-      <div class="flex flex-wrap items-center gap-3 mb-6">
-        <select v-model.number="windowMonths" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option :value="3">{{ t('supervisorStaffComparisonView.last3Months') }}</option>
-          <option :value="6">{{ t('supervisorStaffComparisonView.last6Months') }}</option>
-          <option :value="12">{{ t('supervisorStaffComparisonView.last12Months') }}</option>
-          <option :value="0">{{ t('supervisorStaffComparisonView.allTime') }}</option>
-        </select>
-        <select v-model="regionFilter" @change="onRegionChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">{{ t('supervisorStaffComparisonView.allRegions') }}</option>
-          <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
-        </select>
-        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
-          <option value="ALL">{{ t('supervisorStaffComparisonView.allOutlets') }}</option>
-          <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
-        </select>
-      </div>
 
       <div v-if="loading || !videoTrainingsLoaded" class="text-slate text-sm">{{ t('supervisorStaffComparisonView.loading') }}</div>
       <template v-else>

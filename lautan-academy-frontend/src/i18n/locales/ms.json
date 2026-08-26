@@ -157,7 +157,9 @@
     "manageModuleQuizQuestions": "Urus Soalan Kuiz Modul",
     "manageContentQuiz": "Urus Kuiz Kandungan",
     "pharmacistTag": "Ahli Farmasi",
-    "logOut": "Log Keluar"
+    "logOut": "Log Keluar",
+    "more": "Lagi",
+    "moreSheetTitle": "Lagi"
   },
   "dashboardView": {
     "greeting": "Hai {name}",
