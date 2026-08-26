@@ -22,11 +22,14 @@ import OutletManagerDashboard from '../views/OutletManagerDashboard.vue'
 import OutletManagerStaffView from '../views/OutletManagerStaffView.vue'
 import OutletManagerResultsView from '../views/OutletManagerResultsView.vue'
 import OutletManagerStaffReviewView from '../views/OutletManagerStaffReviewView.vue'
+import OutletManagerStaffActivityView from '../views/OutletManagerStaffActivityView.vue'
 import WarehouseManagerDashboard from '../views/WarehouseManagerDashboard.vue'
 import WarehouseManagerStaffView from '../views/WarehouseManagerStaffView.vue'
 import WarehouseManagerResultsView from '../views/WarehouseManagerResultsView.vue'
+import WarehouseManagerStaffActivityView from '../views/WarehouseManagerStaffActivityView.vue'
 import AreaManagerDashboard from '../views/AreaManagerDashboard.vue'
 import AreaManagerReviewsView from '../views/AreaManagerReviewsView.vue'
+import AreaManagerStaffActivityView from '../views/AreaManagerStaffActivityView.vue'
 import SupervisorDashboard from '../views/SupervisorDashboard.vue'
 import SupervisorStaffComparisonView from '../views/SupervisorStaffComparisonView.vue'
 import SupervisorReportsView from '../views/SupervisorReportsView.vue'
@@ -81,13 +84,16 @@ const router = createRouter({
     { path: '/manager/staff', name: 'manager-staff', component: OutletManagerStaffView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
     { path: '/manager/results', name: 'manager-results', component: OutletManagerResultsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
     { path: '/manager/staff-review', name: 'manager-staff-review', component: OutletManagerStaffReviewView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
+    { path: '/manager/dashboard', name: 'manager-dashboard', component: OutletManagerStaffActivityView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
     { path: '/manager/resources', name: 'manager-resources', component: ResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'outlet_manager' } },
     { path: '/warehouse-manager', name: 'warehouse-manager', component: WarehouseManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
     { path: '/warehouse-manager/staff', name: 'warehouse-manager-staff', component: WarehouseManagerStaffView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
     { path: '/warehouse-manager/results', name: 'warehouse-manager-results', component: WarehouseManagerResultsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
+    { path: '/warehouse-manager/dashboard', name: 'warehouse-manager-dashboard', component: WarehouseManagerStaffActivityView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
     { path: '/warehouse-manager/resources', name: 'warehouse-manager-resources', component: ResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'warehouse_manager' } },
     { path: '/area-manager', name: 'area-manager', component: AreaManagerDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/area-manager/reviews', name: 'area-manager-reviews', component: AreaManagerReviewsView, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
+    { path: '/area-manager/dashboard', name: 'area-manager-dashboard', component: AreaManagerStaffActivityView, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/area-manager/resources', name: 'area-manager-resources', component: ResourcesView, meta: { requiresAuth: true, role: 'manager', managerRole: 'area_manager' } },
     { path: '/supervisor', name: 'supervisor', component: SupervisorDashboard, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },
     { path: '/supervisor/staff-comparison', name: 'supervisor-staff-comparison', component: SupervisorStaffComparisonView, meta: { requiresAuth: true, role: 'manager', managerRole: 'supervisor' } },

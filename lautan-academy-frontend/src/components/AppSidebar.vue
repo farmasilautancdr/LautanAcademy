@@ -36,6 +36,7 @@ const isSupervisor = computed(() => managerRole.value === 'supervisor')
 const managerHomePath = computed(() => managerRole.value === 'warehouse_manager' ? '/warehouse-manager' : '/manager')
 const managerStaffPath = computed(() => `${managerHomePath.value}/staff`)
 const managerResultsPath = computed(() => `${managerHomePath.value}/results`)
+const managerDashboardPath = computed(() => `${managerHomePath.value}/dashboard`)
 // Area Manager's home path differs from managerHomePath (which only
 // branches outlet vs. warehouse); Supervisor's home is /supervisor.
 const managerResourcesPath = computed(() => {
@@ -77,6 +78,10 @@ const sections = computed(() => {
 
   if (isOutletOrWarehouseManager.value) {
     groups.push({
+      label: t('sidebar.groupOverview'),
+      items: [{ label: t('sidebar.dashboard'), to: managerDashboardPath.value, icon: 'home' }],
+    })
+    groups.push({
       label: t('sidebar.groupQuizManagement'),
       items: [
         { label: t('sidebar.createQuiz'), to: managerHomePath.value, icon: 'plus' },
@@ -104,6 +109,7 @@ const sections = computed(() => {
     groups.push({
       label: t('sidebar.groupOutletPerformance'),
       items: [
+        { label: t('sidebar.dashboard'), to: '/area-manager/dashboard', icon: 'home' },
         { label: t('sidebar.staffResults'), to: '/area-manager', icon: 'chart' },
         // Real — File a Report + Filed Reports, its own page now. No
         // "pending" state exists in the data model yet.
@@ -168,36 +174,38 @@ const mobileNav = computed(() => {
   if (auth.isStaff) {
     const dashboardItem = { label: t('sidebar.dashboard'), to: '/', icon: 'home' }
     const quizHistoryItem = { label: t('sidebar.quizHistory'), to: '/history', icon: 'history' }
-    const browseCoursesItem = { label: t('sidebar.browseCourses'), to: '/resources', icon: 'book' }
+    const browseCoursesFab = { label: t('sidebar.browseCourses'), to: '/resources', icon: 'book', fab: true }
     if (auth.staff?.division !== 'retail') {
-      return { items: [dashboardItem, quizHistoryItem, browseCoursesItem], more: [logoutItem] }
+      return { items: [dashboardItem, browseCoursesFab, quizHistoryItem], more: [logoutItem] }
     }
     const moduleQuizItem = { label: t('sidebar.moduleQuiz'), to: '/module-quiz', icon: 'clipboard' }
     const videoTrainingItem = { label: t('sidebar.videoTraining'), to: '/video-training', icon: 'video' }
     const more = []
     if (auth.staff?.isPharmacist) more.push({ label: t('sidebar.pharmacistCourses'), to: '/pharmacist-courses', icon: 'clipboard' })
     more.push(quizHistoryItem, logoutItem)
-    return { items: [dashboardItem, moduleQuizItem, videoTrainingItem, browseCoursesItem], more }
+    return { items: [dashboardItem, moduleQuizItem, browseCoursesFab, videoTrainingItem], more }
   }
 
   if (isOutletOrWarehouseManager.value) {
+    const dashboardItem = { label: t('sidebar.dashboard'), to: managerDashboardPath.value, icon: 'home' }
     const createQuizItem = { label: t('sidebar.createQuiz'), to: managerHomePath.value, icon: 'plus', fab: true }
     const staffRosterItem = { label: t('sidebar.staffRoster'), to: managerStaffPath.value, icon: 'send' }
     const staffResultsItem = { label: t('sidebar.staffResults'), to: managerResultsPath.value, icon: 'chart' }
     const browseCoursesItem = { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }
-    const more = []
+    const more = [browseCoursesItem]
     if (managerRole.value === 'outlet_manager') more.push({ label: t('sidebar.staffReview'), to: '/manager/staff-review', icon: 'clipboard' })
     more.push(logoutItem)
-    return { items: [staffRosterItem, staffResultsItem, createQuizItem, browseCoursesItem], more }
+    return { items: [dashboardItem, staffRosterItem, createQuizItem, staffResultsItem], more }
   }
 
   if (isAreaManager.value) {
+    const dashboardItem = { label: t('sidebar.dashboard'), to: '/area-manager/dashboard', icon: 'home' }
     const staffResultsItem = { label: t('sidebar.staffResults'), to: '/area-manager', icon: 'chart' }
     // File a Report lives on this page (see `sections` above) — same
     // "create" shape as Create Quiz / Add Resources, so it gets the FAB.
     const assessmentItem = { label: t('sidebar.assessment'), to: '/area-manager/reviews', icon: 'clipboard', fab: true }
     const browseCoursesItem = { label: t('sidebar.browseCourses'), to: managerResourcesPath.value, icon: 'book' }
-    return { items: [staffResultsItem, assessmentItem, browseCoursesItem], more: [logoutItem] }
+    return { items: [dashboardItem, staffResultsItem, assessmentItem, browseCoursesItem], more: [logoutItem] }
   }
 
   if (isSupervisor.value) {

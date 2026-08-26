@@ -139,6 +139,7 @@
     "quizHistory": "Quiz History",
     "groupBrowseCourses": "Browse Courses",
     "browseCourses": "Browse Courses",
+    "groupOverview": "Overview",
     "groupQuizManagement": "Quiz Management",
     "createQuiz": "Create Quiz",
     "groupAssignStaff": "Assign Staff",
@@ -1033,5 +1034,24 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {current} of {total}"
+  },
+  "staffActivityView": {
+    "title": "Staff Activity",
+    "summary": "{active} of {total} staff active in the last {days} days",
+    "loading": "Loading...",
+    "noStaff": "No staff on the roster yet.",
+    "lastActive": "Last active {date}",
+    "noActivityYet": "No activity yet",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "areaStaffActivityView": {
+    "title": "Outlet Activity",
+    "summary": "{active} of {total} outlets have active staff in the last {days} days",
+    "loading": "Loading...",
+    "noOutlets": "No outlets in your region yet.",
+    "activeStaffCount": "{count} staff active | {count} staff active",
+    "noActivity": "No activity in the last {days} days",
+    "needsAttention": "Needs attention"
   }
 }

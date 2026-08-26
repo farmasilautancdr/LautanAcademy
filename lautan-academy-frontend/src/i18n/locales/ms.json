@@ -139,6 +139,7 @@
     "quizHistory": "Sejarah Kuiz",
     "groupBrowseCourses": "Semak Kursus",
     "browseCourses": "Semak Kursus",
+    "groupOverview": "Gambaran Keseluruhan",
     "groupQuizManagement": "Pengurusan Kuiz",
     "createQuiz": "Cipta Kuiz",
     "groupAssignStaff": "Tugaskan Staf",
@@ -1033,5 +1034,24 @@
     "previous": "Sebelum",
     "next": "Seterusnya",
     "pageOf": "Halaman {current} daripada {total}"
+  },
+  "staffActivityView": {
+    "title": "Aktiviti Staf",
+    "summary": "{active} daripada {total} staf aktif dalam {days} hari terakhir",
+    "loading": "Memuatkan...",
+    "noStaff": "Belum ada staf dalam senarai.",
+    "lastActive": "Aktif terakhir {date}",
+    "noActivityYet": "Belum ada aktiviti",
+    "active": "Aktif",
+    "inactive": "Tidak Aktif"
+  },
+  "areaStaffActivityView": {
+    "title": "Aktiviti Cawangan",
+    "summary": "{active} daripada {total} cawangan mempunyai staf aktif dalam {days} hari terakhir",
+    "loading": "Memuatkan...",
+    "noOutlets": "Belum ada cawangan dalam kawasan anda.",
+    "activeStaffCount": "{count} staf aktif",
+    "noActivity": "Tiada aktiviti dalam {days} hari terakhir",
+    "needsAttention": "Perlu perhatian"
   }
 }
