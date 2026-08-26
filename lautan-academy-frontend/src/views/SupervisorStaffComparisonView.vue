@@ -208,9 +208,9 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
       </div>
 
       <section class="mb-8">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h2 class="font-display text-base font-semibold text-ink">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
-          <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+        <h2 class="font-display text-base font-semibold text-ink mb-3">{{ t('supervisorStaffComparisonView.cpdHeading') }}</h2>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <select v-model.number="cpdYear" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white min-w-0">
             <option v-for="y in cpdYears" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
