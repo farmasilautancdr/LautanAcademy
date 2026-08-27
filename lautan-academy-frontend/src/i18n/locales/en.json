@@ -24,7 +24,7 @@
     "errorTooManyAttempts": "Too many attempts. Please wait a few minutes and try again."
   },
   "managerLogin": {
-    "subtitle": "PIC Outlet / PIC Warehouse",
+    "subtitle": "PIC Outlet / Warehouse",
     "division": "Division",
     "retail": "Retail",
     "warehouse": "Warehouse",
@@ -57,7 +57,7 @@
     "errorEnterPin": "Enter the manager PIN.",
     "errorBadPin": "That PIN doesn't look right.",
     "staffPrompt": "Staff? ",
-    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
+    "outletManagerPrompt": "PIC Outlet/Warehouse?",
     "supervisorPrompt": "Supervisor? ",
     "firstTimePrompt": "First time? ",
     "logInHere": "Log in here",
@@ -71,12 +71,12 @@
     "errorEnterPin": "Enter the Supervisor PIN.",
     "errorBadPin": "That PIN doesn't look right.",
     "staffPrompt": "Staff? ",
-    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
+    "outletManagerPrompt": "PIC Outlet/Warehouse?",
     "areaManagerPrompt": "Area Manager? ",
     "logInHere": "Log in here"
   },
   "managerRegister": {
-    "subtitle": "Register — PIC Outlet / PIC Warehouse",
+    "subtitle": "Register — PIC Outlet / Warehouse",
     "division": "Division",
     "retail": "Retail",
     "warehouse": "Warehouse",
