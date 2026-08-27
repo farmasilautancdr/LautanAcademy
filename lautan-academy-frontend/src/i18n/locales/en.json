@@ -125,7 +125,7 @@
   "sidebar": {
     "staffTraining": "Staff Training",
     "roleStaff": "Staff",
-    "roleOutletManager": "Outlet Manager",
+    "roleOutletManager": "PIC Outlet",
     "roleWarehouseManager": "Warehouse Manager",
     "roleAreaManager": "Area Manager",
     "roleSupervisor": "Supervisor",
@@ -880,7 +880,7 @@
       "targetType": "Type",
       "targetTypeStaffRetail": "Staff (Retail)",
       "targetTypeStaffWarehouse": "Staff (Warehouse)",
-      "targetTypeOutletManager": "Outlet Manager",
+      "targetTypeOutletManager": "PIC Outlet",
       "targetTypeWarehouseManager": "Warehouse Manager",
       "targetTypeAreaManager": "Area Manager",
       "outletLabel": "Outlet",
@@ -981,7 +981,7 @@
       },
       "managerAccounts": {
         "roleAll": "All roles",
-        "roleOutletManager": "Outlet Manager",
+        "roleOutletManager": "PIC Outlet",
         "roleWarehouseManager": "Warehouse Manager",
         "roleAreaManager": "Area Manager",
         "scopeKeyPlaceholder": "Outlet / area code",

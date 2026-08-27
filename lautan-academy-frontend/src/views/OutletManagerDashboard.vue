@@ -18,7 +18,7 @@ const auth = useAuthStore()
 const route = useRoute()
 const { t } = useI18n()
 const outlet = auth.manager?.outlet
-const managerLabel = `Outlet Manager - ${outlet}`
+const managerLabel = `PIC Outlet - ${outlet}`
 
 const topicLabel = ref('')
 const extraNotes = ref('')

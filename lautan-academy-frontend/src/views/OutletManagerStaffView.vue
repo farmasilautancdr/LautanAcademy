@@ -10,7 +10,7 @@ import ManageStaffPanel from '../components/ManageStaffPanel.vue'
 const auth = useAuthStore()
 const { t } = useI18n()
 const outlet = auth.manager?.outlet
-const managerLabel = `Outlet Manager - ${outlet}`
+const managerLabel = `PIC Outlet - ${outlet}`
 </script>
 
 <template>

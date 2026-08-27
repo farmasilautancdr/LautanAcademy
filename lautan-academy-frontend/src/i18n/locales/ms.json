@@ -125,7 +125,7 @@
   "sidebar": {
     "staffTraining": "Latihan Staf",
     "roleStaff": "Staf",
-    "roleOutletManager": "Pengurus Cawangan",
+    "roleOutletManager": "PIC Outlet",
     "roleWarehouseManager": "Pengurus Gudang",
     "roleAreaManager": "Pengurus Kawasan",
     "roleSupervisor": "Penyelia",
@@ -880,7 +880,7 @@
       "targetType": "Jenis",
       "targetTypeStaffRetail": "Staf (Retail)",
       "targetTypeStaffWarehouse": "Staf (Gudang)",
-      "targetTypeOutletManager": "Pengurus Outlet",
+      "targetTypeOutletManager": "PIC Outlet",
       "targetTypeWarehouseManager": "Pengurus Gudang",
       "targetTypeAreaManager": "Pengurus Kawasan",
       "outletLabel": "Outlet",
@@ -981,7 +981,7 @@
       },
       "managerAccounts": {
         "roleAll": "Semua peranan",
-        "roleOutletManager": "Pengurus Outlet",
+        "roleOutletManager": "PIC Outlet",
         "roleWarehouseManager": "Pengurus Gudang",
         "roleAreaManager": "Pengurus Kawasan",
         "scopeKeyPlaceholder": "Kod outlet / kawasan",
