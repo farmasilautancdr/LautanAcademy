@@ -24,7 +24,7 @@
     "errorTooManyAttempts": "Terlalu banyak percubaan. Sila tunggu beberapa minit dan cuba lagi."
   },
   "managerLogin": {
-    "subtitle": "Pengurus Cawangan / Gudang",
+    "subtitle": "PIC Outlet / PIC Warehouse",
     "division": "Bahagian",
     "retail": "Runcit",
     "warehouse": "Gudang",
@@ -57,7 +57,7 @@
     "errorEnterPin": "Masukkan PIN pengurus.",
     "errorBadPin": "PIN tidak sah.",
     "staffPrompt": "Staf? ",
-    "outletManagerPrompt": "Pengurus Cawangan/Gudang?",
+    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
     "supervisorPrompt": "Penyelia? ",
     "firstTimePrompt": "Kali pertama? ",
     "logInHere": "Log masuk di sini",
@@ -71,12 +71,12 @@
     "errorEnterPin": "Masukkan PIN Penyelia.",
     "errorBadPin": "PIN tidak sah.",
     "staffPrompt": "Staf? ",
-    "outletManagerPrompt": "Pengurus Cawangan/Gudang?",
+    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
     "areaManagerPrompt": "Pengurus Kawasan? ",
     "logInHere": "Log masuk di sini"
   },
   "managerRegister": {
-    "subtitle": "Pendaftaran — Pengurus Cawangan / Gudang",
+    "subtitle": "Pendaftaran — PIC Outlet / PIC Warehouse",
     "division": "Bahagian",
     "retail": "Runcit",
     "warehouse": "Gudang",

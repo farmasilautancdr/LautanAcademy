@@ -57,7 +57,7 @@
     "errorEnterPin": "Enter the manager PIN.",
     "errorBadPin": "That PIN doesn't look right.",
     "staffPrompt": "Staff? ",
-    "outletManagerPrompt": "Outlet/Warehouse Manager?",
+    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
     "supervisorPrompt": "Supervisor? ",
     "firstTimePrompt": "First time? ",
     "logInHere": "Log in here",
@@ -71,7 +71,7 @@
     "errorEnterPin": "Enter the Supervisor PIN.",
     "errorBadPin": "That PIN doesn't look right.",
     "staffPrompt": "Staff? ",
-    "outletManagerPrompt": "Outlet/Warehouse Manager?",
+    "outletManagerPrompt": "PIC Outlet/PIC Warehouse?",
     "areaManagerPrompt": "Area Manager? ",
     "logInHere": "Log in here"
   },
