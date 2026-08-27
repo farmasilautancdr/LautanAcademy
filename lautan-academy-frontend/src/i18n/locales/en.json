@@ -24,7 +24,7 @@
     "errorTooManyAttempts": "Too many attempts. Please wait a few minutes and try again."
   },
   "managerLogin": {
-    "subtitle": "Outlet / Warehouse Manager",
+    "subtitle": "PIC Outlet / PIC Warehouse",
     "division": "Division",
     "retail": "Retail",
     "warehouse": "Warehouse",
@@ -76,7 +76,7 @@
     "logInHere": "Log in here"
   },
   "managerRegister": {
-    "subtitle": "Register — Outlet / Warehouse Manager",
+    "subtitle": "Register — PIC Outlet / PIC Warehouse",
     "division": "Division",
     "retail": "Retail",
     "warehouse": "Warehouse",
