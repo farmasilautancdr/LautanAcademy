@@ -21,11 +21,18 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { usePagination } from '../composables/usePagination'
+import { attemptedTopics } from '../composables/useAttemptedTopics'
 import Pagination from '../components/Pagination.vue'
 import ResourcePreviewModal from '../components/ResourcePreviewModal.vue'
+import AttemptedBadge from '../components/AttemptedBadge.vue'
 
 const driveResources = ref([])
 const knowledgeEntries = ref([])
+// Managers share this page but don't take quizzes themselves — attempt
+// history is staff-only, left empty (and never fetched) for every manager
+// role so no "attempted" badge renders for them.
+const moduleResults = ref([])
+const aiResults = ref([])
 const loading = ref(true)
 const route = useRoute()
 const router = useRouter()
@@ -124,23 +131,34 @@ function goToContentQuiz(e, event) {
 }
 
 onMounted(async () => {
-  const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
+  const scopedPromise = auth.isStaff ? api.getScopedData() : Promise.resolve(null)
+  const [resourcesResult, contentResult, scopedResult] = await Promise.allSettled([api.getResources(), api.getContent(), scopedPromise])
   if (resourcesResult.status === 'fulfilled') driveResources.value = resourcesResult.value.referenceDocs || []
   if (contentResult.status === 'fulfilled') knowledgeEntries.value = contentResult.value.content || []
+  if (scopedResult.status === 'fulfilled' && scopedResult.value) {
+    moduleResults.value = scopedResult.value.results || []
+    aiResults.value = scopedResult.value.aiResults || []
+  }
   loading.value = false
 })
 
+const attemptedSet = computed(() => attemptedTopics(moduleResults.value, aiResults.value))
+
 // One shared shape for both sources — isContent marks which fields apply
-// (Body/Link vs PreviewURL/Kind).
+// (Body/Link vs PreviewURL/Kind). attempted keys off a Drive file's Name
+// (an AI quiz sourced from a Drive file stores the file's Name as Topic,
+// not its Subcategory) vs. a Content entry's Topic (matches every other
+// quiz type — see useAttemptedTopics.js).
 const allEntries = computed(() => [
   ...driveResources.value.map(r => ({
     id: 'drive-' + r.ID, driveId: r.ID, name: r.Name, category: r.Category, subcategory: r.Subcategory,
-    kind: r.Kind, previewUrl: r.PreviewURL, isContent: false,
+    kind: r.Kind, previewUrl: r.PreviewURL, isContent: false, attempted: attemptedSet.value.has(r.Name),
   })),
   ...knowledgeEntries.value.map(c => ({
     id: 'content-' + c.ID, name: c.Title || c.Topic, category: c.Category, subcategory: c.Topic,
     kind: 'Article', link: c.Link, body: c.Body, isContent: true,
     quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID, hours: c.Hours,
+    attempted: attemptedSet.value.has(c.Topic),
   })),
 ])
 
@@ -193,7 +211,10 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <!-- Drive-backed: previews in-app via Drive's iframe-embeddable /preview URL. -->
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left">
-                <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                <span class="flex items-center gap-1.5 min-w-0">
+                  <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                </span>
                 <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}</p>
               </button>
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
@@ -205,7 +226,10 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <!-- Knowledge entry with a file attached: flat row same as Drive entries — click opens the link preview direct, no expand needed. -->
             <div v-else-if="e.link" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <button type="button" @click="openLinkPreview(e)" class="flex-1 min-w-0 text-left">
-                <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                <span class="flex items-center gap-1.5 min-w-0">
+                  <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                </span>
                 <p class="text-xs text-slate">
                   {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
                 </p>
@@ -223,7 +247,10 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <details v-else class="px-5 py-3 group">
               <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
                 <div class="min-w-0">
+                  <span class="flex items-center gap-1.5 min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                </span>
                   <p class="text-xs text-slate">
                     {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
                   </p>

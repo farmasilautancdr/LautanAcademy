@@ -186,7 +186,8 @@
     "cpdHoursComingSoon": "Penjejakan jam latihan — akan datang",
     "statHoursLabel": "Jam latihan tahun ini",
     "statAttemptsLabel": "Percubaan Latihan AI",
-    "statCoursesLabel": "Kursus disemak"
+    "statCoursesLabel": "Kursus disemak",
+    "attemptedLabel": "Sudah dicuba"
   },
   "moduleQuizView": {
     "title": "Kuiz Modul",
@@ -310,7 +311,8 @@
     "close": "Tutup",
     "backToCourses": "Kembali ke Kursus",
     "cpdHourValue": "{hours} jam CPD",
-    "docTypeArticle": "Artikel"
+    "docTypeArticle": "Artikel",
+    "attemptedLabel": "Sudah dicuba"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "Kuiz Latihan AI",

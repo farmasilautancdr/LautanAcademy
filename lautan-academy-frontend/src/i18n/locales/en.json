@@ -186,7 +186,8 @@
     "cpdHoursComingSoon": "Training hours tracking — coming soon",
     "statHoursLabel": "Training hours this year",
     "statAttemptsLabel": "AI practice attempts",
-    "statCoursesLabel": "Courses browsed"
+    "statCoursesLabel": "Courses browsed",
+    "attemptedLabel": "Attempted"
   },
   "moduleQuizView": {
     "title": "Module Quiz",
@@ -310,7 +311,8 @@
     "close": "Close",
     "backToCourses": "Back to Courses",
     "cpdHourValue": "{hours} CPD hour | {hours} CPD hours",
-    "docTypeArticle": "Article"
+    "docTypeArticle": "Article",
+    "attemptedLabel": "Attempted"
   },
   "outletManagerDashboard": {
     "aiPracticeQuiz": "AI Practice Quiz",
