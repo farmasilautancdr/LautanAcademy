@@ -144,9 +144,6 @@ async function joinQuiz() {
           <p class="text-white/60 text-sm mt-0.5">
             {{ history.length === 0 ? t('dashboardView.joinCodeBelow') : t('dashboardView.practiceAttempts', history.length) }}
           </p>
-          <p v-if="!loadingHistory" class="text-aqualight text-sm font-medium mt-3">
-            {{ t('dashboardView.cpdHoursProgress', { hours: cpdHoursThisYear, target: CPD_TARGET_HOURS }) }}
-          </p>
           <button v-if="!auth.impersonating" type="button" @click="scrollToJoin" class="mt-4 bg-aqua text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
             {{ t('dashboardView.joinQuizBtn') }}
           </button>
