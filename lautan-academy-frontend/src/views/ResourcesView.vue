@@ -21,7 +21,7 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { usePagination } from '../composables/usePagination'
-import { attemptedTopics } from '../composables/useAttemptedTopics'
+import { attemptedTopics, isAttempted } from '../composables/useAttemptedTopics'
 import Pagination from '../components/Pagination.vue'
 import ResourcePreviewModal from '../components/ResourcePreviewModal.vue'
 import AttemptedBadge from '../components/AttemptedBadge.vue'
@@ -152,13 +152,13 @@ const attemptedSet = computed(() => attemptedTopics(moduleResults.value, aiResul
 const allEntries = computed(() => [
   ...driveResources.value.map(r => ({
     id: 'drive-' + r.ID, driveId: r.ID, name: r.Name, category: r.Category, subcategory: r.Subcategory,
-    kind: r.Kind, previewUrl: r.PreviewURL, isContent: false, attempted: attemptedSet.value.has(r.Name),
+    kind: r.Kind, previewUrl: r.PreviewURL, isContent: false, attempted: isAttempted(r.Name, attemptedSet.value),
   })),
   ...knowledgeEntries.value.map(c => ({
     id: 'content-' + c.ID, name: c.Title || c.Topic, category: c.Category, subcategory: c.Topic,
     kind: 'Article', link: c.Link, body: c.Body, isContent: true,
     quizRequired: c.QuizRequired, quizReady: c.QuizReady, contentId: c.ID, hours: c.Hours,
-    attempted: attemptedSet.value.has(c.Topic),
+    attempted: isAttempted(c.Topic, attemptedSet.value),
   })),
 ])
 
