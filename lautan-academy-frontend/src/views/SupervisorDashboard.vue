@@ -9,6 +9,11 @@ import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
+import StatCard from '../components/StatCard.vue'
+
+const ICON_USERS = 'M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'
+const ICON_GRID = 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'
+const ICON_CHART = 'M4 20V10M4 20h16M10 20V4M16 20v-7'
 
 const { t } = useI18n()
 const { areas: AREAS, outletsForArea } = useOutlets()
@@ -102,19 +107,10 @@ const { currentPage, totalPages, paginatedItems: paginatedActivity, next, prev }
       <div v-if="loading" class="text-slate text-sm">{{ t('supervisorDashboard.loading') }}</div>
 
       <template v-else>
-        <div class="grid grid-cols-3 gap-3 mb-8">
-          <div class="bg-white rounded-xl2 p-4 text-center shadow-sm">
-            <p class="font-display text-2xl font-bold text-ink">{{ staffCount }}</p>
-            <p class="text-xs text-slate mt-1">{{ t('supervisorDashboard.staffActive') }}</p>
-          </div>
-          <div class="bg-white rounded-xl2 p-4 text-center shadow-sm">
-            <p class="font-display text-2xl font-bold text-ink">{{ outlets.length }}</p>
-            <p class="text-xs text-slate mt-1">{{ t('supervisorDashboard.outletsActive') }}</p>
-          </div>
-          <div class="bg-white rounded-xl2 p-4 text-center shadow-sm">
-            <p class="font-display text-2xl font-bold" :class="avgPercent >= 70 ? 'text-aqua' : 'text-coral'">{{ avgPercent }}%</p>
-            <p class="text-xs text-slate mt-1">{{ t('supervisorDashboard.averageScore') }}</p>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <StatCard :value="staffCount" :label="t('supervisorDashboard.staffActive')" accent="aqua" :icon="ICON_USERS" />
+          <StatCard :value="outlets.length" :label="t('supervisorDashboard.outletsActive')" accent="seagrass" :icon="ICON_GRID" />
+          <StatCard :value="`${avgPercent}%`" :label="t('supervisorDashboard.averageScore')" :accent="avgPercent >= 70 ? 'aqua' : 'coral'" :icon="ICON_CHART" />
         </div>
 
         <h2 class="font-display text-lg font-semibold text-ink mb-4">{{ t('supervisorDashboard.activityLog') }}</h2>

@@ -183,7 +183,10 @@
     "errorInvalidCode": "Kod tidak sah atau luput untuk cawangan anda.",
     "impersonatingNotice": "Mengambil kuiz disembunyikan semasa melihat sebagai orang lain.",
     "cpdHoursProgress": "{hours} / {target} jam latihan tahun ini",
-    "cpdHoursComingSoon": "Penjejakan jam latihan — akan datang"
+    "cpdHoursComingSoon": "Penjejakan jam latihan — akan datang",
+    "statHoursLabel": "Jam latihan tahun ini",
+    "statAttemptsLabel": "Percubaan latihan",
+    "statCoursesLabel": "Kursus disemak"
   },
   "moduleQuizView": {
     "title": "Kuiz Modul",
@@ -451,7 +454,10 @@
     "aiPracticeHeading": "Latihan AI",
     "cpdHeading": "Jam CPD",
     "cpdHoursOfTarget": "{hours} / {target} jam",
-    "cpdComingSoon": "Akan datang"
+    "cpdComingSoon": "Akan datang",
+    "statStaffTracked": "Staf dijejak",
+    "statOutletsInScope": "Cawangan dalam skop",
+    "statAvgCpdHours": "Purata jam CPD"
   },
   "areaManagerReviewsView": {
     "title": "Penilaian — {area}",

@@ -183,7 +183,10 @@
     "errorInvalidCode": "Invalid or expired code for your outlet.",
     "impersonatingNotice": "Quiz-taking is hidden while viewing as someone else.",
     "cpdHoursProgress": "{hours} / {target} training hours this year",
-    "cpdHoursComingSoon": "Training hours tracking — coming soon"
+    "cpdHoursComingSoon": "Training hours tracking — coming soon",
+    "statHoursLabel": "Training hours this year",
+    "statAttemptsLabel": "Practice attempts",
+    "statCoursesLabel": "Courses browsed"
   },
   "moduleQuizView": {
     "title": "Module Quiz",
@@ -451,7 +454,10 @@
     "aiPracticeHeading": "AI Practice",
     "cpdHeading": "CPD Hours",
     "cpdHoursOfTarget": "{hours} / {target} hrs",
-    "cpdComingSoon": "Coming soon"
+    "cpdComingSoon": "Coming soon",
+    "statStaffTracked": "Staff tracked",
+    "statOutletsInScope": "Outlets in scope",
+    "statAvgCpdHours": "Avg. CPD hours"
   },
   "areaManagerReviewsView": {
     "title": "Assessment — {area}",

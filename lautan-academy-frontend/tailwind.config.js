@@ -15,6 +15,14 @@ export default {
         coral:    '#E8622C',   // streaks, "resume", warm CTA accent — used sparingly (logo's orange/red)
         ink:      '#132433',   // primary text
         slate:    '#5B7180',   // secondary/muted text
+        // Ocean-adjacent extension of the palette (not from the logo, but
+        // tonally consistent with it) — gives stat cards/rings a second and
+        // third accent hue so a row of them doesn't read as one repeated
+        // aqua block. Used sparingly, same as coral.
+        seagrass: '#2E9C6B',   // muted teal-green — completion/positive stats
+        seagrasslight: '#DFF3E9',
+        sand:     '#D99A3E',   // warm sandy amber — in-progress/hours stats
+        sandlight:'#FBEEDA',
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],

@@ -15,6 +15,11 @@ import { videoHoursByTopic, contentHoursByTopic, hoursByStaff, splitByVideoTopic
 import { usePagination } from '../composables/usePagination'
 import Pagination from '../components/Pagination.vue'
 import PharmacistComplianceMatrix from '../components/PharmacistComplianceMatrix.vue'
+import StatCard from '../components/StatCard.vue'
+
+const ICON_USERS = 'M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'
+const ICON_GRID = 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'
+const ICON_HOURS = 'M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'
 
 const auth = useAuthStore()
 const areaLabel = auth.manager?.outlet
@@ -141,6 +146,11 @@ const cpdYears = computed(() => {
 // Outlet filter now applies to the CPD summary too — previously this used
 // the unfiltered allResults/allAiResults regardless of the outlet dropdown.
 const cpdSummary = computed(() => hoursByStaff(outletScopedResults.value, outletScopedAiResults.value, videoHoursByTopic(videoTrainings.value), contentHoursByTopic(contentEntries.value), cpdYear.value))
+const outletsInScope = computed(() => outletFilter.value === 'ALL' ? regionOutlets.length : 1)
+const avgCpdHours = computed(() => {
+  if (!cpdSummary.value.length) return 0
+  return Math.round((cpdSummary.value.reduce((sum, s) => sum + s.hours, 0) / cpdSummary.value.length) * 10) / 10
+})
 const { currentPage: cpdCurrentPage, totalPages: cpdTotalPages, paginatedItems: paginatedCpdSummary, next: cpdNext, prev: cpdPrev } = usePagination(cpdSummary)
 const { currentPage: videoCurrentPage, totalPages: videoTotalPages, paginatedItems: paginatedVideoResults, next: videoNext, prev: videoPrev } = usePagination(filteredVideoResults)
 const { currentPage: standardCurrentPage, totalPages: standardTotalPages, paginatedItems: paginatedStandardResults, next: standardNext, prev: standardPrev } = usePagination(filteredStandardResults)
@@ -175,6 +185,12 @@ function wrongsFor(h) {
             <option value="ALL">{{ t('areaManagerDashboard.allOutletsInRegion') }}</option>
             <option v-for="o in regionOutlets" :key="o" :value="o">{{ o }}</option>
           </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <StatCard :value="cpdSummary.length" :label="t('areaManagerDashboard.statStaffTracked')" accent="aqua" :icon="ICON_USERS" />
+          <StatCard :value="outletsInScope" :label="t('areaManagerDashboard.statOutletsInScope')" accent="seagrass" :icon="ICON_GRID" />
+          <StatCard :value="`${avgCpdHours}/${CPD_TARGET_HOURS}`" :label="t('areaManagerDashboard.statAvgCpdHours')" accent="sand" :icon="ICON_HOURS" />
         </div>
 
         <section class="mb-8">

@@ -21,7 +21,12 @@ import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { CPD_TARGET_HOURS } from '../composables/useCpdHours'
 import ProgressRing from '../components/ProgressRing.vue'
+import StatCard from '../components/StatCard.vue'
 import DigitCode from '../components/DigitCode.vue'
+
+const ICON_HOURS = 'M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'
+const ICON_CHECK = 'M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z'
+const ICON_BOOK = 'M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13z'
 
 const { t } = useI18n()
 const passcode = ref('')
@@ -148,6 +153,28 @@ async function joinQuiz() {
         </div>
       </div>
 
+      <!-- Stat row: real counts already loaded above, no new data fetched. -->
+      <section class="area-stats grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard
+          :value="`${cpdHoursThisYear}/${CPD_TARGET_HOURS}`"
+          :label="t('dashboardView.statHoursLabel')"
+          accent="sand"
+          :icon="ICON_HOURS"
+        />
+        <StatCard
+          :value="history.length"
+          :label="t('dashboardView.statAttemptsLabel')"
+          accent="aqua"
+          :icon="ICON_CHECK"
+        />
+        <StatCard
+          :value="categoryCards.length"
+          :label="t('dashboardView.statCoursesLabel')"
+          accent="seagrass"
+          :icon="ICON_BOOK"
+        />
+      </section>
+
       <!-- Browse Courses: one card per Resources category. -->
       <section class="area-grid">
         <div class="flex items-center justify-between mb-3">
@@ -234,7 +261,7 @@ async function joinQuiz() {
 .dash-grid {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-areas: "hero" "grid" "widget" "join";
+  grid-template-areas: "hero" "stats" "grid" "widget" "join";
   gap: 1.5rem;
 }
 @media (min-width: 768px) {
@@ -242,12 +269,14 @@ async function joinQuiz() {
     grid-template-columns: 1fr 18rem;
     grid-template-areas:
       "hero   widget"
+      "stats  widget"
       "grid   widget"
       "join   widget";
     align-items: start;
   }
 }
 .area-hero { grid-area: hero; }
+.area-stats { grid-area: stats; }
 .area-grid { grid-area: grid; }
 .area-widget { grid-area: widget; }
 .area-join { grid-area: join; }
