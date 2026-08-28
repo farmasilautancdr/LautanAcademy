@@ -20,11 +20,9 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { CPD_TARGET_HOURS } from '../composables/useCpdHours'
-import { attemptedTopics } from '../composables/useAttemptedTopics'
 import ProgressRing from '../components/ProgressRing.vue'
 import StatCard from '../components/StatCard.vue'
 import DigitCode from '../components/DigitCode.vue'
-import AttemptedBadge from '../components/AttemptedBadge.vue'
 
 const ICON_HOURS = 'M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'
 const ICON_CHECK = 'M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z'
@@ -35,7 +33,6 @@ const passcode = ref('')
 const joining = ref(false)
 const joinError = ref('')
 const history = ref([])
-const moduleResults = ref([])
 const loadingHistory = ref(true)
 const cpdHoursThisYear = ref(0)
 const resources = ref([])
@@ -50,7 +47,6 @@ onMounted(async () => {
   try {
     const data = await api.getScopedData()
     history.value = data.aiResults || []
-    moduleResults.value = data.results || []
     cpdHoursThisYear.value = data.cpdHoursThisYear || 0
   } catch (e) { /* leave history empty — not fatal */ }
   loadingHistory.value = false
@@ -93,35 +89,19 @@ function dayOfMonth(iso) { return new Date(iso).getDate() }
 // in whatever order it first appears in.
 const CATEGORY_ORDER = ['eLearning', 'Housebrand Modules', 'General Policies', '101 Guide to Retailing']
 
-// A staff member has "attempted" a category if any AI Practice/Module
-// Quiz/Video Training/eLearning attempt's Topic matches a material under
-// it — a Drive file's own Topic-equivalent is its Name (AI quizzes sourced
-// from a Drive file store the file's Name as Topic, not its Subcategory),
-// while a Content entry's is its Topic field (matches every other quiz
-// type, see useCpdHours.js's topic-based splitting).
-const attemptedSet = computed(() => attemptedTopics(moduleResults.value, history.value))
-
-// One card per category — name + material count + whether it's been
-// attempted, not a fake completion ring (nothing in a reference doc is
-// "completed"). Same two sources as ResourcesView.vue's own merge
-// (Drive-backed referenceDocs + Content/Knowledge entries added directly
-// in-app).
+// One card per category — just name + material count, not a fake
+// completion ring (nothing in a reference doc is "completed"). Same two
+// sources as ResourcesView.vue's own merge (Drive-backed referenceDocs +
+// Content/Knowledge entries added directly in-app).
 const categoryCards = computed(() => {
   const map = new Map()
-  function add(category, key) {
+  function add(category) {
     if (!category) return
-    if (!map.has(category)) map.set(category, { count: 0, keys: new Set() })
-    const entry = map.get(category)
-    entry.count++
-    if (key) entry.keys.add(key)
+    map.set(category, (map.get(category) || 0) + 1)
   }
-  for (const r of resources.value) { add(r.Category, r.Subcategory); add(r.Category, r.Name) }
-  for (const c of contentEntries.value) add(c.Category, c.Topic)
-  const cards = [...map.entries()].map(([name, entry]) => ({
-    name,
-    count: entry.count,
-    attempted: [...entry.keys].some(k => attemptedSet.value.has(k)),
-  }))
+  for (const r of resources.value) add(r.Category)
+  for (const c of contentEntries.value) add(c.Category)
+  const cards = [...map.entries()].map(([name, count]) => ({ name, count }))
   return cards.sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a.name)
     const bi = CATEGORY_ORDER.indexOf(b.name)
@@ -235,10 +215,7 @@ async function joinQuiz() {
                 <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13z" />
               </svg>
             </div>
-            <div class="flex items-center gap-1.5 min-w-0">
-              <AttemptedBadge v-if="c.attempted" :label="t('dashboardView.attemptedLabel')" :size="16" />
-              <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
-            </div>
+            <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
             <p class="text-xs text-slate mt-0.5">{{ t('dashboardView.materialsCount', c.count) }}</p>
           </RouterLink>
         </div>

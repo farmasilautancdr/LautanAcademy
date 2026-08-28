@@ -186,8 +186,7 @@
     "cpdHoursComingSoon": "Penjejakan jam latihan — akan datang",
     "statHoursLabel": "Jam latihan tahun ini",
     "statAttemptsLabel": "Percubaan Latihan AI",
-    "statCoursesLabel": "Kursus disemak",
-    "attemptedLabel": "Sudah dicuba"
+    "statCoursesLabel": "Kursus disemak"
   },
   "moduleQuizView": {
     "title": "Kuiz Modul",

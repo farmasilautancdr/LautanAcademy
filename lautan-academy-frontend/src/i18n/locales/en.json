@@ -186,8 +186,7 @@
     "cpdHoursComingSoon": "Training hours tracking — coming soon",
     "statHoursLabel": "Training hours this year",
     "statAttemptsLabel": "AI practice attempts",
-    "statCoursesLabel": "Courses browsed",
-    "attemptedLabel": "Attempted"
+    "statCoursesLabel": "Courses browsed"
   },
   "moduleQuizView": {
     "title": "Module Quiz",
