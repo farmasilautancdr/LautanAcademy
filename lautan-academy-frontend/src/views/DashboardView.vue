@@ -89,22 +89,19 @@ function dayOfMonth(iso) { return new Date(iso).getDate() }
 // in whatever order it first appears in.
 const CATEGORY_ORDER = ['eLearning', 'Housebrand Modules', 'General Policies', '101 Guide to Retailing']
 
-// One card per category — count + up to 3 subcategory tags, not a fake
+// One card per category — just name + material count, not a fake
 // completion ring (nothing in a reference doc is "completed"). Same two
-// sources + field mapping as ResourcesView.vue's own merge (Content's
-// Topic plays the same role as a Drive resource's Subcategory).
+// sources as ResourcesView.vue's own merge (Drive-backed referenceDocs +
+// Content/Knowledge entries added directly in-app).
 const categoryCards = computed(() => {
   const map = new Map()
-  function add(category, subcategory) {
+  function add(category) {
     if (!category) return
-    if (!map.has(category)) map.set(category, { name: category, count: 0, subcategories: new Set() })
-    const entry = map.get(category)
-    entry.count++
-    if (subcategory) entry.subcategories.add(subcategory)
+    map.set(category, (map.get(category) || 0) + 1)
   }
-  for (const r of resources.value) add(r.Category, r.Subcategory)
-  for (const c of contentEntries.value) add(c.Category, c.Topic)
-  const cards = [...map.values()].map(c => ({ ...c, subcategories: [...c.subcategories].slice(0, 3) }))
+  for (const r of resources.value) add(r.Category)
+  for (const c of contentEntries.value) add(c.Category)
+  const cards = [...map.entries()].map(([name, count]) => ({ name, count }))
   return cards.sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a.name)
     const bi = CATEGORY_ORDER.indexOf(b.name)
@@ -220,9 +217,6 @@ async function joinQuiz() {
             </div>
             <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
             <p class="text-xs text-slate mt-0.5">{{ t('dashboardView.materialsCount', c.count) }}</p>
-            <div v-if="c.subcategories.length" class="flex flex-wrap gap-1 mt-2">
-              <span v-for="s in c.subcategories" :key="s" class="text-[10px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 truncate max-w-full">{{ s }}</span>
-            </div>
           </RouterLink>
         </div>
       </section>
