@@ -639,7 +639,16 @@
     "cancelEdit": "Batal",
     "confirmRemove": "Padam soalan ini?",
     "errorSaveFailed": "Gagal menyimpan. Sila semak medan dan cuba lagi.",
-    "errorDeleteFailed": "Gagal memadam."
+    "errorDeleteFailed": "Gagal memadam.",
+    "renameTopic": "Namakan semula topik ini",
+    "renameTopicLabel": "Nama baharu untuk \"{topic}\"",
+    "renameTopicHint": "Mengemas kini setiap soalan di bawah topik ini, dan setiap keputusan kuiz/laporan lampau yang telah direkodkan di bawahnya — supaya Sejarah Kuiz turut memaparkan nama baharu.",
+    "confirmRenameTopic": "Namakan Semula Topik",
+    "renaming": "Menamakan semula...",
+    "renameSuccess": "Berjaya dinamakan semula. {questions} soalan, {results} keputusan, {wrongAnswers} jawapan salah, {reports} laporan dikemas kini.",
+    "errorEnterNewTopicName": "Masukkan nama baharu untuk topik ini.",
+    "errorSameTopicName": "Itu sudah nama topik ini.",
+    "errorRenameFailed": "Gagal menamakan semula — tiada perubahan dibuat."
   },
   "supervisorManageContentQuizQuestionsView": {
     "title": "Urus Kuiz Kandungan",

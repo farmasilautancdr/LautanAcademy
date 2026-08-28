@@ -639,7 +639,16 @@
     "cancelEdit": "Cancel",
     "confirmRemove": "Delete this question?",
     "errorSaveFailed": "Failed to save. Please check the fields and try again.",
-    "errorDeleteFailed": "Failed to delete."
+    "errorDeleteFailed": "Failed to delete.",
+    "renameTopic": "Rename this topic",
+    "renameTopicLabel": "New name for \"{topic}\"",
+    "renameTopicHint": "Updates every question under this topic, and every past quiz result/report already recorded under it — so Quiz History shows the new name too.",
+    "confirmRenameTopic": "Rename Topic",
+    "renaming": "Renaming...",
+    "renameSuccess": "Renamed. Updated {questions} question(s), {results} result(s), {wrongAnswers} wrong answer(s), {reports} report(s).",
+    "errorEnterNewTopicName": "Enter a new name for this topic.",
+    "errorSameTopicName": "That's already the topic name.",
+    "errorRenameFailed": "Failed to rename — nothing was changed."
   },
   "supervisorManageContentQuizQuestionsView": {
     "title": "Manage Content Quiz",

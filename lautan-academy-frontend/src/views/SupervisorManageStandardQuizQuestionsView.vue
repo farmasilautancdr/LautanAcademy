@@ -127,6 +127,65 @@ async function saveQuestion() {
   }
 }
 
+// Deliberate, separate action from editing a question's topic field above
+// — renames the whole topic (every question under it) in one go, and
+// cascades into historical results/wrong_answers/reports server-side, so
+// Quiz History stops showing the old name for attempts already taken. See
+// backend questions.js PATCH /topic/rename for why this can't just be a
+// side effect of a normal single-question edit.
+const renamingTopic = ref(false)
+const renameNewName = ref('')
+const renameError = ref('')
+const renameSuccess = ref('')
+const renaming = ref(false)
+
+// Only fires on a genuine user-driven dropdown switch (native @change), not
+// when submitRenameTopic() reassigns selectedTopic itself after a
+// successful rename — a plain watch(selectedTopic, ...) would also catch
+// that reassignment and wipe renameSuccess before it's ever seen (watch
+// callbacks run on the next microtask, after the assignment right below it
+// in submitRenameTopic finishes, not before).
+function onTopicDropdownChange() {
+  renamingTopic.value = false
+  renameSuccess.value = ''
+  renameError.value = ''
+}
+
+function startRenameTopic() {
+  renamingTopic.value = true
+  renameNewName.value = selectedTopic.value
+  renameError.value = ''
+  renameSuccess.value = ''
+}
+
+async function submitRenameTopic() {
+  renameError.value = ''
+  renameSuccess.value = ''
+  const newName = renameNewName.value.trim()
+  if (!newName) {
+    renameError.value = t('supervisorManageStandardQuizQuestionsView.errorEnterNewTopicName')
+    return
+  }
+  if (newName === selectedTopic.value) {
+    renameError.value = t('supervisorManageStandardQuizQuestionsView.errorSameTopicName')
+    return
+  }
+  renaming.value = true
+  try {
+    const data = await api.renameStandardQuizTopic(selectedTopic.value, newName)
+    renamingTopic.value = false
+    await loadAll()
+    selectedTopic.value = newName // triggers the watch above, clearing renameSuccess first — set it after
+    renameSuccess.value = t('supervisorManageStandardQuizQuestionsView.renameSuccess', {
+      questions: data.questions, results: data.results, wrongAnswers: data.wrongAnswers, reports: data.reports,
+    })
+  } catch (err) {
+    renameError.value = err.message || t('supervisorManageStandardQuizQuestionsView.errorRenameFailed')
+  } finally {
+    renaming.value = false
+  }
+}
+
 const deleteError = ref('')
 async function removeQuestion(q) {
   deleteError.value = ''
@@ -153,7 +212,7 @@ async function removeQuestion(q) {
         <label class="block text-sm font-medium text-ink mb-1">{{ t('supervisorManageStandardQuizQuestionsView.topicLabel') }}</label>
         <div v-if="loadingTopics" class="text-slate text-sm">{{ t('supervisorManageStandardQuizQuestionsView.loading') }}</div>
         <template v-else>
-          <select v-model="selectedTopic" class="w-full border border-slate/30 rounded-lg py-2 px-3 bg-white">
+          <select v-model="selectedTopic" @change="onTopicDropdownChange" class="w-full border border-slate/30 rounded-lg py-2 px-3 bg-white">
             <option value="">{{ t('supervisorManageStandardQuizQuestionsView.topicPlaceholder') }}</option>
             <option v-for="topic in topics" :key="topic" :value="topic">{{ topic }}</option>
             <option value="__new__">{{ t('supervisorManageStandardQuizQuestionsView.newTopicOption') }}</option>
@@ -167,6 +226,27 @@ async function removeQuestion(q) {
           />
           <p v-if="topics.length === 0" class="text-xs text-slate mt-1">{{ t('supervisorManageStandardQuizQuestionsView.noTopicsYet') }}</p>
         </template>
+      </div>
+
+      <div v-if="selectedTopic && selectedTopic !== '__new__'" class="mb-4">
+        <p v-if="renameSuccess" class="text-aqua text-sm bg-aqualight rounded-lg px-3 py-2 mb-2">{{ renameSuccess }}</p>
+        <button v-if="!renamingTopic" type="button" @click="startRenameTopic" class="text-aqua text-sm font-medium underline">
+          {{ t('supervisorManageStandardQuizQuestionsView.renameTopic') }}
+        </button>
+        <form v-else @submit.prevent="submitRenameTopic" class="bg-white rounded-xl2 p-4 shadow-sm space-y-2">
+          <label class="block text-sm font-medium text-ink">{{ t('supervisorManageStandardQuizQuestionsView.renameTopicLabel', { topic: selectedTopic }) }}</label>
+          <input v-model="renameNewName" type="text" class="w-full border border-slate/30 rounded-lg py-2 px-3" />
+          <p class="text-xs text-slate">{{ t('supervisorManageStandardQuizQuestionsView.renameTopicHint') }}</p>
+          <p v-if="renameError" class="text-coral text-sm">{{ renameError }}</p>
+          <div class="flex gap-2">
+            <button type="submit" :disabled="renaming" class="bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-60">
+              {{ renaming ? t('supervisorManageStandardQuizQuestionsView.renaming') : t('supervisorManageStandardQuizQuestionsView.confirmRenameTopic') }}
+            </button>
+            <button type="button" @click="renamingTopic = false" class="text-slate text-sm font-medium px-3">
+              {{ t('supervisorManageStandardQuizQuestionsView.cancelEdit') }}
+            </button>
+          </div>
+        </form>
       </div>
 
       <template v-if="effectiveTopic">

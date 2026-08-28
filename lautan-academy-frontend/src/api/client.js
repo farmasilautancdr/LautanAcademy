@@ -127,6 +127,7 @@ export const api = {
   addStandardQuestion: (payload) => request('/questions', { method: 'POST', body: JSON.stringify(payload) }),
   updateStandardQuestion: (id, payload) => request(`/questions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteStandardQuestion: (id) => request(`/questions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  renameStandardQuizTopic: (oldTopic, newTopic) => request('/questions/topic/rename', { method: 'PATCH', body: JSON.stringify({ oldTopic, newTopic }) }),
   getVideoTrainings: () => request('/video-trainings'),
   getVideoQuestions: (topic) => request(`/video-questions?topic=${encodeURIComponent(topic)}`),
   checkVideoAnswer: (id, chosen) => request(`/video-questions/${id}/check`, { method: 'POST', body: JSON.stringify({ chosen }) }),
