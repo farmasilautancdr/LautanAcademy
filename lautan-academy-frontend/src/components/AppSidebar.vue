@@ -283,15 +283,17 @@ const ICONS = {
 
 <template>
   <aside class="hidden md:flex w-64 h-screen sticky top-0 bg-white border-r border-seafoam flex-col shrink-0">
-    <div class="px-5 py-6 flex items-center gap-3 border-b border-seafoam">
-      <div class="w-10 h-10 shrink-0">
-        <img :src="logoUrl" alt="Lautan Academy" class="w-full h-full object-contain" />
+    <div class="px-5 py-6 border-b border-seafoam">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 shrink-0">
+          <img :src="logoUrl" alt="Lautan Academy" class="w-full h-full object-contain" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-display font-semibold text-ink text-sm leading-tight truncate">Lautan Academy</p>
+          <p class="text-xs text-slate truncate">{{ subtitle }}</p>
+        </div>
       </div>
-      <div class="min-w-0 flex-1">
-        <p class="font-display font-semibold text-ink text-sm leading-tight truncate">Lautan Academy</p>
-        <p class="text-xs text-slate truncate">{{ subtitle }}</p>
-      </div>
-      <div class="flex items-center gap-2">
+      <div class="mt-3 flex items-center justify-end">
         <LanguageSwitcher />
       </div>
     </div>
