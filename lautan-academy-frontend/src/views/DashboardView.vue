@@ -228,15 +228,17 @@ async function joinQuiz() {
             v-for="c in categoryCards"
             :key="c.name"
             :to="{ path: '/resources', query: { category: c.name } }"
-            class="relative bg-white rounded-xl2 shadow-sm p-4 hover:shadow-md transition-shadow"
+            class="bg-white rounded-xl2 shadow-sm p-4 hover:shadow-md transition-shadow"
           >
-            <AttemptedBadge v-if="c.attempted" :label="t('dashboardView.attemptedLabel')" class="absolute top-3 right-3" />
             <div class="w-9 h-9 rounded-lg bg-aqualight flex items-center justify-center mb-3">
               <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" fill="none" stroke="#1E88C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13z" />
               </svg>
             </div>
-            <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <AttemptedBadge v-if="c.attempted" :label="t('dashboardView.attemptedLabel')" :size="16" />
+              <p class="font-display font-semibold text-ink text-sm truncate">{{ c.name }}</p>
+            </div>
             <p class="text-xs text-slate mt-0.5">{{ t('dashboardView.materialsCount', c.count) }}</p>
           </RouterLink>
         </div>
