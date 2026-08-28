@@ -36,6 +36,7 @@ const history = ref([])
 const loadingHistory = ref(true)
 const cpdHoursThisYear = ref(0)
 const resources = ref([])
+const contentEntries = ref([])
 const loadingResources = ref(true)
 const router = useRouter()
 const auth = useAuthStore()
@@ -54,11 +55,15 @@ onMounted(async () => {
   if (history.value.length === 0) digitCode.value?.focus()
 })
 
+// Course categories come from two sources, same as ResourcesView.vue's own
+// merge: Drive-backed referenceDocs (GET /resources) AND Knowledge entries
+// added directly in-app (GET /content) — a category like "eLearning" can
+// exist purely as Knowledge entries with no Drive file at all, so reading
+// only /resources here missed it entirely.
 onMounted(async () => {
-  try {
-    const data = await api.getResources()
-    resources.value = data.referenceDocs || []
-  } catch (e) { /* leave resources empty — not fatal */ }
+  const [resourcesResult, contentResult] = await Promise.allSettled([api.getResources(), api.getContent()])
+  if (resourcesResult.status === 'fulfilled') resources.value = resourcesResult.value.referenceDocs || []
+  if (contentResult.status === 'fulfilled') contentEntries.value = contentResult.value.content || []
   loadingResources.value = false
 })
 
@@ -84,17 +89,21 @@ function dayOfMonth(iso) { return new Date(iso).getDate() }
 // in whatever order it first appears in.
 const CATEGORY_ORDER = ['eLearning', 'Housebrand Modules', 'General Policies', '101 Guide to Retailing']
 
-// One card per Resources category — count + up to 3 subcategory tags, not
-// a fake completion ring (nothing in a reference doc is "completed").
+// One card per category — count + up to 3 subcategory tags, not a fake
+// completion ring (nothing in a reference doc is "completed"). Same two
+// sources + field mapping as ResourcesView.vue's own merge (Content's
+// Topic plays the same role as a Drive resource's Subcategory).
 const categoryCards = computed(() => {
   const map = new Map()
-  for (const r of resources.value) {
-    if (!r.Category) continue
-    if (!map.has(r.Category)) map.set(r.Category, { name: r.Category, count: 0, subcategories: new Set() })
-    const entry = map.get(r.Category)
+  function add(category, subcategory) {
+    if (!category) return
+    if (!map.has(category)) map.set(category, { name: category, count: 0, subcategories: new Set() })
+    const entry = map.get(category)
     entry.count++
-    if (r.Subcategory) entry.subcategories.add(r.Subcategory)
+    if (subcategory) entry.subcategories.add(subcategory)
   }
+  for (const r of resources.value) add(r.Category, r.Subcategory)
+  for (const c of contentEntries.value) add(c.Category, c.Topic)
   const cards = [...map.values()].map(c => ({ ...c, subcategories: [...c.subcategories].slice(0, 3) }))
   return cards.sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a.name)
