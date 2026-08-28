@@ -79,6 +79,11 @@ const recentPractice = computed(() =>
 function monthAbbr(iso) { return new Date(iso).toLocaleDateString('en-US', { month: 'short' }).toUpperCase() }
 function dayOfMonth(iso) { return new Date(iso).getDate() }
 
+// Fixed display order for the categories that have one — anything else
+// (a category typed in later via Add Resources) falls back after these,
+// in whatever order it first appears in.
+const CATEGORY_ORDER = ['eLearning', 'Housebrand Modules', 'General Policies', '101 Guide to Retailing']
+
 // One card per Resources category — count + up to 3 subcategory tags, not
 // a fake completion ring (nothing in a reference doc is "completed").
 const categoryCards = computed(() => {
@@ -90,7 +95,15 @@ const categoryCards = computed(() => {
     entry.count++
     if (r.Subcategory) entry.subcategories.add(r.Subcategory)
   }
-  return [...map.values()].map(c => ({ ...c, subcategories: [...c.subcategories].slice(0, 3) }))
+  const cards = [...map.values()].map(c => ({ ...c, subcategories: [...c.subcategories].slice(0, 3) }))
+  return cards.sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a.name)
+    const bi = CATEGORY_ORDER.indexOf(b.name)
+    if (ai === -1 && bi === -1) return 0
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
 })
 
 function scrollToJoin() {
