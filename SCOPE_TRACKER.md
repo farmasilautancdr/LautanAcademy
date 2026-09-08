@@ -681,18 +681,27 @@ the Vue app, both fixed and verified live:
   staff-name check in the legacy fallback (cross-staff wrong-answer leak
   for pre-migration rows) — fixed and re-verified. Verified live on
   phone across all 3 manager roles + the new Staff Review page.
-- [x] Supervisor CSV export of raw quiz results — `SupervisorStaffComparisonView.vue`
-      (the All Outlets nav's Staff Comparison page) gained a Topic filter
-      dropdown (spans Video Training/Module Quiz/eLearning/AI Practice
-      topics, scoped by the existing Region/Outlet filters) plus a
-      "Download CSV" button. Exports one row per quiz attempt (Timestamp,
-      Outlet, Staff Name, Quiz Type, Topic, Score, Percentage) — raw
-      attempts, not the on-screen leaderboard averages — respecting
-      whatever Window/Region/Outlet/Topic filters are active. Same
-      BOM+CSV-escape pattern as the existing Cluster Reports CSV export.
-      No backend changes (reused `getScopedData()`). Verified with a
-      local mock backend (real backend/DB unavailable in this session) via
-      Playwright: filters cascade correctly, download fires with correct
-      filename, and the captured Blob content (header + BOM + rows) was
-      inspected directly and matched expectations for a region-filtered
-      export.
+- [x] Supervisor CSV export of Module Quiz results — shipped in 2 passes.
+      v1 put a Topic filter + "Download CSV" on `SupervisorStaffComparisonView.vue`
+      (Staff Comparison), exporting raw rows across all 4 quiz types. Real
+      prod use surfaced two problems: wrong page (competes with the
+      leaderboards already there) and a CSV-open bug — Score values like
+      "15/15"/"10/15" were being misread by Excel as dates ("10/15" →
+      "Oct-15"). v2 reverted Staff Comparison to its original state
+      (leaderboards untouched) and instead added the Topic filter +
+      Download CSV to `SupervisorDashboard.vue` (the sidebar nav item,
+      renamed "All Outlets" → "Module Quiz Review"), export now scoped to
+      Module Quiz attempts only (`splitByVideoTopic` + `splitByContentTopic`
+      peel off Video Training/eLearning first) — excludes Video
+      Training/eLearning/AI Practice entirely. Columns: Timestamp, Outlet,
+      Staff Name, Quiz Type (always "Module Quiz"), Topic, Score, Percentage.
+      Score fix: CSV renders "15 of 15" instead of "15/15" so Excel can't
+      parse it as a date. Same BOM+CSV-escape pattern as the existing
+      Cluster Reports CSV export. No backend changes (reused
+      `getScopedData()`). v1 verified live via Playwright against a local
+      mock backend. v2's Module-Quiz-only split and the Score-format fix
+      verified by importing the real `useCpdHours.js` composable into a
+      standalone Node script and diffing output against expected rows
+      (Playwright MCP disconnected mid-session) — the nav rename and
+      button placement were build-checked only, not re-verified live in a
+      browser.
