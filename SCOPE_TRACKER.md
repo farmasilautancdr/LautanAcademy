@@ -681,3 +681,18 @@ the Vue app, both fixed and verified live:
   staff-name check in the legacy fallback (cross-staff wrong-answer leak
   for pre-migration rows) — fixed and re-verified. Verified live on
   phone across all 3 manager roles + the new Staff Review page.
+- [x] Supervisor CSV export of raw quiz results — `SupervisorStaffComparisonView.vue`
+      (the All Outlets nav's Staff Comparison page) gained a Topic filter
+      dropdown (spans Video Training/Module Quiz/eLearning/AI Practice
+      topics, scoped by the existing Region/Outlet filters) plus a
+      "Download CSV" button. Exports one row per quiz attempt (Timestamp,
+      Outlet, Staff Name, Quiz Type, Topic, Score, Percentage) — raw
+      attempts, not the on-screen leaderboard averages — respecting
+      whatever Window/Region/Outlet/Topic filters are active. Same
+      BOM+CSV-escape pattern as the existing Cluster Reports CSV export.
+      No backend changes (reused `getScopedData()`). Verified with a
+      local mock backend (real backend/DB unavailable in this session) via
+      Playwright: filters cascade correctly, download fires with correct
+      filename, and the captured Blob content (header + BOM + rows) was
+      inspected directly and matched expectations for a region-filtered
+      export.
