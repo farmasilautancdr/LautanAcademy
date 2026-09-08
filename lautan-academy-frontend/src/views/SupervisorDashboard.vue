@@ -3,11 +3,12 @@
 // how far back the backend queries (0 = all time). Add Resources (Content
 // entries) now lives on its own route under the Browse Courses nav group
 // — see SupervisorAddResourcesView.vue.
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { usePagination } from '../composables/usePagination'
+import { videoHoursByTopic, contentHoursByTopic, splitByVideoTopic, splitByContentTopic } from '../composables/useCpdHours'
 import Pagination from '../components/Pagination.vue'
 import StatCard from '../components/StatCard.vue'
 
@@ -23,12 +24,16 @@ const results = ref([])
 const aiResults = ref([])
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
+const topicFilter = ref('ALL')
+const videoTrainings = ref([])
+const contentEntries = ref([])
 
 // Picking a region narrows the outlet dropdown to that region's roster
 // (whether or not those outlets have data in the current window) rather
 // than only outlets already present in loaded data — matches the picker
 // pattern AreaManagerReviewsView.vue already uses.
-function onRegionChange() { outletFilter.value = 'ALL' }
+function onRegionChange() { outletFilter.value = 'ALL'; topicFilter.value = 'ALL' }
+function onOutletChange() { topicFilter.value = 'ALL' }
 
 async function load() {
   loading.value = true
@@ -42,6 +47,18 @@ async function load() {
 
 watch(windowMonths, load)
 load()
+
+// Video Training + Module Quiz share the same `results` table, and Module
+// Quiz further shares its topic namespace with Content/eLearning quizzes —
+// only fetched here for the CSV export below, which is Module Quiz only
+// (the activity log above still shows everything, unchanged).
+onMounted(async () => {
+  try {
+    const [videos, content] = await Promise.all([api.getVideoTrainings(), api.getContent()])
+    videoTrainings.value = videos.videoTrainings || []
+    contentEntries.value = content.content || []
+  } catch (e) { /* leave empty */ }
+})
 
 // Region narrows first (canonical roster, not just outlets with data),
 // outlet narrows further within that — same two-step scoping as the
@@ -77,6 +94,64 @@ const avgPercent = computed(() => {
 })
 const { currentPage, totalPages, paginatedItems: paginatedActivity, next, prev } = usePagination(activity)
 
+// CSV export — Module Quiz results only (not Video Training, not
+// eLearning/Content quiz, not AI Practice), region/outlet/window/topic
+// scoped same as the activity log above. results.value mixes all three
+// non-AI sources in one table; splitByVideoTopic + splitByContentTopic
+// peel off Video Training then Content, leaving true Module Quiz.
+const moduleQuizResults = computed(() => {
+  const video = splitByVideoTopic(results.value, videoHoursByTopic(videoTrainings.value))
+  const nonVideo = splitByContentTopic(video.moduleQuiz, contentHoursByTopic(contentEntries.value))
+  return nonVideo.moduleQuiz
+})
+const scopedModuleQuiz = computed(() => {
+  let list = moduleQuizResults.value
+  if (regionFilter.value !== 'ALL') {
+    const regionOutlets = new Set(outletsForArea(regionFilter.value))
+    list = list.filter(r => regionOutlets.has(r.Outlet))
+  }
+  if (outletFilter.value !== 'ALL') list = list.filter(r => r.Outlet === outletFilter.value)
+  return list
+})
+const moduleQuizTopics = computed(() => [...new Set(scopedModuleQuiz.value.map(r => r.Topic))].filter(Boolean).sort())
+const filteredModuleQuiz = computed(() => {
+  if (topicFilter.value === 'ALL') return scopedModuleQuiz.value
+  return scopedModuleQuiz.value.filter(r => r.Topic === topicFilter.value)
+})
+
+// Score comes back as "correct/total" (e.g. "15/15") — Excel's CSV import
+// auto-detects that shape as a date (15/15 -> "Oct-15" etc). " of " reads
+// the same to a human and can't be parsed as a date.
+const CSV_COLUMNS = [
+  ['Timestamp', r => new Date(r.Timestamp).toISOString()],
+  ['Outlet', r => r.Outlet],
+  ['Staff Name', r => r.Name],
+  ['Quiz Type', () => 'Module Quiz'],
+  ['Topic', r => r.Topic],
+  ['Score', r => (r.Score || '').replace('/', ' of ')],
+  ['Percentage', r => r.Percentage],
+]
+
+function csvEscape(value) {
+  const s = (value ?? '').toString()
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+}
+
+function downloadCsv() {
+  const header = CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
+  const rows = filteredModuleQuiz.value.map(r => CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
+  // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
+  const blob = new Blob(['﻿' + [header, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 </script>
 
 <template>
@@ -98,10 +173,18 @@ const { currentPage, totalPages, paginatedItems: paginatedActivity, next, prev }
           <option value="ALL">{{ t('supervisorDashboard.allRegions') }}</option>
           <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
         </select>
-        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+        <select v-model="outletFilter" @change="onOutletChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">{{ t('supervisorDashboard.allOutlets') }}</option>
           <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
         </select>
+        <select v-model="topicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">{{ t('supervisorDashboard.allTopics') }}</option>
+          <option v-for="tp in moduleQuizTopics" :key="tp" :value="tp">{{ tp }}</option>
+        </select>
+        <button type="button" @click="downloadCsv" :disabled="filteredModuleQuiz.length === 0"
+          class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">
+          {{ t('supervisorDashboard.downloadCsv') }}
+        </button>
       </div>
 
       <div v-if="loading" class="text-slate text-sm">{{ t('supervisorDashboard.loading') }}</div>
