@@ -1,0 +1,12 @@
+{
+  "name": "lautan-academy-repo-tooling",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd lautan-academy-frontend && npm run build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
