@@ -732,6 +732,7 @@
     "attemptsCount": "{count} attempt | {count} attempts",
     "allYears": "All years",
     "allTopics": "All topics",
+    "downloadCsv": "Download CSV",
     "videoTrainingHeading": "Video Training",
     "moduleQuizHeading": "Module Quiz",
     "eLearningHeading": "eLearning",

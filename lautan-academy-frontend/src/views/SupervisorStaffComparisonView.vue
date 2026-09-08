@@ -21,6 +21,7 @@ const results = ref([])
 const aiResults = ref([])
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
+const exportTopicFilter = ref('ALL')
 const cpdResults = ref([])
 const cpdAiResults = ref([])
 const videoTrainings = ref([])
@@ -39,7 +40,8 @@ const aiTopic = ref('ALL')
 const aiSort = ref('avg')
 const cpdYear = ref(new Date().getFullYear())
 
-function onRegionChange() { outletFilter.value = 'ALL' }
+function onRegionChange() { outletFilter.value = 'ALL'; exportTopicFilter.value = 'ALL' }
+function onOutletChange() { exportTopicFilter.value = 'ALL' }
 
 // Every year/topic filter's option list is derived from region/outlet-scoped
 // data, so a value picked under one scope can be meaningless under another
@@ -163,6 +165,57 @@ const aiYears = computed(() => [...new Set(outletScoped(aiResults.value).map(r =
 const aiTopics = computed(() => [...new Set(outletScoped(aiResults.value).map(r => r.Topic))].sort())
 const aiRows = computed(() => buildLeaderboard(aiResults.value, aiYear.value, aiTopic.value, aiSort.value))
 
+// Raw per-attempt rows for CSV export — separate from the leaderboard
+// aggregates above (those average scores per staff; this keeps every
+// attempt). Tags each row with its quiz type since Video/Module/eLearning
+// all share the same underlying `results` table. Scoped by the same
+// windowMonths/region/outlet the leaderboards already use, plus its own
+// topic filter spanning all four categories.
+const exportRows = computed(() => {
+  const tagged = [
+    ...splitResults.value.video.map(r => ({ ...r, quizType: 'Video Training' })),
+    ...splitNonVideo.value.moduleQuiz.map(r => ({ ...r, quizType: 'Module Quiz' })),
+    ...splitNonVideo.value.content.map(r => ({ ...r, quizType: 'eLearning' })),
+    ...aiResults.value.map(r => ({ ...r, quizType: 'AI Practice' })),
+  ]
+  return outletScoped(tagged)
+})
+const exportTopics = computed(() => [...new Set(exportRows.value.map(r => r.Topic))].filter(Boolean).sort())
+const filteredExportRows = computed(() => {
+  if (exportTopicFilter.value === 'ALL') return exportRows.value
+  return exportRows.value.filter(r => r.Topic === exportTopicFilter.value)
+})
+
+const EXPORT_CSV_COLUMNS = [
+  ['Timestamp', r => new Date(r.Timestamp).toISOString()],
+  ['Outlet', r => r.Outlet],
+  ['Staff Name', r => r.Name],
+  ['Quiz Type', r => r.quizType],
+  ['Topic', r => r.Topic],
+  ['Score', r => r.Score],
+  ['Percentage', r => r.Percentage],
+]
+
+function csvEscape(value) {
+  const s = (value ?? '').toString()
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+}
+
+function downloadCsv() {
+  const header = EXPORT_CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
+  const rows = filteredExportRows.value.map(r => EXPORT_CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
+  // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
+  const blob = new Blob(['﻿' + [header, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `supervisor-quiz-results-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 // CPD year dropdown always offers the current year even with zero data
 // yet, plus any year real attempts exist for — no "ALL" option.
 const cpdYears = computed(() => {
@@ -201,10 +254,18 @@ const { currentPage: aiCurrentPage, totalPages: aiTotalPages, paginatedItems: pa
           <option value="ALL">{{ t('supervisorStaffComparisonView.allRegions') }}</option>
           <option v-for="a in AREAS" :key="a.id" :value="a.id">{{ a.id }} - {{ a.label }}</option>
         </select>
-        <select v-model="outletFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+        <select v-model="outletFilter" @change="onOutletChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
           <option value="ALL">{{ t('supervisorStaffComparisonView.allOutlets') }}</option>
           <option v-for="o in outlets" :key="o" :value="o">{{ o }}</option>
         </select>
+        <select v-model="exportTopicFilter" class="border border-slate/30 rounded-lg py-2 px-3 text-sm bg-white">
+          <option value="ALL">{{ t('supervisorStaffComparisonView.allTopics') }}</option>
+          <option v-for="tp in exportTopics" :key="tp" :value="tp">{{ tp }}</option>
+        </select>
+        <button type="button" @click="downloadCsv" :disabled="filteredExportRows.length === 0"
+          class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">
+          {{ t('supervisorStaffComparisonView.downloadCsv') }}
+        </button>
       </div>
 
       <section class="mb-8">
