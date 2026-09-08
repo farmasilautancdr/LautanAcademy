@@ -3,3 +3,4 @@
 .codex/
 skills-lock.json
 .vercel/
+.worktrees/
