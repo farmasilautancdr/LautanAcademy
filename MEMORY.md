@@ -21,13 +21,24 @@
 - Local dev backend on `C:\Users\Client`'s machine can't reach Supabase's Direct-connection host (IPv6-only, this network has no IPv6 egress) — use the Session Pooler connection string (`aws-0-<region>.pooler.supabase.com`) for any local `npm run dev`, not the Direct host. Railway production already uses the pooler; this is a local-machine-only gap, not a prod issue.
 - No separate test/staging DB exists for this project — local dev and "testing" both point at the same production Supabase DB. Be careful with any destructive/bulk-write test (see Annual Data Reset in ARCHIVE.md for why that endpoint's real delete path has never actually been executed).
 
-[ACTIVE TASK — RESUME HERE] Automated test suite, grading-first slice — IN PROGRESS, blocked on Docker install (user restarting machine 2026-09-08 to finish Docker Desktop setup). Spec: `docs/superpowers/specs/2026-09-08-grading-test-suite-design.md` (committed, frontend `674c0df`). Plan: `docs/superpowers/plans/2026-09-08-grading-test-suite.md` (9 tasks, full code written out, executing inline/Option 2, not subagent-driven). Both approved by user, do not re-brainstorm — just resume execution from the plan file.
-Progress:
-- Two isolated worktrees created (user chose worktree isolation over this project's usual direct-to-master convention, this one time): backend worktree at `farmasilautancdr-lautan-academy-backend-/.worktrees/grading-test-suite` (branch `grading-test-suite`, `npm install` already done there); frontend worktree at `.worktrees/grading-test-suite` (branch `grading-test-suite`, deps NOT yet installed — Task 9 not started). Both repos' `.gitignore` already updated+committed on `main`/`master` to exclude `.worktrees/` before the worktrees were created.
-- Task 1 (Docker Compose test DB + schema script) files are WRITTEN but UNCOMMITTED in the backend worktree: `docker-compose.test.yml`, `.env.test`, `scripts/apply-test-schema.js` (all untracked, confirmed via `git status --short`). Not yet verified — verification requires Docker, which is what's blocking.
-- Tasks 2-9 not started (no code written yet for app.js split, vitest setup, any grading test file, CI workflow, or either pre-push hook).
-- Blocker: Docker Desktop was not installed on this machine at all (no docker.exe anywhere under Program Files, confirmed via search) — user is installing it now, which needs a restart.
-[NEXT STEPS ON RESUME]: Ask user to confirm `docker --version` works post-restart. Then continue Task 1 Step 4 (verify schema applies + tables exist in the disposable container) exactly as written in the plan file, then proceed through Tasks 2-9 in order. Do not skip the plan's TDD steps (write failing test → run → implement → run → commit) even though the code for each was already drafted during planning — actually run every verification command for real before marking a task done, per this project's own repeated lesson about catching bugs before they ship.
+[DONE 2026-09-08] Automated test suite, grading-first slice — ALL 9 TASKS COMPLETE, verified for real, pushed, PRs open: backend PR farmasilautancdr/farmasilautancdr-lautan-academy-backend-#1, frontend PR farmasilautancdr/LautanAcademy#1. Not yet merged — awaiting review/green CI. Spec: `docs/superpowers/specs/2026-09-08-grading-test-suite-design.md`. Plan: `docs/superpowers/plans/2026-09-08-grading-test-suite.md`.
+Commits (backend worktree, `farmasilautancdr-lautan-academy-backend-/.worktrees/grading-test-suite`, branch `grading-test-suite`):
+- `7d8fb4c` Task 1 — disposable Docker Postgres + schema apply script
+- `59a13cf` Task 2 — extracted `src/app.js`, vitest+supertest smoke test
+- `ab968f6` Task 3 — seeding/token/cleanup test helpers
+- `a5837e8` Task 4 — `POST /data/results` grading tests (7)
+- `0a7c710` Task 5 — `POST /data/ai-results` grading tests (5)
+- `b24d7a7` Task 6 — video/content-results grading tests (6)
+- `2c3e0e0` Task 7 — GitHub Actions CI workflow
+- `43d7337` Task 8 — backend husky pre-push hook (runs grading suite)
+Full grading suite: 20 tests, all passing (`npm test` in backend worktree). No production grading-logic bugs found across all 4 endpoints.
+Commit (frontend worktree, `.worktrees/grading-test-suite`, branch `grading-test-suite`):
+- `5e6a401` Task 9 — root `package.json` + husky pre-push hook (build only)
+Two real bugs found and fixed during verification (both flagged, not silently patched):
+1. `src/config/db.js` hardcoded `ssl: { rejectUnauthorized: false }` — broke against local Docker Postgres (no SSL listener). Fixed: ssl conditional on `localhost`/`127.0.0.1` in the connection string, zero behavior change for Supabase/prod. Part of Task 1's commit.
+2. Backend `.husky/pre-push`'s plan-specified script combined `set -e` with `npm test; status=$?` — `set -e` kills the script the instant `npm test` fails, so the teardown after `status=$?` never runs, leaking the disposable test container on every failed push attempt. Fixed: `trap cleanup EXIT` instead. Confirmed via a real broken-test dry-run push (blocked + tore down correctly) and a real passing dry-run push (proceeded + tore down correctly). Part of Task 8's commit.
+This machine has no real backend `.env` at all — any future work needing "a real `.env` present" should use `.env.test` + the disposable Docker DB instead (proven pattern from Task 2/8).
+[NEXT STEPS]: Ask user whether to push `grading-test-suite` branches to origin and open PRs (or merge direct-to-trunk per this project's usual convention), now that all 9 tasks are verified complete. Remaining, explicitly deferred per the plan's own post-plan note: auth/lockout backend tests, frontend `vitest`+`@vue/test-utils`, frontend CI workflow — each its own future brainstorm→spec→plan cycle.
 
 [PENDING] (still open, not started):
 - Automated test suite, remaining phases (deferred, not part of the active task above): frontend `vitest`+`@vue/test-utils`, auth/lockout backend tests, frontend CI workflow. No scope/spec cycle started for these.
