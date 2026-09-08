@@ -681,3 +681,39 @@ the Vue app, both fixed and verified live:
   staff-name check in the legacy fallback (cross-staff wrong-answer leak
   for pre-migration rows) — fixed and re-verified. Verified live on
   phone across all 3 manager roles + the new Staff Review page.
+- [x] Supervisor CSV export of Module Quiz results — shipped in 3 passes,
+      each on real user/prod feedback. v1 put a Topic filter + "Download
+      CSV" on `SupervisorStaffComparisonView.vue` (Staff Comparison),
+      exporting raw rows across all 4 quiz types. Real prod use surfaced
+      problems: wrong page (competes with the leaderboards already there),
+      a CSV-open bug (Score values like "15/15"/"10/15" misread by Excel as
+      dates, e.g. "10/15" → "Oct-15"). v2 reverted Staff Comparison to its
+      original state (leaderboards untouched) and instead added the Topic
+      filter + Download CSV to `SupervisorDashboard.vue` (sidebar nav
+      renamed "All Outlets" → "Module Quiz Review"), CSV scoped to Module
+      Quiz attempts only (`splitByVideoTopic` + `splitByContentTopic` peel
+      off Video Training/eLearning first), Score rendered as "15 of 15" —
+      but v2 only scoped the *CSV*, not the page itself: the visible
+      activity log/stat tiles still mixed in Video Training/eLearning/AI
+      Practice, and the Topic filter only affected the download, not what
+      was on screen. v3 fixed both by making `moduleQuizResults` →
+      `scopedModuleQuiz` → `filteredModuleQuiz` (region/outlet/topic
+      applied in that order) the single source for stat tiles, the visible
+      activity log, AND the CSV — so the whole page is Module-Quiz-only and
+      the Topic filter now filters everything visible, not just the
+      download. Page header retitled "Module Quiz Review" (was
+      "Company-wide") to match the nav. Added a `videoTrainingsLoaded` gate
+      (same pattern as Staff Comparison) so the page doesn't flash
+      misclassified rows before the video/content catalogs arrive. CSV
+      columns: Timestamp, Outlet, Staff Name, Quiz Type (always "Module
+      Quiz"), Topic, Score, Percentage. Same BOM+CSV-escape pattern as the
+      existing Cluster Reports CSV export. No backend changes throughout
+      (reused `getScopedData()`). v1 verified live via Playwright against a
+      local mock backend. v2 and v3's filtering/split logic verified by
+      importing the real `useCpdHours.js` composable into standalone Node
+      scripts and diffing output against expected rows (Playwright MCP has
+      been disconnected the whole session) — the nav rename, button
+      placement, and on-screen topic-filter behavior were build-checked and
+      logic-verified only, NOT re-verified in a live browser. Flag for next
+      session: do a real click-through of this page before trusting it
+      further.

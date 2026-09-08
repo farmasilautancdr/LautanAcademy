@@ -149,7 +149,7 @@
     "staffReview": "Semakan Staf",
     "assessment": "Penilaian",
     "groupCrossOutlet": "Merentas Cawangan",
-    "allOutlets": "Semua Cawangan",
+    "allOutlets": "Semakan Kuiz Modul",
     "staffComparison": "Perbandingan Staf",
     "clusterReports": "Laporan Kluster",
     "managerAccess": "Akses Pengurus",
@@ -505,21 +505,21 @@
     "impersonatingNotice": "Memfailkan laporan disembunyikan semasa melihat sebagai orang lain."
   },
   "supervisorDashboard": {
-    "title": "Seluruh Syarikat",
+    "title": "Semakan Kuiz Modul",
     "last3Months": "3 bulan lepas",
     "last6Months": "6 bulan lepas",
     "last12Months": "12 bulan lepas",
     "allTime": "Sepanjang masa",
     "allRegions": "Semua wilayah",
     "allOutlets": "Semua cawangan",
+    "allTopics": "Semua topik",
+    "downloadCsv": "Muat Turun CSV",
     "loading": "Memuatkan...",
     "staffActive": "Staf aktif",
     "outletsActive": "Cawangan aktif",
     "averageScore": "Skor purata",
     "activityLog": "Log Aktiviti",
-    "noActivity": "Tiada aktiviti dalam tempoh ini.",
-    "kindStandard": "Standard",
-    "kindAiPractice": "Latihan AI"
+    "noActivity": "Tiada aktiviti dalam tempoh ini."
   },
   "supervisorAddResourcesView": {
     "title": "Tambah Sumber",
