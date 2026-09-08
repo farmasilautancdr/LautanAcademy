@@ -3,3 +3,5 @@
 .codex/
 skills-lock.json
 .vercel/
+.worktrees/
+node_modules/
