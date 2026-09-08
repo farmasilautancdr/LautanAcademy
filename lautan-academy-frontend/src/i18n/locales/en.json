@@ -505,7 +505,7 @@
     "impersonatingNotice": "Filing reports is hidden while viewing as someone else."
   },
   "supervisorDashboard": {
-    "title": "Company-wide",
+    "title": "Module Quiz Review",
     "last3Months": "Last 3 months",
     "last6Months": "Last 6 months",
     "last12Months": "Last 12 months",
@@ -519,9 +519,7 @@
     "outletsActive": "Outlets active",
     "averageScore": "Average score",
     "activityLog": "Activity Log",
-    "noActivity": "No activity in this window.",
-    "kindStandard": "Standard",
-    "kindAiPractice": "AI Practice"
+    "noActivity": "No activity in this window."
   },
   "supervisorAddResourcesView": {
     "title": "Add Resources",

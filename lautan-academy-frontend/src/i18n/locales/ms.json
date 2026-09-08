@@ -505,7 +505,7 @@
     "impersonatingNotice": "Memfailkan laporan disembunyikan semasa melihat sebagai orang lain."
   },
   "supervisorDashboard": {
-    "title": "Seluruh Syarikat",
+    "title": "Semakan Kuiz Modul",
     "last3Months": "3 bulan lepas",
     "last6Months": "6 bulan lepas",
     "last12Months": "12 bulan lepas",
@@ -519,9 +519,7 @@
     "outletsActive": "Cawangan aktif",
     "averageScore": "Skor purata",
     "activityLog": "Log Aktiviti",
-    "noActivity": "Tiada aktiviti dalam tempoh ini.",
-    "kindStandard": "Standard",
-    "kindAiPractice": "Latihan AI"
+    "noActivity": "Tiada aktiviti dalam tempoh ini."
   },
   "supervisorAddResourcesView": {
     "title": "Tambah Sumber",
