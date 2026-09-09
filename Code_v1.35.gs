@@ -1,3 +1,32 @@
+// One-time manual repair: run this from the Apps Script editor (select
+// `repairNameErrorCells` in the function dropdown, click Run) to fix
+// existing "Reports" rows broken by the formula-injection bug — a manager's
+// free-text answer starting with =, +, -, or @ got silently written as a
+// Sheets formula instead of plain text, and now displays #NAME? in place of
+// what they typed. Sheets still keeps the original typed text as the cell's
+// formula source, so this reads it back with getFormula() and re-writes it
+// as plain text in the same cell. Not called anywhere else in this file —
+// only ever run by hand, once, after deploying the write-side fix above.
+function repairNameErrorCells() {
+  const repSheet = SS.getSheetByName("Reports");
+  if (!repSheet) return;
+  const lastRow = repSheet.getLastRow();
+  const columns = [5, 10, 11, 15];
+  let repaired = 0;
+  for (let row = 2; row <= lastRow; row++) {
+    columns.forEach(col => {
+      const cell = repSheet.getRange(row, col);
+      const formula = cell.getFormula();
+      if (formula) {
+        cell.setNumberFormat('@');
+        cell.setValue(formula);
+        repaired++;
+      }
+    });
+  }
+  Logger.log('Repaired ' + repaired + ' cell(s).');
+}
+
 // --- BOUND CONFIGURATION ---
 // v1.4: Fresh-deploy placeholders. Create two NEW Drive folders (see the
 // deployment guide) and paste their IDs below before running anything.
@@ -314,15 +343,23 @@ function doPost(e) {
           data.productKnowledgeComments || ''
         ]; 
 
+        // Free-text fields (Performance Gaps, Recommendations, Product Knowledge
+        // Comments) come straight from manager input and can start with =, +, -
+        // or @ — Sheets silently parses those as formulas on write, which then
+        // resolve to #NAME? and destroy the original text. Force those columns
+        // (and Quiz Score, for the pre-existing numeric-format reason) to Plain
+        // text before writing so the value is stored exactly as typed.
+        const TEXT_PROTECTED_COLUMNS = [5, 10, 11, 15];
+
         if (existingRowIndex > -1) {
-          repSheet.getRange(existingRowIndex, 5).setNumberFormat('@'); 
-          repSheet.getRange(existingRowIndex, 1, 1, 15).setValues([rowValues]); 
-          return ContentService.createTextOutput(JSON.stringify({ status: 'updated' })).setMimeType(ContentService.MimeType.JSON); 
+          TEXT_PROTECTED_COLUMNS.forEach(col => repSheet.getRange(existingRowIndex, col).setNumberFormat('@'));
+          repSheet.getRange(existingRowIndex, 1, 1, 15).setValues([rowValues]);
+          return ContentService.createTextOutput(JSON.stringify({ status: 'updated' })).setMimeType(ContentService.MimeType.JSON);
         } else {
-          const nextRepRow = repSheet.getLastRow() + 1; 
-          repSheet.getRange(nextRepRow, 5).setNumberFormat('@'); 
-          repSheet.appendRow(rowValues); 
-          return ContentService.createTextOutput(JSON.stringify({ status: 'created' })).setMimeType(ContentService.MimeType.JSON); 
+          const nextRepRow = repSheet.getLastRow() + 1;
+          TEXT_PROTECTED_COLUMNS.forEach(col => repSheet.getRange(nextRepRow, col).setNumberFormat('@'));
+          repSheet.appendRow(rowValues);
+          return ContentService.createTextOutput(JSON.stringify({ status: 'created' })).setMimeType(ContentService.MimeType.JSON);
         }
       } catch (err) {
         return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON); 
