@@ -112,11 +112,20 @@ const avgPercent = computed(() => {
 })
 const { currentPage, totalPages, paginatedItems: paginatedActivity, next, prev } = usePagination(activity)
 
+// Reverse of outletsForArea: outlet code -> region id, so the CSV can carry
+// Region without a per-row lookup call.
+const outletRegion = computed(() => {
+  const map = {}
+  AREAS.value.forEach(a => (a.outlets || []).forEach(o => { map[o] = a.id }))
+  return map
+})
+
 // Score comes back as "correct/total" (e.g. "15/15") — Excel's CSV import
 // auto-detects that shape as a date (15/15 -> "Oct-15" etc). " of " reads
 // the same to a human and can't be parsed as a date.
 const CSV_COLUMNS = [
   ['Timestamp', r => new Date(r.Timestamp).toISOString()],
+  ['Region', r => outletRegion.value[r.Outlet] || ''],
   ['Outlet', r => r.Outlet],
   ['Staff Name', r => r.Name],
   ['Quiz Type', () => 'Module Quiz'],
