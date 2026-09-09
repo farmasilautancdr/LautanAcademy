@@ -115,7 +115,11 @@ const cpdHoursThisYear = computed(() => hoursByStaff(standardHistory.value, aiHi
 // cpdYear (the point is an archive, not a snapshot of one year). See
 // docs/superpowers/specs/2026-08-17-cpd-compliance-report-design.md.
 function csvEscape(value) {
-  const str = String(value ?? '')
+  let str = String(value ?? '')
+  // A cell starting with =, +, -, or @ gets parsed as a formula by
+  // Excel/Sheets on open — a leading apostrophe forces it back to plain
+  // text (OWASP CSV injection mitigation).
+  if (/^[=+\-@]/.test(str)) str = "'" + str
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
 }
 

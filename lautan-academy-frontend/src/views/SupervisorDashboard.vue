@@ -135,7 +135,12 @@ const CSV_COLUMNS = [
 ]
 
 function csvEscape(value) {
-  const s = (value ?? '').toString()
+  let s = (value ?? '').toString()
+  // A cell starting with =, +, -, or @ gets parsed as a formula by
+  // Excel/Sheets on open — a leading apostrophe forces it back to plain
+  // text (OWASP CSV injection mitigation), avoiding #NAME? for free-text
+  // fields that happen to start with one of these.
+  if (/^[=+\-@]/.test(s)) s = "'" + s
   return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
 }
 
