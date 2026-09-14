@@ -242,7 +242,7 @@
   "quizView": {
     "noActiveQuiz": "No active quiz — join one from the dashboard first.",
     "questionProgress": "Question {current} of {total}",
-    "checking": "Checking...",
+    "checking": "Loading...",
     "errorCheckFailed": "Could not check that answer — check your connection and try again.",
     "back": "← Back",
     "next": "Next",

@@ -242,7 +242,7 @@
   "quizView": {
     "noActiveQuiz": "Tiada kuiz aktif — sertai satu daripada papan pemuka dahulu.",
     "questionProgress": "Soalan {current} daripada {total}",
-    "checking": "Menyemak...",
+    "checking": "Memuatkan...",
     "errorCheckFailed": "Tidak dapat menyemak jawapan itu — semak sambungan anda dan cuba lagi.",
     "back": "← Kembali",
     "next": "Seterusnya",
