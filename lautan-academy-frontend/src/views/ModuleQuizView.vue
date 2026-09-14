@@ -30,7 +30,14 @@ onMounted(async () => {
   loading.value = false
 })
 
-const topics = computed(() => [...new Set(allQuestions.value.map((q) => q.topic))].filter(Boolean).sort())
+// allQuestions comes back ordered by id (see backend GET /questions), so a
+// topic's last occurrence marks its most recently added question — sort
+// topics by that, newest first, instead of alphabetically.
+const topics = computed(() => {
+  const lastIndex = new Map()
+  allQuestions.value.forEach((q, i) => { if (q.topic) lastIndex.set(q.topic, i) })
+  return [...lastIndex.keys()].sort((a, b) => lastIndex.get(b) - lastIndex.get(a))
+})
 const bankCount = computed(() => allQuestions.value.filter((q) => q.topic === selectedTopic.value).length)
 
 function isSameCalendarDay(a, b) {
