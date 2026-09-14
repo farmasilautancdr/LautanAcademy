@@ -36,7 +36,14 @@ async function loadAll() {
 }
 loadAll()
 
-const topics = computed(() => [...new Set(allQuestions.value.map(q => q.topic))].filter(Boolean).sort())
+// allQuestions comes back ordered by id (see backend GET /questions), so a
+// topic's last occurrence marks its most recently added question — sort
+// topics by that, newest first, instead of alphabetically.
+const topics = computed(() => {
+  const lastIndex = new Map()
+  allQuestions.value.forEach((q, i) => { if (q.topic) lastIndex.set(q.topic, i) })
+  return [...lastIndex.keys()].sort((a, b) => lastIndex.get(b) - lastIndex.get(a))
+})
 const questions = computed(() => allQuestions.value.filter(q => q.topic === effectiveTopic.value))
 const { currentPage, totalPages, paginatedItems: paginatedQuestions, next, prev } = usePagination(questions)
 
