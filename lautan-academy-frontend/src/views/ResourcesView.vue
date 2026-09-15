@@ -114,16 +114,10 @@ function docTypeLabel(e) {
 // have a real Hours field the supervisor sets — those follow it as-is, no
 // override.
 const HOUSEBRAND_CATEGORY = 'Housebrand Modules'
-function cpdHours(e) {
-  if (!e.isContent && e.category === HOUSEBRAND_CATEGORY) return t('resourcesView.cpdHourValue', { hours: 1 }, 1)
-  if (e.quizRequired && e.hours) return t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours)
+function cpdSuffix(e) {
+  if (!e.isContent && e.category === HOUSEBRAND_CATEGORY) return ' · ' + t('resourcesView.cpdHourValue', { hours: 1 }, 1)
+  if (e.quizRequired && e.hours) return ' · ' + t('resourcesView.cpdHourValue', { hours: e.hours }, e.hours)
   return ''
-}
-// Category now shows as a tab next to the title, so the subtitle line is
-// just whatever's left: subcategory and CPD hours, joined only where both exist.
-function entrySubtitle(e, includeSubcategory) {
-  const subcategory = includeSubcategory && e.subcategory ? e.subcategory : ''
-  return [subcategory, cpdHours(e)].filter(Boolean).join(' · ')
 }
 
 // Take Quiz needs to work from the collapsed row (no expand-first) — can't
@@ -216,13 +210,12 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
           <template v-for="e in paginatedEntries" :key="e.id">
             <!-- Drive-backed: previews in-app via Drive's iframe-embeddable /preview URL. -->
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
-              <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left">
-                <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="14" />
+              <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left flex items-center gap-2">
+                <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                <span class="min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
-                  <span class="text-[11px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 shrink-0">{{ e.category }}</span>
+                  <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}</p>
                 </span>
-                <p v-if="entrySubtitle(e, true)" class="text-xs text-slate">{{ entrySubtitle(e, true) }}</p>
               </button>
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ e.kind }}</span>
               <RouterLink v-if="canCreateQuiz" :to="{ path: createQuizPath, query: { sourceType: 'resource', sourceValue: e.driveId, topicLabel: e.name } }"
@@ -232,15 +225,14 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             </div>
             <!-- Knowledge entry with a file attached: flat row same as Drive entries — click opens the link preview direct, no expand needed. -->
             <div v-else-if="e.link" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
-              <button type="button" @click="openLinkPreview(e)" class="flex-1 min-w-0 text-left">
-                <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="14" />
+              <button type="button" @click="openLinkPreview(e)" class="flex-1 min-w-0 text-left flex items-center gap-2">
+                <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                <span class="min-w-0">
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
-                  <span class="text-[11px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 shrink-0">{{ e.category }}</span>
+                  <p class="text-xs text-slate">
+                    {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
+                  </p>
                 </span>
-                <p v-if="entrySubtitle(e, e.subcategory !== e.name)" class="text-xs text-slate">
-                  {{ entrySubtitle(e, e.subcategory !== e.name) }}
-                </p>
               </button>
               <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1 shrink-0">{{ docTypeLabel(e) }}</span>
               <button v-if="canTakeContentQuiz && e.quizRequired && e.quizReady" type="button" @click="goToContentQuiz(e, $event)"
@@ -254,15 +246,14 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <!-- Knowledge entry with no file — pure body text, nothing to preview, so expands in place instead. -->
             <details v-else class="px-5 py-3 group">
               <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
-                <div class="min-w-0">
-                  <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="14" />
-                  <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
-                  <span class="text-[11px] font-medium text-aqua bg-aqualight rounded-full px-2 py-0.5 shrink-0">{{ e.category }}</span>
-                </span>
-                  <p v-if="entrySubtitle(e, e.subcategory !== e.name)" class="text-xs text-slate">
-                    {{ entrySubtitle(e, e.subcategory !== e.name) }}
-                  </p>
+                <div class="min-w-0 flex items-center gap-2">
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                  <span class="min-w-0">
+                    <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
+                    <p class="text-xs text-slate">
+                      {{ e.category }}{{ e.subcategory && e.subcategory !== e.name ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}
+                    </p>
+                  </span>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="text-xs font-medium text-aqua bg-aqualight rounded-full px-2.5 py-1">{{ docTypeLabel(e) }}</span>
