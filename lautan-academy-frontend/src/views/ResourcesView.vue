@@ -212,7 +212,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <div v-if="!e.isContent" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <button type="button" @click="openDrivePreview(e)" class="flex-1 min-w-0 text-left">
                 <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="28" />
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                 </span>
                 <p class="text-xs text-slate">{{ e.category }}{{ e.subcategory ? ' · ' + e.subcategory : '' }}{{ cpdSuffix(e) }}</p>
@@ -227,7 +227,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
             <div v-else-if="e.link" class="flex items-center gap-3 px-5 py-3 hover:bg-seafoam transition-colors">
               <button type="button" @click="openLinkPreview(e)" class="flex-1 min-w-0 text-left">
                 <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="28" />
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                 </span>
                 <p class="text-xs text-slate">
@@ -248,7 +248,7 @@ const { currentPage, totalPages, paginatedItems: paginatedEntries, next, prev } 
               <summary class="flex items-center justify-between gap-3 cursor-pointer list-none">
                 <div class="min-w-0">
                   <span class="flex items-center gap-1.5 min-w-0">
-                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="16" />
+                  <AttemptedBadge v-if="e.attempted" :label="t('resourcesView.attemptedLabel')" :size="28" />
                   <p class="text-sm font-medium text-ink truncate">{{ e.name }}</p>
                 </span>
                   <p class="text-xs text-slate">

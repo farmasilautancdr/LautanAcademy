@@ -94,7 +94,16 @@ const scopedModuleQuiz = computed(() => {
   if (outletFilter.value !== 'ALL') list = list.filter(r => r.Outlet === outletFilter.value)
   return list
 })
-const moduleQuizTopics = computed(() => [...new Set(scopedModuleQuiz.value.map(r => r.Topic))].filter(Boolean).sort())
+// Newest addition first: last time each topic appeared in the results, descending.
+const moduleQuizTopics = computed(() => {
+  const latestByTopic = new Map()
+  scopedModuleQuiz.value.forEach(r => {
+    if (!r.Topic) return
+    const ts = new Date(r.Timestamp).getTime()
+    if (!latestByTopic.has(r.Topic) || ts > latestByTopic.get(r.Topic)) latestByTopic.set(r.Topic, ts)
+  })
+  return [...latestByTopic.keys()].sort((a, b) => latestByTopic.get(b) - latestByTopic.get(a))
+})
 // Topic-filtered — this is the single source for the stat tiles, the
 // visible activity log, and the CSV export below, so what's on screen
 // always matches what gets downloaded.
