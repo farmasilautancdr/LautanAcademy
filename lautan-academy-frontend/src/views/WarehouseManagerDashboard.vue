@@ -182,12 +182,8 @@ async function endQuiz() {
         </div>
 
         <form v-if="!auth.impersonating" @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
-          <div v-if="resourceSource" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
-            <span>{{ t('warehouseManagerDashboard.sourcedFromCourse') }}</span>
-            <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('warehouseManagerDashboard.useTopicInstead') }}</button>
-          </div>
           <div v-if="allCourseOptions.length">
-            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.pickCourseOptional') }}</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.pickTopicFromCourse') }}</label>
             <div class="grid grid-cols-2 gap-2 mb-2">
               <select v-model="categoryFilter" @change="onCategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
                 <option value="ALL">{{ t('warehouseManagerDashboard.allCategories') }}</option>
@@ -203,9 +199,20 @@ async function endQuiz() {
               <option v-for="o in filteredCourseOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
             </select>
           </div>
-          <div>
+          <!-- Once a course is picked, its name already shows in the select
+               above — repeating it in an editable Topic field below read as
+               the same topic shown twice. Collapse to one line instead, with
+               an escape hatch back to free-text entry. -->
+          <div v-if="selectedCourseKey" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium truncate">{{ topicLabel }}</p>
+              <p v-if="resourceSource" class="text-xs text-deepsea/70 mt-0.5">{{ t('warehouseManagerDashboard.sourcedFromCourse') }}</p>
+            </div>
+            <button type="button" @click="clearResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('warehouseManagerDashboard.useTopicInstead') }}</button>
+          </div>
+          <div v-else>
             <label class="block text-sm font-medium text-ink mb-1">{{ t('warehouseManagerDashboard.topicLabel') }}</label>
-            <input v-model="topicLabel" @input="clearResourceSource" type="text" :placeholder="t('warehouseManagerDashboard.topicPlaceholder')"
+            <input v-model="topicLabel" type="text" :placeholder="t('warehouseManagerDashboard.topicPlaceholder')"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>

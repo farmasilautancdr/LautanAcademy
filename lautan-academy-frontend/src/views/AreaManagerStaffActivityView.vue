@@ -184,12 +184,8 @@ onUnmounted(() => { if (quizTimerHandle) clearInterval(quizTimerHandle) })
         </div>
 
         <form v-if="!auth.impersonating" @submit.prevent="createQuiz" class="bg-white rounded-xl2 p-5 shadow-sm space-y-3">
-          <div v-if="quizResourceSource" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
-            <span>{{ t('areaStaffActivityView.sourcedFromCourse') }}</span>
-            <button type="button" @click="clearQuizResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('areaStaffActivityView.useTopicInstead') }}</button>
-          </div>
           <div v-if="allCourseOptions.length">
-            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaStaffActivityView.pickCourseOptional') }}</label>
+            <label class="block text-sm font-medium text-ink mb-1">{{ t('areaStaffActivityView.pickTopicFromCourse') }}</label>
             <div class="grid grid-cols-2 gap-2 mb-2">
               <select v-model="quizCategoryFilter" @change="onQuizCategoryFilterChange" class="border border-slate/30 rounded-lg py-2 px-3 text-sm">
                 <option value="ALL">{{ t('areaStaffActivityView.allCategories') }}</option>
@@ -205,9 +201,20 @@ onUnmounted(() => { if (quizTimerHandle) clearInterval(quizTimerHandle) })
               <option v-for="o in filteredQuizCourseOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
             </select>
           </div>
-          <div>
+          <!-- Once a course is picked, its name already shows in the select
+               above — repeating it in an editable Topic field below read as
+               the same topic shown twice. Collapse to one line instead, with
+               an escape hatch back to free-text entry. -->
+          <div v-if="quizSelectedCourseKey" class="bg-aqualight/40 border border-aqua/30 rounded-lg p-3 text-sm text-deepsea flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium truncate">{{ quizTopicLabel }}</p>
+              <p v-if="quizResourceSource" class="text-xs text-deepsea/70 mt-0.5">{{ t('areaStaffActivityView.sourcedFromCourse') }}</p>
+            </div>
+            <button type="button" @click="clearQuizResourceSource" class="text-aqua font-medium underline shrink-0">{{ t('areaStaffActivityView.useTopicInstead') }}</button>
+          </div>
+          <div v-else>
             <label class="block text-sm font-medium text-ink mb-1">{{ t('areaStaffActivityView.topicLabel') }}</label>
-            <input v-model="quizTopicLabel" @input="clearQuizResourceSource" type="text" :placeholder="t('areaStaffActivityView.topicPlaceholder')"
+            <input v-model="quizTopicLabel" type="text" :placeholder="t('areaStaffActivityView.topicPlaceholder')"
               class="w-full border border-slate/30 rounded-lg py-2 px-3" />
           </div>
           <div>
