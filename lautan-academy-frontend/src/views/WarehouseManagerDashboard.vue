@@ -40,7 +40,7 @@ async function loadCourseOptions() {
   const opts = []
   if (contentResult.status === 'fulfilled') {
     for (const c of (contentResult.value.content || [])) {
-      opts.push({ key: 'topic::' + c.ID, label: c.Title, category: c.Category, subcategory: c.Topic, sourceType: 'topic', sourceValue: c.Topic })
+      opts.push({ key: 'topic::' + c.ID, label: c.Title || c.Topic, category: c.Category, subcategory: c.Topic, sourceType: 'topic', sourceValue: c.Topic })
     }
   }
   if (resourcesResult.status === 'fulfilled') {
