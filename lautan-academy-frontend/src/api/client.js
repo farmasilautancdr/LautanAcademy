@@ -78,6 +78,8 @@ export const api = {
   getScopedData: (windowMonths) =>
     request(`/data/scoped-data${windowMonths ? `?windowMonths=${windowMonths}` : ''}`),
   getPharmacistCompliance: () => request('/pharmacist-compliance'),
+  getOutletSuggestions: (payload) =>
+    request('/supervisor-insights/outlet-suggestions', { method: 'POST', body: JSON.stringify(payload) }),
   createAiQuiz: (payload) => request('/quiz/create', { method: 'POST', body: JSON.stringify(payload) }),
   redeemAiQuiz: (outlet, passcode) =>
     request('/quiz/redeem', { method: 'POST', body: JSON.stringify({ outlet, passcode }) }),
