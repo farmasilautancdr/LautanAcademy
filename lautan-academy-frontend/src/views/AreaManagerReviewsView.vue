@@ -83,10 +83,25 @@ const topicsForStaff = computed(() => [...new Set(results.value.filter(r => r.Na
 // original attempt feeds the manager's report, everything else stays
 // visible in staff/manager history only. Not year-scoped — matches the
 // `reports` table's own all-time-once-per-topic dedup (see reports.js).
+//
+// Exception: a first attempt under 30% is treated as a likely system
+// error (forced logout mid-quiz), not a genuine first try — if the
+// staff's very next attempt came within 7x24 hours, that one is used
+// instead (whatever its own score, not required to clear 30% itself).
+// A next attempt arriving later than a week is treated as a separate
+// retraining event, not a same-incident retry, so it's never pulled
+// forward into this report — with nothing within the window, the
+// original sub-30% first attempt stands as the recorded score.
+const ASSESSMENT_RETRY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const selectedResult = computed(() => {
   const matches = results.value.filter(r => r.Name === formStaff.value && r.Outlet === formOutlet.value && r.Topic === formTopic.value)
   if (!matches.length) return undefined
-  return matches.reduce((earliest, r) => new Date(r.Timestamp) < new Date(earliest.Timestamp) ? r : earliest)
+  const sorted = [...matches].sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+  const first = sorted[0]
+  if ((parseInt(first.Percentage) || 0) >= 30) return first
+  const second = sorted[1]
+  if (second && new Date(second.Timestamp).getTime() - new Date(first.Timestamp).getTime() <= ASSESSMENT_RETRY_WINDOW_MS) return second
+  return first
 })
 const skillLevel = computed(() => {
   const p = parseInt(selectedResult.value?.Percentage) || 0
