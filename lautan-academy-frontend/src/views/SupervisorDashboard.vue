@@ -274,9 +274,10 @@ const REGION_HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb:
 // modeled on a reference report (SUMMARY REPORT OMEGA & NUTRAN.xlsx)
 // Supervisor provided: a bold section header per tier, an "Outlets:"
 // line, a one-line "Summary:", then a bold "Recommendation:" with 3
-// bullets. The reference's own bullets are generic staff-management
-// advice (not tied to the quiz topic) — adapted here for quiz-accuracy
-// framing, same 3-per-tier structure.
+// bullets. Both the Summary and the Recommendation bullets are now
+// AI-generated per topic+tier (see downloadReport's tierRecommendations
+// below) — RECOMMENDATION_BULLETS further down is the fallback only,
+// used when "All Topics" is selected or the request fails.
 const TIER_SECTION_TITLE = {
   top: 'Top Performing Outlets (Accuracy ≥95%)',
   middle: 'Middle Performing Outlets (Accuracy 85-94%)',
@@ -372,15 +373,17 @@ async function downloadReport() {
 
     let suggestionByOutlet = {}
     let tierSummaryByTier = {}
+    let tierRecommendationsByTier = {}
     if (topicFilter.value !== 'ALL' && (summaries.length || tierGroups.length)) {
       try {
-        const { suggestions, tierSummaries } = await api.getOutletSuggestions({
+        const { suggestions, tierSummaries, tierRecommendations } = await api.getOutletSuggestions({
           topic: topicFilter.value,
           outlets: summaries.map(s => ({ code: s.outlet, tier: s.tier, missedQuestion: s.missedQuestion, correctAnswer: s.correctAnswer })),
           tiers: tierGroups.map(g => ({ tier: g.tier, outlets: g.outlets.map(s => ({ code: s.outlet, avgPercent: s.avgPercent })) })),
         })
         suggestionByOutlet = suggestions || {}
         tierSummaryByTier = tierSummaries || {}
+        tierRecommendationsByTier = tierRecommendations || {}
       } catch (e) {
         status.value = t('supervisorDashboard.suggestionsDegraded')
         statusOk.value = false
@@ -460,6 +463,9 @@ async function downloadReport() {
         ? sortedTierOutlets.map(s => `${s.outlet} (${s.avgPercent}%)`).join(', ')
         : sortedTierOutlets.map(s => s.outlet).join(', ')
       const summaryText = tierSummaryByTier[tier] || tierSummaryFallback(tier, tierOutlets)
+      const bullets = tierRecommendationsByTier[tier]?.length
+        ? tierRecommendationsByTier[tier].map(r => [r.label, r.text])
+        : RECOMMENDATION_BULLETS[tier]
 
       summarySheet.addRow([])
       writeMergedTextRow(`${TIER_SECTION_TITLE[tier]} — ${tierOutlets.length} outlet(s)`, { bold: true, fill: TIER_FILL[tier] })
@@ -467,7 +473,7 @@ async function downloadReport() {
       writeMergedTextRow(`Summary: ${summaryText}`)
       summarySheet.addRow([])
       writeMergedTextRow('Recommendation:', { bold: true })
-      for (const [label, text] of RECOMMENDATION_BULLETS[tier]) {
+      for (const [label, text] of bullets) {
         writeMergedTextRow(`${label}: ${text}`)
       }
     }
