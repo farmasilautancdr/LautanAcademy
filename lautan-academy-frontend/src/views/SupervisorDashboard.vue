@@ -185,6 +185,19 @@ const dedupedModuleQuiz = computed(() => {
   return result
 })
 
+// Outlet Result sheet's row order — region first (Master's own area
+// order, not lexicographic), outlet code second, so a Supervisor scans
+// one region's outlets together instead of a flat staff-name-ordered list.
+const sortedOutletResult = computed(() => {
+  const regionRank = new Map(AREAS.value.map((a, i) => [a.id, i]))
+  return [...dedupedModuleQuiz.value].sort((a, b) => {
+    const ra = regionRank.get(outletRegion.value[a.Outlet]) ?? Infinity
+    const rb = regionRank.get(outletRegion.value[b.Outlet]) ?? Infinity
+    if (ra !== rb) return ra - rb
+    return a.Outlet.localeCompare(b.Outlet)
+  })
+})
+
 // wrong_answers isn't split by Video Training/Content/Module Quiz the way
 // `results` is (see moduleQuizResults above) — restrict to Module Quiz's
 // own topic universe first, then apply the same region/outlet/topic
@@ -257,6 +270,56 @@ const TIER_FONT = {
 }
 const REGION_HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEBF7' } }
 
+// Tier-breakdown block appended below the per-outlet table — layout
+// modeled on a reference report (SUMMARY REPORT OMEGA & NUTRAN.xlsx)
+// Supervisor provided: a bold section header per tier, an "Outlets:"
+// line, a one-line "Summary:", then a bold "Recommendation:" with 3
+// bullets. The reference's own bullets are generic staff-management
+// advice (not tied to the quiz topic) — adapted here for quiz-accuracy
+// framing, same 3-per-tier structure.
+const TIER_SECTION_TITLE = {
+  top: 'Top Performing Outlets (Accuracy ≥95%)',
+  middle: 'Middle Performing Outlets (Accuracy 85-94%)',
+  bottom: 'Underperforming Outlets (Accuracy ≤84%)',
+}
+const TIER_ORDER = ['top', 'middle', 'bottom']
+// Deterministic fallback for the tier "Summary:" line — used when the
+// whole /outlet-suggestions request fails (network error) or "All
+// Topics" is selected, same honest-fallback philosophy as STATIC_FALLBACK.
+// Mirrors the backend's own tierSummaryFallback for consistency between
+// "Gemini failed for this one tier" and "the request never went out."
+function tierSummaryFallback(tier, outlets) {
+  const sorted = [...outlets].sort((a, b) => b.avgPercent - a.avgPercent)
+  if (!sorted.length) return ''
+  if (tier === 'top') {
+    const best = sorted[0]
+    return `${sorted.length} outlet(s) scored in the Top tier, led by ${best.outlet} at ${best.avgPercent}%.`
+  }
+  if (tier === 'bottom') {
+    const worst = sorted[sorted.length - 1]
+    return `${sorted.length} outlet(s) scored in the Bottom tier, with ${worst.outlet} lowest at ${worst.avgPercent}%.`
+  }
+  return `${sorted.length} outlet(s) scored in the Middle tier, ranging from ${sorted[sorted.length - 1].avgPercent}% to ${sorted[0].avgPercent}%.`
+}
+
+const RECOMMENDATION_BULLETS = {
+  top: [
+    ['Incentives', 'Recognize and reward staff at these outlets to maintain high quiz performance and morale.'],
+    ['Best Practice Sharing', 'Document how these outlets prepare for and review Module Quiz topics, and share it as a standard for other outlets.'],
+    ['Mentorship', 'Pair high-scoring staff from these outlets with staff at underperforming outlets for peer coaching.'],
+  ],
+  middle: [
+    ['Targeted Training', 'Review the specific questions these outlets got wrong to identify if gaps are knowledge-based or process-based.'],
+    ['Internal Audits', 'Have outlet managers run a quick weekly quiz-topic review with staff to catch knowledge gaps early.'],
+    ['Refresher Courses', 'Schedule a light refresher on this topic next quarter to close the gap to the top tier.'],
+  ],
+  bottom: [
+    ['Immediate Intervention', 'Investigate the root cause with outlet management — staffing gaps, lack of reference material, or need for retraining.'],
+    ['Intensive Retraining', 'Staff at these outlets should redo the Module Quiz training material before retaking the quiz.'],
+    ['Monitoring', 'Increase check-ins with these outlets and re-quiz within a few weeks to confirm improvement.'],
+  ],
+}
+
 const outletSummaries = computed(() => {
   const byOutlet = new Map()
   for (const r of dedupedModuleQuiz.value) {
@@ -303,14 +366,21 @@ async function downloadReport() {
   status.value = ''
   try {
     let summaries = outletSummaries.value
+    const tierGroups = TIER_ORDER
+      .map(tier => ({ tier, outlets: summaries.filter(s => s.tier === tier) }))
+      .filter(g => g.outlets.length)
+
     let suggestionByOutlet = {}
-    if (topicFilter.value !== 'ALL' && summaries.length) {
+    let tierSummaryByTier = {}
+    if (topicFilter.value !== 'ALL' && (summaries.length || tierGroups.length)) {
       try {
-        const { suggestions } = await api.getOutletSuggestions({
+        const { suggestions, tierSummaries } = await api.getOutletSuggestions({
           topic: topicFilter.value,
           outlets: summaries.map(s => ({ code: s.outlet, tier: s.tier, missedQuestion: s.missedQuestion, correctAnswer: s.correctAnswer })),
+          tiers: tierGroups.map(g => ({ tier: g.tier, outlets: g.outlets.map(s => ({ code: s.outlet, avgPercent: s.avgPercent })) })),
         })
         suggestionByOutlet = suggestions || {}
+        tierSummaryByTier = tierSummaries || {}
       } catch (e) {
         status.value = t('supervisorDashboard.suggestionsDegraded')
         statusOk.value = false
@@ -320,9 +390,9 @@ async function downloadReport() {
     const ExcelJS = await loadExcelJS()
     const workbook = new ExcelJS.Workbook()
 
-    const rawSheet = workbook.addWorksheet('Raw Results')
+    const rawSheet = workbook.addWorksheet('Outlet Result')
     rawSheet.addRow(RAW_COLUMNS.map(([label]) => label)).font = { bold: true }
-    for (const r of dedupedModuleQuiz.value) rawSheet.addRow(RAW_COLUMNS.map(([, get]) => get(r)))
+    for (const r of sortedOutletResult.value) rawSheet.addRow(RAW_COLUMNS.map(([, get]) => get(r)))
     rawSheet.columns.forEach(col => { col.width = 18 })
 
     const summarySheet = workbook.addWorksheet('Outlet Summary')
@@ -371,12 +441,44 @@ async function downloadReport() {
       leftover.forEach(writeOutletRow)
     }
 
+    // Tier breakdown — bold section title, "Outlets:" list, one-line
+    // "Summary:", then "Recommendation:" with 3 bullets. Each text block
+    // merged across all 6 columns and wrapped, matching the per-outlet
+    // rows above rather than introducing a different layout mid-sheet.
+    function writeMergedTextRow(text, { bold = false, fill = null } = {}) {
+      const row = summarySheet.addRow([text])
+      summarySheet.mergeCells(row.number, 1, row.number, 6)
+      row.font = { bold }
+      row.alignment = { wrapText: true, vertical: 'top' }
+      if (fill) row.getCell(1).fill = fill
+      return row
+    }
+
+    for (const { tier, outlets: tierOutlets } of tierGroups) {
+      const sortedTierOutlets = [...tierOutlets].sort((a, b) => b.avgPercent - a.avgPercent)
+      const outletList = tier === 'bottom'
+        ? sortedTierOutlets.map(s => `${s.outlet} (${s.avgPercent}%)`).join(', ')
+        : sortedTierOutlets.map(s => s.outlet).join(', ')
+      const summaryText = tierSummaryByTier[tier] || tierSummaryFallback(tier, tierOutlets)
+
+      summarySheet.addRow([])
+      writeMergedTextRow(`${TIER_SECTION_TITLE[tier]} — ${tierOutlets.length} outlet(s)`, { bold: true, fill: TIER_FILL[tier] })
+      writeMergedTextRow(`Outlets: ${outletList}.`)
+      writeMergedTextRow(`Summary: ${summaryText}`)
+      summarySheet.addRow([])
+      writeMergedTextRow('Recommendation:', { bold: true })
+      for (const [label, text] of RECOMMENDATION_BULLETS[tier]) {
+        writeMergedTextRow(`${label}: ${text}`)
+      }
+    }
+
     const buffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.xlsx`
+    const topicLabel = (topicFilter.value === 'ALL' ? 'All Topics' : topicFilter.value).replace(/[\\/:*?"<>|]/g, '-')
+    a.download = `${topicLabel} Result & Summary - ${new Date().toISOString().slice(0, 10)}.xlsx`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
