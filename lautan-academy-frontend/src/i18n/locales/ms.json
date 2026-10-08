@@ -928,11 +928,17 @@
       "add": "Tambah",
       "deactivate": "Nyahaktifkan",
       "reactivate": "Aktifkan Semula",
+      "editManager": "Edit nama pengurus",
+      "editManagerPlaceholder": "Nama pengurus",
+      "save": "Simpan",
+      "cancel": "Batal",
       "successAreaAdded": "Kawasan {id} ditambah.",
       "successOutletAdded": "Cawangan {code} ditambah.",
+      "successManagerUpdated": "Nama pengurus untuk {id} dikemas kini.",
       "errorLoadFailed": "Gagal memuatkan cawangan.",
       "errorAddFailed": "Gagal menambah.",
-      "errorUpdateFailed": "Gagal mengemas kini."
+      "errorUpdateFailed": "Gagal mengemas kini.",
+      "errorEnterManagerName": "Sila masukkan nama pengurus."
     },
     "dataPurge": {
       "title": "Padam Data Ujian",

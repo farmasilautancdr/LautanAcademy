@@ -28,6 +28,10 @@ const newOutletDivision = ref('retail')
 const newOutletAreaId = ref('')
 const addingOutlet = ref(false)
 
+const editingAreaId = ref('')
+const editLabelValue = ref('')
+const savingLabel = ref(false)
+
 const warehouseOutlets = computed(() => outlets.value.filter((o) => o.division === 'warehouse'))
 const outletsByArea = computed(() => {
   const map = {}
@@ -120,6 +124,40 @@ async function toggleArea(area) {
   }
 }
 
+function startEditLabel(area) {
+  editingAreaId.value = area.id
+  editLabelValue.value = area.label
+  status.value = ''
+}
+
+function cancelEditLabel() {
+  editingAreaId.value = ''
+  editLabelValue.value = ''
+}
+
+async function saveLabel(area) {
+  const label = editLabelValue.value.trim()
+  if (!label) {
+    status.value = t('masterPanel.outlets.errorEnterManagerName')
+    statusOk.value = false
+    return
+  }
+  savingLabel.value = true
+  status.value = ''
+  try {
+    await api.masterUpdateArea(area.id, { label }, masterAuth.token)
+    status.value = t('masterPanel.outlets.successManagerUpdated', { id: area.id })
+    statusOk.value = true
+    editingAreaId.value = ''
+    await load()
+  } catch (err) {
+    status.value = err.message || t('masterPanel.outlets.errorUpdateFailed')
+    statusOk.value = false
+  } finally {
+    savingLabel.value = false
+  }
+}
+
 load()
 </script>
 
@@ -138,11 +176,32 @@ load()
 
     <div v-if="!loading" class="space-y-3">
       <div v-for="area in areas" :key="area.id" class="border border-seafoam rounded-lg p-3" :class="!area.active && 'opacity-50'">
-        <div class="flex items-center justify-between">
-          <span class="font-medium text-ink text-sm">{{ area.id }} - {{ area.label }}</span>
-          <button type="button" @click="toggleArea(area)" class="text-xs font-medium hover:underline" :class="area.active ? 'text-coral' : 'text-aqua'">
-            {{ area.active ? t('masterPanel.outlets.deactivate') : t('masterPanel.outlets.reactivate') }}
+        <div v-if="editingAreaId === area.id" class="flex items-center gap-2">
+          <span class="font-medium text-ink text-sm whitespace-nowrap">{{ area.id }} -</span>
+          <input
+            v-model="editLabelValue"
+            :placeholder="t('masterPanel.outlets.editManagerPlaceholder')"
+            class="flex-1 border border-slate/30 rounded-lg py-1.5 px-2 text-sm"
+            @keyup.enter="saveLabel(area)"
+            @keyup.escape="cancelEditLabel"
+          />
+          <button type="button" @click="saveLabel(area)" :disabled="savingLabel" class="text-xs font-medium text-aqua hover:underline disabled:opacity-60">
+            {{ t('masterPanel.outlets.save') }}
           </button>
+          <button type="button" @click="cancelEditLabel" class="text-xs font-medium text-slate hover:underline">
+            {{ t('masterPanel.outlets.cancel') }}
+          </button>
+        </div>
+        <div v-else class="flex items-center justify-between">
+          <span class="font-medium text-ink text-sm">{{ area.id }} - {{ area.label }}</span>
+          <div class="flex items-center gap-3">
+            <button type="button" @click="startEditLabel(area)" class="text-xs font-medium text-slate hover:underline">
+              {{ t('masterPanel.outlets.editManager') }}
+            </button>
+            <button type="button" @click="toggleArea(area)" class="text-xs font-medium hover:underline" :class="area.active ? 'text-coral' : 'text-aqua'">
+              {{ area.active ? t('masterPanel.outlets.deactivate') : t('masterPanel.outlets.reactivate') }}
+            </button>
+          </div>
         </div>
         <ul class="mt-2 flex flex-wrap gap-1.5">
           <li v-for="o in outletsByArea[area.id]" :key="o.code" class="text-xs px-2 py-1 rounded border border-slate/30" :class="!o.active && 'opacity-50 line-through'">

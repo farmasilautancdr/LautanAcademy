@@ -928,11 +928,17 @@
       "add": "Add",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
+      "editManager": "Edit manager name",
+      "editManagerPlaceholder": "Manager name",
+      "save": "Save",
+      "cancel": "Cancel",
       "successAreaAdded": "Area {id} added.",
       "successOutletAdded": "Outlet {code} added.",
+      "successManagerUpdated": "Manager name for {id} updated.",
       "errorLoadFailed": "Could not load outlets.",
       "errorAddFailed": "Could not add.",
-      "errorUpdateFailed": "Could not update."
+      "errorUpdateFailed": "Could not update.",
+      "errorEnterManagerName": "Enter a manager name."
     },
     "dataPurge": {
       "title": "Test Data Purge",
