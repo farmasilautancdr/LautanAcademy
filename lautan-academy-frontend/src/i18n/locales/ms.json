@@ -519,7 +519,9 @@
     "outletsActive": "Cawangan aktif",
     "averageScore": "Skor purata",
     "activityLog": "Log Aktiviti",
-    "noActivity": "Tiada aktiviti dalam tempoh ini."
+    "noActivity": "Tiada aktiviti dalam tempoh ini.",
+    "generatingSuggestions": "Menjana cadangan...",
+    "suggestionsDegraded": "Cadangan AI tidak tersedia kali ini — memaparkan tip generik."
   },
   "supervisorAddResourcesView": {
     "title": "Tambah Sumber",

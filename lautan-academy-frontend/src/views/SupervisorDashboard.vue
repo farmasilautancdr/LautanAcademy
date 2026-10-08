@@ -24,6 +24,10 @@ const { areas: AREAS, outletsForArea } = useOutlets()
 const windowMonths = ref(3) // matches GAS's default — fast first load
 const loading = ref(true)
 const results = ref([])
+const wrongAnswers = ref([])
+const downloading = ref(false)
+const status = ref('')
+const statusOk = ref(false)
 const regionFilter = ref('ALL')
 const outletFilter = ref('ALL')
 const topicFilter = ref('ALL')
@@ -42,6 +46,7 @@ async function load() {
   try {
     const data = await api.getScopedData(windowMonths.value)
     results.value = data.results || []
+    wrongAnswers.value = data.wrongAnswers || []
   } catch (e) { /* leave empty */ }
   loading.value = false
 }
@@ -129,6 +134,117 @@ const outletRegion = computed(() => {
   return map
 })
 
+// Retakes of the same topic by the same staff at the same outlet collapse
+// to one counted entry — a sub-30% attempt is treated as a likely system
+// error (forced logout mid-quiz) and skipped in favor of the next valid
+// attempt, unless every attempt in the group is sub-30%, in which case the
+// earliest one counts anyway so nobody silently vanishes from the report.
+// _scoreGap flags a >=20-point swing across the group's attempts, surfaced
+// as an extra CSV column rather than silently resolved one way or another.
+const dedupedModuleQuiz = computed(() => {
+  const groups = new Map()
+  for (const r of filteredModuleQuiz.value) {
+    const key = `${r.Name}|${r.Outlet}|${r.Topic}`
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(r)
+  }
+  const result = []
+  for (const group of groups.values()) {
+    const sorted = [...group].sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+    const valid = sorted.find(r => (parseInt(r.Percentage) || 0) >= 30)
+    const counted = valid || sorted[0]
+    const percentages = sorted.map(r => parseInt(r.Percentage) || 0)
+    const gap = Math.max(...percentages) - Math.min(...percentages)
+    result.push({
+      ...counted,
+      _duplicateCount: sorted.length,
+      _scoreGap: sorted.length > 1 && gap >= 20 ? `${Math.min(...percentages)}% -> ${Math.max(...percentages)}%` : '',
+    })
+  }
+  return result
+})
+
+// wrong_answers isn't split by Video Training/Content/Module Quiz the way
+// `results` is (see moduleQuizResults above) — restrict to Module Quiz's
+// own topic universe first, then apply the same region/outlet/topic
+// filters already governing the raw CSV rows, so "most missed question"
+// never pulls in a Video Training or Content quiz question.
+const scopedWrongAnswers = computed(() => {
+  const moduleTopics = new Set(moduleQuizTopics.value)
+  let list = wrongAnswers.value.filter(w => moduleTopics.has(w.Topic))
+  if (regionFilter.value !== 'ALL') {
+    const regionOutlets = new Set(outletsForArea(regionFilter.value))
+    list = list.filter(w => regionOutlets.has(w.Outlet))
+  }
+  if (outletFilter.value !== 'ALL') list = list.filter(w => w.Outlet === outletFilter.value)
+  if (topicFilter.value !== 'ALL') list = list.filter(w => w.Topic === topicFilter.value)
+  return list
+})
+
+// Counts distinct staff who got each question wrong (not raw wrong-answer
+// rows), so one staff retrying the same question repeatedly doesn't
+// inflate it — then keeps the single most-missed question per outlet.
+const mostMissedByOutlet = computed(() => {
+  const byOutlet = new Map()
+  for (const w of scopedWrongAnswers.value) {
+    const question = w['Question Text En']
+    if (!question) continue
+    if (!byOutlet.has(w.Outlet)) byOutlet.set(w.Outlet, new Map())
+    const questionMap = byOutlet.get(w.Outlet)
+    if (!questionMap.has(question)) questionMap.set(question, { staff: new Set(), correctAnswer: w['Correct Answer En'] || '' })
+    questionMap.get(question).staff.add(w['Staff Name'])
+  }
+  const result = {}
+  for (const [outlet, questionMap] of byOutlet) {
+    let best = null
+    for (const [question, info] of questionMap) {
+      if (!best || info.staff.size > best.count) best = { question, count: info.staff.size, correctAnswer: info.correctAnswer }
+    }
+    if (best) result[outlet] = best
+  }
+  return result
+})
+
+function tierFor(avgPercent) {
+  if (avgPercent >= 95) return 'top'
+  if (avgPercent >= 85) return 'middle'
+  return 'bottom'
+}
+
+// Honest fallback, not a fake tailored suggestion — used when Gemini is
+// unavailable for a given outlet, or when "All Topics" is selected (an
+// outlet's rows span unrelated subjects, so nothing coherent to tailor to).
+const STATIC_FALLBACK = {
+  top: 'Outlet is performing well on this topic — keep reinforcing correct answers in daily huddles so the standard holds through staff turnover.',
+  middle: 'Outlet is above the minimum bar but inconsistent — review the most-missed question above as a team and re-quiz in a few weeks.',
+  bottom: 'Outlet needs a structured refresher on this topic before the next quiz cycle — start with the most-missed question above.',
+}
+const TIER_DISPLAY = { top: 'Top', middle: 'Middle', bottom: 'Bottom' }
+
+const outletSummaries = computed(() => {
+  const byOutlet = new Map()
+  for (const r of dedupedModuleQuiz.value) {
+    if (!byOutlet.has(r.Outlet)) byOutlet.set(r.Outlet, { sum: 0, count: 0 })
+    const acc = byOutlet.get(r.Outlet)
+    acc.sum += parseInt(r.Percentage) || 0
+    acc.count += 1
+  }
+  return [...byOutlet.entries()].map(([outlet, { sum, count }]) => {
+    const avgPercent = Math.round(sum / count)
+    const missed = mostMissedByOutlet.value[outlet]
+    return {
+      outlet,
+      region: outletRegion.value[outlet] || '',
+      avgPercent,
+      tier: tierFor(avgPercent),
+      entriesCounted: count,
+      missedQuestion: missed?.question || '',
+      missedCount: missed?.count || 0,
+      correctAnswer: missed?.correctAnswer || '',
+    }
+  })
+})
+
 // Score comes back as "correct/total" (e.g. "15/15") — Excel's CSV import
 // auto-detects that shape as a date (15/15 -> "Oct-15" etc). " of " reads
 // the same to a human and can't be parsed as a date.
@@ -141,6 +257,8 @@ const CSV_COLUMNS = [
   ['Topic', r => r.Topic],
   ['Score', r => (r.Score || '').replace('/', ' of ')],
   ['Percentage', r => r.Percentage],
+  ['Duplicate Attempts', r => r._duplicateCount],
+  ['Large Score Gap', r => r._scoreGap || ''],
 ]
 
 function csvEscape(value) {
@@ -153,19 +271,49 @@ function csvEscape(value) {
   return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
 }
 
-function downloadCsv() {
-  const header = CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
-  const rows = filteredModuleQuiz.value.map(r => CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
-  // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
-  const blob = new Blob(['﻿' + [header, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.csv`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+async function downloadCsv() {
+  downloading.value = true
+  status.value = ''
+  try {
+    const header = CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
+    const rows = dedupedModuleQuiz.value.map(r => CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
+
+    let summaries = outletSummaries.value
+    let suggestionByOutlet = {}
+    if (topicFilter.value !== 'ALL' && summaries.length) {
+      try {
+        const { suggestions } = await api.getOutletSuggestions({
+          topic: topicFilter.value,
+          outlets: summaries.map(s => ({ code: s.outlet, tier: s.tier, missedQuestion: s.missedQuestion, correctAnswer: s.correctAnswer })),
+        })
+        suggestionByOutlet = suggestions || {}
+      } catch (e) {
+        status.value = t('supervisorDashboard.suggestionsDegraded')
+        statusOk.value = false
+      }
+    }
+
+    const summaryHeader = ['Outlet', 'Region', 'Average %', 'Tier', 'Entries Counted', 'Most Missed Question', 'Suggestion'].map(csvEscape).join(',')
+    const summaryRows = summaries.map(s => {
+      const suggestion = suggestionByOutlet[s.outlet] || STATIC_FALLBACK[s.tier]
+      const missed = s.missedQuestion ? `${s.missedQuestion} (missed by ${s.missedCount} staff)` : ''
+      return [s.outlet, s.region, `${s.avgPercent}%`, TIER_DISPLAY[s.tier], s.entriesCounted, missed, suggestion].map(csvEscape).join(',')
+    })
+
+    const csvBody = [header, ...rows, '', 'OUTLET SUMMARY', summaryHeader, ...summaryRows].join('\r\n')
+    // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
+    const blob = new Blob(['﻿' + csvBody], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } finally {
+    downloading.value = false
+  }
 }
 
 </script>
@@ -197,11 +345,13 @@ function downloadCsv() {
           <option value="ALL">{{ t('supervisorDashboard.allTopics') }}</option>
           <option v-for="tp in moduleQuizTopics" :key="tp" :value="tp">{{ tp }}</option>
         </select>
-        <button type="button" @click="downloadCsv" :disabled="filteredModuleQuiz.length === 0"
+        <button type="button" @click="downloadCsv" :disabled="downloading || dedupedModuleQuiz.length === 0"
           class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">
-          {{ t('supervisorDashboard.downloadCsv') }}
+          {{ downloading ? t('supervisorDashboard.generatingSuggestions') : t('supervisorDashboard.downloadCsv') }}
         </button>
       </div>
+
+      <p v-if="status" class="text-xs mb-4" :class="statusOk ? 'text-aqua' : 'text-coral'">{{ status }}</p>
 
       <div v-if="loading || !videoTrainingsLoaded" class="text-slate text-sm">{{ t('supervisorDashboard.loading') }}</div>
 

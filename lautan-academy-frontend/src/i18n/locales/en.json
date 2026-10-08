@@ -519,7 +519,9 @@
     "outletsActive": "Outlets active",
     "averageScore": "Average score",
     "activityLog": "Activity Log",
-    "noActivity": "No activity in this window."
+    "noActivity": "No activity in this window.",
+    "generatingSuggestions": "Generating suggestions...",
+    "suggestionsDegraded": "AI suggestions unavailable this time — showing generic tips."
   },
   "supervisorAddResourcesView": {
     "title": "Add Resources",
