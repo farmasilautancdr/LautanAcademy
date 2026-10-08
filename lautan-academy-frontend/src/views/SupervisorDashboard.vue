@@ -8,6 +8,22 @@
 // route under the Browse Courses nav group — see SupervisorAddResourcesView.vue.
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+// ExcelJS adds ~270KB gzipped — loaded via a lazy dynamic import() inside
+// downloadReport() below, not statically here, so every role/page that
+// isn't this report doesn't pay that weight (this app bundles as a single
+// chunk, no route-based code splitting). ExcelJS's own browser bundle
+// (dist/exceljs.min.js) is a UMD build that attaches `window.ExcelJS` as a
+// side effect rather than using real ESM exports — importing it for its
+// default export throws, and the bare 'exceljs'/'exceljs/excel.js'
+// entries are Node-only (they gate on process.versions.node, which
+// doesn't exist in a browser). This is the only import shape that
+// actually works in Vite; see vite.config.js's optimizeDeps.exclude,
+// required so esbuild's dep pre-bundler doesn't try (and fail) to
+// re-parse the already-minified file.
+async function loadExcelJS() {
+  if (!window.ExcelJS) await import('exceljs/dist/exceljs.min.js')
+  return window.ExcelJS
+}
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
 import { usePagination } from '../composables/usePagination'
@@ -220,6 +236,21 @@ const STATIC_FALLBACK = {
   bottom: 'Outlet needs a structured refresher on this topic before the next quiz cycle — start with the most-missed question above.',
 }
 const TIER_DISPLAY = { top: 'Top', middle: 'Middle', bottom: 'Bottom' }
+const TIER_RANK = { top: 0, middle: 1, bottom: 2 }
+// Excel's own built-in "Good/Neutral/Bad" conditional-formatting colors —
+// recognizable to anyone who's used Excel's conditional formatting before,
+// not an arbitrary palette.
+const TIER_FILL = {
+  top: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' } },
+  middle: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEB9C' } },
+  bottom: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } },
+}
+const TIER_FONT = {
+  top: { color: { argb: 'FF006100' } },
+  middle: { color: { argb: 'FF9C6500' } },
+  bottom: { color: { argb: 'FF9C0006' } },
+}
+const REGION_HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEBF7' } }
 
 const outletSummaries = computed(() => {
   const byOutlet = new Map()
@@ -245,10 +276,11 @@ const outletSummaries = computed(() => {
   })
 })
 
-// Score comes back as "correct/total" (e.g. "15/15") — Excel's CSV import
-// auto-detects that shape as a date (15/15 -> "Oct-15" etc). " of " reads
-// the same to a human and can't be parsed as a date.
-const CSV_COLUMNS = [
+// Score comes back as "correct/total" (e.g. "15/15") — kept as " of " for
+// readability continuity with the old CSV export (this cell is written as
+// an explicit string value, so unlike a CSV re-opened in Excel, there's no
+// date-autodetection risk here either way).
+const RAW_COLUMNS = [
   ['Timestamp', r => new Date(r.Timestamp).toISOString()],
   ['Region', r => outletRegion.value[r.Outlet] || ''],
   ['Outlet', r => r.Outlet],
@@ -261,23 +293,10 @@ const CSV_COLUMNS = [
   ['Large Score Gap', r => r._scoreGap || ''],
 ]
 
-function csvEscape(value) {
-  let s = (value ?? '').toString()
-  // A cell starting with =, +, -, or @ gets parsed as a formula by
-  // Excel/Sheets on open — a leading apostrophe forces it back to plain
-  // text (OWASP CSV injection mitigation), avoiding #NAME? for free-text
-  // fields that happen to start with one of these.
-  if (/^[=+\-@]/.test(s)) s = "'" + s
-  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
-}
-
-async function downloadCsv() {
+async function downloadReport() {
   downloading.value = true
   status.value = ''
   try {
-    const header = CSV_COLUMNS.map(([label]) => csvEscape(label)).join(',')
-    const rows = dedupedModuleQuiz.value.map(r => CSV_COLUMNS.map(([, get]) => csvEscape(get(r))).join(','))
-
     let summaries = outletSummaries.value
     let suggestionByOutlet = {}
     if (topicFilter.value !== 'ALL' && summaries.length) {
@@ -293,20 +312,66 @@ async function downloadCsv() {
       }
     }
 
-    const summaryHeader = ['Outlet', 'Region', 'Average %', 'Tier', 'Entries Counted', 'Most Missed Question', 'Suggestion'].map(csvEscape).join(',')
-    const summaryRows = summaries.map(s => {
+    const ExcelJS = await loadExcelJS()
+    const workbook = new ExcelJS.Workbook()
+
+    const rawSheet = workbook.addWorksheet('Raw Results')
+    rawSheet.addRow(RAW_COLUMNS.map(([label]) => label)).font = { bold: true }
+    for (const r of dedupedModuleQuiz.value) rawSheet.addRow(RAW_COLUMNS.map(([, get]) => get(r)))
+    rawSheet.columns.forEach(col => { col.width = 18 })
+
+    const summarySheet = workbook.addWorksheet('Outlet Summary')
+    summarySheet.addRow(['Outlet', 'Average %', 'Tier', 'Entries Counted', 'Most Missed Question', 'Suggestion']).font = { bold: true }
+    summarySheet.columns = [{ width: 12 }, { width: 12 }, { width: 10 }, { width: 14 }, { width: 45 }, { width: 70 }]
+
+    const summaryByOutlet = new Map(summaries.map(s => [s.outlet, s]))
+    const grouped = new Set()
+
+    function writeOutletRow(s) {
       const suggestion = suggestionByOutlet[s.outlet] || STATIC_FALLBACK[s.tier]
       const missed = s.missedQuestion ? `${s.missedQuestion} (missed by ${s.missedCount} staff)` : ''
-      return [s.outlet, s.region, `${s.avgPercent}%`, TIER_DISPLAY[s.tier], s.entriesCounted, missed, suggestion].map(csvEscape).join(',')
-    })
+      const row = summarySheet.addRow([s.outlet, `${s.avgPercent}%`, TIER_DISPLAY[s.tier], s.entriesCounted, missed, suggestion])
+      row.eachCell(cell => { cell.fill = TIER_FILL[s.tier]; cell.font = TIER_FONT[s.tier] })
+      row.alignment = { wrapText: true, vertical: 'top' }
+      grouped.add(s.outlet)
+    }
 
-    const csvBody = [header, ...rows, '', 'OUTLET SUMMARY', summaryHeader, ...summaryRows].join('\r\n')
-    // BOM so Excel opens the bilingual (EN/MS) text as UTF-8 instead of guessing wrong.
-    const blob = new Blob(['﻿' + csvBody], { type: 'text/csv;charset=utf-8;' })
+    // Region order matches Master's own area list (R1, R2, ... R10, not
+    // lexicographic) — within a region, outlets cluster Top -> Middle ->
+    // Bottom, highest average first within a tier, so a Supervisor scans
+    // one region at a glance instead of hunting across a flat list.
+    for (const area of AREAS.value) {
+      const areaOutlets = (area.outlets || [])
+        .map(code => summaryByOutlet.get(code))
+        .filter(Boolean)
+        .sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.avgPercent - a.avgPercent)
+      if (!areaOutlets.length) continue
+
+      const regionRow = summarySheet.addRow([`${area.id} - ${area.label}`])
+      summarySheet.mergeCells(regionRow.number, 1, regionRow.number, 6)
+      regionRow.font = { bold: true }
+      regionRow.getCell(1).fill = REGION_HEADER_FILL
+      areaOutlets.forEach(writeOutletRow)
+    }
+
+    // Safety net, not the expected path — every outlet summary comes from
+    // outletRegion, which is itself built from AREAS, so this should never
+    // fire. Guards against silently dropping a row if that ever drifts.
+    const leftover = summaries.filter(s => !grouped.has(s.outlet))
+    if (leftover.length) {
+      const regionRow = summarySheet.addRow(['Unassigned'])
+      summarySheet.mergeCells(regionRow.number, 1, regionRow.number, 6)
+      regionRow.font = { bold: true }
+      regionRow.getCell(1).fill = REGION_HEADER_FILL
+      leftover.forEach(writeOutletRow)
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `module-quiz-results-${new Date().toISOString().slice(0, 10)}.xlsx`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -345,9 +410,9 @@ async function downloadCsv() {
           <option value="ALL">{{ t('supervisorDashboard.allTopics') }}</option>
           <option v-for="tp in moduleQuizTopics" :key="tp" :value="tp">{{ tp }}</option>
         </select>
-        <button type="button" @click="downloadCsv" :disabled="downloading || dedupedModuleQuiz.length === 0"
+        <button type="button" @click="downloadReport" :disabled="downloading || dedupedModuleQuiz.length === 0"
           class="ml-auto bg-aqua text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-40">
-          {{ downloading ? t('supervisorDashboard.generatingSuggestions') : t('supervisorDashboard.downloadCsv') }}
+          {{ downloading ? t('supervisorDashboard.generatingSuggestions') : t('supervisorDashboard.downloadReport') }}
         </button>
       </div>
 

@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
     "vue-i18n": "^11.4.8",

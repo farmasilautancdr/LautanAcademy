@@ -26,8 +26,15 @@ export default defineConfig({
         // API calls go to a different origin (Railway) — never cache those,
         // only the app shell itself needs offline/install support.
         navigateFallbackDenylist: [/^\/api\//],
+        // ExcelJS (Supervisor report export) is lazy dynamic-imported
+        // specifically so most roles never fetch its ~270KB chunk —
+        // precaching it here on install would silently undo that for
+        // every installed-PWA user regardless of role. Fetched from
+        // network on the one occasion it's actually needed instead.
+        globIgnores: ['**/exceljs.min-*.js'],
       },
     }),
   ],
   server: { port: 5173 },
+  optimizeDeps: { exclude: ['exceljs'] },
 })
