@@ -12,17 +12,22 @@ import { useI18n } from 'vue-i18n'
 // downloadReport() below, not statically here, so every role/page that
 // isn't this report doesn't pay that weight (this app bundles as a single
 // chunk, no route-based code splitting). ExcelJS's own browser bundle
-// (dist/exceljs.min.js) is a UMD build that attaches `window.ExcelJS` as a
-// side effect rather than using real ESM exports — importing it for its
-// default export throws, and the bare 'exceljs'/'exceljs/excel.js'
-// entries are Node-only (they gate on process.versions.node, which
-// doesn't exist in a browser). This is the only import shape that
-// actually works in Vite; see vite.config.js's optimizeDeps.exclude,
-// required so esbuild's dep pre-bundler doesn't try (and fail) to
-// re-parse the already-minified file.
+// (dist/exceljs.min.js) is a UMD build with no real ESM export; the bare
+// 'exceljs'/'exceljs/excel.js' entries are Node-only (they gate on
+// process.versions.node, which doesn't exist in a browser) — this is the
+// only import path that works at all. BUT: Vite's two bundlers interop
+// with that UMD build differently and disagree on where the library ends
+// up. `npm run dev` (esbuild) runs the UMD factory in a context where it
+// self-attaches to `window.ExcelJS`; `npm run build` (Rollup) captures the
+// module's CJS export directly as the import's `.default` and never
+// touches `window` at all. Checking both, in this order, is required —
+// confirmed by testing each bundler's actual output in a real browser,
+// not assumed. See vite.config.js's optimizeDeps.exclude, required so
+// esbuild's dep pre-bundler doesn't try (and fail) to re-parse the
+// already-minified file.
 async function loadExcelJS() {
-  if (!window.ExcelJS) await import('exceljs/dist/exceljs.min.js')
-  return window.ExcelJS
+  const mod = await import('exceljs/dist/exceljs.min.js')
+  return mod.default || window.ExcelJS
 }
 import { api } from '../api/client'
 import { useOutlets } from '../composables/useOutlets'
