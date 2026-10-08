@@ -158,10 +158,19 @@ const outletRegion = computed(() => {
 // Retakes of the same topic by the same staff at the same outlet collapse
 // to one counted entry — a sub-30% attempt is treated as a likely system
 // error (forced logout mid-quiz) and skipped in favor of the next valid
-// attempt, unless every attempt in the group is sub-30%, in which case the
+// attempt, unless every attempt in the window is sub-30%, in which case the
 // earliest one counts anyway so nobody silently vanishes from the report.
-// _scoreGap flags a >=20-point swing across the group's attempts, surfaced
+// _scoreGap flags a >=20-point swing across the window's attempts, surfaced
 // as an extra CSV column rather than silently resolved one way or another.
+//
+// Only attempts within 7x24 hours of the staff's first attempt at this
+// topic/outlet feed into that one counted row — same reasoning as Area
+// Manager's Assessment retry window (AreaManagerReviewsView.vue): an
+// attempt arriving later than a week is treated as a separate retraining
+// cycle with the outlet manager, not a same-incident retry, so it's
+// excluded from this report entirely rather than merged into the original
+// group's duplicate count, score gap, or counted score.
+const DEDUP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const dedupedModuleQuiz = computed(() => {
   const groups = new Map()
   for (const r of filteredModuleQuiz.value) {
@@ -171,7 +180,9 @@ const dedupedModuleQuiz = computed(() => {
   }
   const result = []
   for (const group of groups.values()) {
-    const sorted = [...group].sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+    const sortedAll = [...group].sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+    const firstTimestamp = new Date(sortedAll[0].Timestamp).getTime()
+    const sorted = sortedAll.filter(r => new Date(r.Timestamp).getTime() - firstTimestamp <= DEDUP_WINDOW_MS)
     const valid = sorted.find(r => (parseInt(r.Percentage) || 0) >= 30)
     const counted = valid || sorted[0]
     const percentages = sorted.map(r => parseInt(r.Percentage) || 0)
